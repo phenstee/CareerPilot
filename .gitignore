@@ -1,0 +1,15 @@
+# Secret environment variables
+.env
+
+# Python-generated files
+__pycache__/
+*.pyc
+
+# Python virtual environment
+.venv/
+venv/
+
+# Frontend dependencies and builds
+node_modules/
+dist/
+.next/
