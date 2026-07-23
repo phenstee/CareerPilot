@@ -13,3 +13,13 @@ venv/
 node_modules/
 dist/
 .next/
+.npm-cache/
+
+# Local uploads and generated artifacts
+uploads/
+coverage/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+*.db
