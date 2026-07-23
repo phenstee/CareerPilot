@@ -73,6 +73,8 @@ def test_mock_job_match_and_resume_suggestions_are_stored(client: TestClient, mo
     assert suggestions.status_code == 201
     assert suggestions.json()["analysis_type"] == "resume_suggestions"
     assert "React" in suggestions.json()["result"]["keywords"]
+    assert suggestions.json()["result"]["suggested_additions"]
+    assert suggestions.json()["result"]["less_important_items"]
 
     listing = client.get("/api/v1/analyses", params={"job_posting_id": job["id"]})
     assert listing.status_code == 200

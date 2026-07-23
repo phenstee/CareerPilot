@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarClock, Loader2, ListChecks } from "lucide-react";
+import { ArrowRight, CalendarClock, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { getDashboard } from "@/lib/api";
@@ -130,27 +130,20 @@ export function DashboardSummary() {
           )}
         </DashboardPanel>
 
-        <DashboardPanel title="High-priority tasks">
-          {dashboard.priority_task_items.length > 0 ? (
-            dashboard.priority_task_items.map((task) => (
+        <DashboardPanel title="Recent jobs">
+          {dashboard.recent_jobs.length > 0 ? (
+            dashboard.recent_jobs.map((job) => (
               <Link
-                key={task.id}
-                href="/tasks"
+                key={job.id}
+                href={`/jobs/${job.id}`}
                 className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white"
               >
-                <p className="text-sm font-semibold text-ink">{task.title}</p>
-                <p className="mt-1 text-sm text-slate-600">
-                  {task.application_company
-                    ? `${task.application_company} - ${task.application_role}`
-                    : task.related_skill || "General task"}
-                </p>
-                <p className="mt-2 text-xs text-slate-500">
-                  {formatDate(task.suggested_deadline)}
-                </p>
+                <p className="text-sm font-semibold text-ink">{job.title}</p>
+                <p className="mt-1 text-sm text-slate-600">{job.company}</p>
               </Link>
             ))
           ) : (
-            <EmptyPanelText>No high-priority tasks.</EmptyPanelText>
+            <EmptyPanelText>No saved jobs yet.</EmptyPanelText>
           )}
         </DashboardPanel>
       </section>
@@ -169,7 +162,7 @@ export function DashboardSummary() {
             ))}
           </div>
         </DashboardPanel>
-        <DashboardPanel title="Recent AI analyses">
+        <DashboardPanel title="AI analyses">
           {dashboard.recent_analyses.length > 0 ? (
             dashboard.recent_analyses.map((analysis) => (
               <Link
@@ -200,25 +193,6 @@ export function DashboardSummary() {
           )}
         </DashboardPanel>
       </section>
-
-      <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-        <DashboardPanel title="Recent jobs">
-          {dashboard.recent_jobs.length > 0 ? (
-            dashboard.recent_jobs.map((job) => (
-              <Link
-                key={job.id}
-                href={`/jobs/${job.id}`}
-                className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white"
-              >
-                <p className="text-sm font-semibold text-ink">{job.title}</p>
-                <p className="mt-1 text-sm text-slate-600">{job.company}</p>
-              </Link>
-            ))
-          ) : (
-            <EmptyPanelText>No saved jobs yet.</EmptyPanelText>
-          )}
-        </DashboardPanel>
-      </section>
     </div>
   );
 }
@@ -233,11 +207,7 @@ function DashboardPanel({
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
-        {title.includes("task") ? (
-          <ListChecks aria-hidden="true" className="h-4 w-4 text-lagoon" />
-        ) : (
-          <CalendarClock aria-hidden="true" className="h-4 w-4 text-lagoon" />
-        )}
+        <CalendarClock aria-hidden="true" className="h-4 w-4 text-lagoon" />
         <h2 className="text-lg font-semibold text-ink">{title}</h2>
       </div>
       <div className="space-y-3">{children}</div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { JobForm } from "@/components/job-form";
+import { JobSearchAgent } from "@/components/job-search-agent";
 
 export default function NewJobPage() {
   return (
@@ -9,14 +9,14 @@ export default function NewJobPage() {
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
-              Jobs
+              AI job search
             </p>
             <h1 className="mt-2 text-3xl font-semibold text-ink">
-              Save a job posting
+              Find jobs that fit you
             </h1>
             <p className="mt-3 max-w-2xl text-slate-600">
-              Paste the full job description and your own notes. No scraping is
-              used in this MVP.
+              Let CareerPilot analyze your profile or follow your instructions
+              to discover relevant opportunities.
             </p>
           </div>
           <Link
@@ -26,7 +26,7 @@ export default function NewJobPage() {
             All jobs
           </Link>
         </div>
-        <JobForm />
+        <JobSearchAgent />
       </div>
     </main>
   );

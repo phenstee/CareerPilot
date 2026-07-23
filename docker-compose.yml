@@ -28,6 +28,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       AI_PROVIDER: ${AI_PROVIDER:-mock}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      GREENHOUSE_BOARDS: ${GREENHOUSE_BOARDS:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
     ports:
       - "8000:8000"

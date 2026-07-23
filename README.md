@@ -22,6 +22,7 @@ This repository currently contains the Phase 6 foundation:
 - Application tracking with stages, stage history, filters, dashboard counts, and manual tasks
 - Mock/OpenAI AI provider boundary
 - Stored job-match analyses and resume-tailoring suggestions for saved jobs
+- AI-assisted job discovery with profile search, prompt search, mock source results, ranking, and save-to-jobs flow
 
 ## Screenshots
 
@@ -148,6 +149,16 @@ Frontend tests will be added once reusable UI and business logic are introduced.
 4. Click `Analyze match` and confirm a stored match score and structured recommendations appear.
 5. Click `Resume suggestions` and confirm keywords, checklist items, and non-fabricated rewrite guidance appear.
 6. Open `/dashboard` and confirm recent AI analyses are listed.
+
+## Manual AI Job Search Test
+
+1. Sign in and open `http://localhost:3000/jobs/new`.
+2. Choose `Use my profile`, adjust filters, and click `Find jobs for me`.
+3. Switch to `Describe what you want`, click an example prompt, and click `Search with AI`.
+4. Confirm mock results are labeled, ranked, and explain match reasons and gaps.
+5. Click `Save job` on a result, then open the saved job from `/jobs`.
+
+`GREENHOUSE_BOARDS` can be set to comma-separated public Greenhouse board tokens for opt-in public board searches. The local default remains the mock provider, and mock results are not presented as live jobs.
 
 ## Current Limitations
 

@@ -4,7 +4,7 @@ from app.ai.base import BaseAIProvider
 from app.models.job import JobPosting
 from app.models.profile import CareerProfile
 from app.models.resume import Resume
-from app.schemas.analysis import JobMatchAnalysisOutput, ResumeRewriteSuggestion, ResumeSuggestionsOutput
+from app.schemas.analysis import JobMatchAnalysisOutput, ResumeSuggestionsOutput
 
 COMMON_TECH_SKILLS = (
     "Python",
@@ -97,34 +97,43 @@ class MockAIProvider(BaseAIProvider):
             for line in resume_lines
             if any(keyword in line.lower() for keyword in requirement_keywords)
         ][:8]
-        rewrite_source = relevant_lines[:3] or resume_lines[:3]
-        rewrites = [
-            ResumeRewriteSuggestion(
-                original_text=line,
-                suggested_text=line,
-                rationale="Mock provider preserves factual content; edit this wording manually if you can verify stronger detail.",
-            )
-            for line in rewrite_source
-        ]
+        user_skills = _user_skills(profile, resume)
+        missing = [skill for skill in COMMON_TECH_SKILLS if skill.lower() in requirement_keywords and skill.lower() not in user_skills]
+        matching = [skill for skill in COMMON_TECH_SKILLS if skill.lower() in requirement_keywords and skill.lower() in user_skills]
+        less_relevant = [
+            skill
+            for skill in _profile_skill_names(profile)
+            if skill.lower() not in requirement_keywords
+        ][:8]
         uncertainties = []
         if resume is None:
-            uncertainties.append("No resume has been uploaded, so there is no existing resume content to rewrite.")
+            uncertainties.append("No resume has been uploaded, so additions are based on profile and job text only.")
         if profile is None:
             uncertainties.append("No profile has been saved, so suggestions cannot cross-check projects and experience.")
 
         return ResumeSuggestionsOutput(
             keywords=_title_case_keywords(requirement_keywords)[:15],
             relevant_existing_resume_content=relevant_lines,
-            suggested_rewrites=rewrites,
+            suggested_additions=[
+                f"Add a truthful bullet, project, or skills line showing {skill} if you have real experience with it."
+                for skill in missing[:8]
+            ]
+            or [
+                f"Make your existing {skill} evidence more visible near the top of the resume."
+                for skill in matching[:5]
+            ]
+            or ["Add a concise project or experience bullet that directly supports this job's main responsibilities."],
+            less_important_items=[
+                f"{skill} appears less central to this posting than the listed job requirements."
+                for skill in less_relevant
+            ]
+            or ["General achievements that do not connect to this job's required skills can be shortened."],
+            suggested_rewrites=[],
             missing_information_questions=[
                 "Which project best demonstrates the strongest missing job requirement?",
                 "Can you add measurable impact for the most relevant project or experience?",
             ],
-            application_checklist=[
-                "Confirm every resume bullet is factually supported.",
-                "Mirror important job keywords only where they match real experience.",
-                "Review deadline and follow-up task before applying.",
-            ],
+            application_checklist=[],
             uncertainties=uncertainties,
         )
 
@@ -168,6 +177,12 @@ def _resume_lines(resume: Resume | None) -> list[str]:
     if resume is None:
         return []
     return [line.strip() for line in resume.extracted_text.splitlines() if line.strip()]
+
+
+def _profile_skill_names(profile: CareerProfile | None) -> list[str]:
+    if profile is None:
+        return []
+    return [skill.name for skill in profile.skills]
 
 
 def _title_case_keywords(keywords: set[str]) -> list[str]:

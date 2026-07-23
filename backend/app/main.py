@@ -7,6 +7,7 @@ from app.api.analyses import router as analyses_router
 from app.api.dashboard import router as dashboard_router
 from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
+from app.api.job_search import router as job_search_router
 from app.api.profile import router as profile_router
 from app.api.resume import router as resume_router
 from app.api.tasks import router as tasks_router
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
     app.include_router(profile_router, prefix=settings.api_v1_prefix)
     app.include_router(resume_router, prefix=settings.api_v1_prefix)
     app.include_router(jobs_router, prefix=settings.api_v1_prefix)
+    app.include_router(job_search_router, prefix=settings.api_v1_prefix)
     app.include_router(applications_router, prefix=settings.api_v1_prefix)
     app.include_router(analyses_router, prefix=settings.api_v1_prefix)
     app.include_router(tasks_router, prefix=settings.api_v1_prefix)

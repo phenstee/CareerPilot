@@ -198,10 +198,12 @@ export type JobMatchAnalysisOutput = {
 export type ResumeSuggestionsOutput = {
   keywords: string[];
   relevant_existing_resume_content: string[];
-  suggested_rewrites: ResumeRewriteSuggestion[];
-  missing_information_questions: string[];
-  application_checklist: string[];
-  uncertainties: string[];
+  suggested_additions?: string[];
+  less_important_items?: string[];
+  suggested_rewrites?: ResumeRewriteSuggestion[];
+  missing_information_questions?: string[];
+  application_checklist?: string[];
+  uncertainties?: string[];
 };
 
 export type JobAnalysis = {
@@ -220,6 +222,58 @@ export type JobAnalysis = {
 export type JobAnalysisListResponse = {
   items: JobAnalysis[];
   total: number;
+};
+
+export type JobSearchFilters = {
+  location: string;
+  workplace_types: Array<"Remote" | "Hybrid" | "Onsite">;
+  employment_types: string[];
+  experience_levels: Array<
+    "Internship" | "Entry-level" | "Junior" | "Mid-level" | "Senior"
+  >;
+  preferred_role: string;
+  date_posted: "Any time" | "Past 24 hours" | "Past week" | "Past month";
+  minimum_match_score: number;
+};
+
+export type NormalizedJobResult = {
+  external_id: string;
+  title: string;
+  company: string;
+  location: string;
+  workplace_type: "Remote" | "Hybrid" | "Onsite";
+  employment_type: string;
+  experience_level: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_currency: string;
+  source: string;
+  source_url: string;
+  posted_at: string | null;
+  discovered_at: string;
+  short_description: string;
+  description: string;
+  requirements: string[];
+  skills: string[];
+  match_score: number;
+  match_reasons: string[];
+  qualification_gaps: string[];
+  is_mock: boolean;
+};
+
+export type JobSearchResponse = {
+  mode: "profile" | "prompt";
+  filters: JobSearchFilters;
+  strategy: string;
+  results: NormalizedJobResult[];
+  warnings: string[];
+  provider_failures: string[];
+  profile_incomplete: boolean;
+};
+
+export type SaveDiscoveredJobResponse = {
+  id: string;
+  already_saved: boolean;
 };
 
 export type DashboardResponse = {
@@ -674,6 +728,58 @@ export async function createResumeSuggestions(
   }
 
   return response.json() as Promise<JobAnalysis>;
+}
+
+export async function searchJobsByProfile(
+  payload: JobSearchFilters
+): Promise<JobSearchResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/job-search/profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<JobSearchResponse>;
+}
+
+export async function searchJobsByPrompt(payload: {
+  prompt: string;
+  use_profile_context: boolean;
+}): Promise<JobSearchResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/job-search/prompt`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<JobSearchResponse>;
+}
+
+export async function saveDiscoveredJob(
+  result: NormalizedJobResult
+): Promise<SaveDiscoveredJobResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/job-search/save`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ result })
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<SaveDiscoveredJobResponse>;
 }
 
 export async function getDashboard(): Promise<DashboardResponse> {

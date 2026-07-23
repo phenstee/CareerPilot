@@ -90,6 +90,20 @@ Updates one owned job posting.
 
 Deletes one owned job posting.
 
+## Job Search Endpoints
+
+### `POST /api/v1/job-search/profile`
+
+Searches for normalized job results using the signed-in user's saved profile plus optional filters. The default local source is a clearly labeled mock provider.
+
+### `POST /api/v1/job-search/prompt`
+
+Converts natural-language search instructions into structured filters and keywords, searches configured job sources, deduplicates results, and returns ranked normalized jobs.
+
+### `POST /api/v1/job-search/save`
+
+Saves one discovered job through the existing saved-job system. The backend rejects unsafe non-HTTPS source URLs and avoids duplicates for the signed-in user.
+
 ## Analysis Endpoints
 
 ### `GET /api/v1/analyses`

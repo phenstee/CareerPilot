@@ -33,6 +33,14 @@ Each user has at most one `CareerProfile`. Projects, experiences, and skills are
 
 Each user has at most one uploaded resume record. The first version stores resume metadata and extracted text, not the original PDF bytes. Job postings are user-owned rows with manual CRUD only; web scraping is intentionally excluded from the MVP.
 
+## AI Job Search
+
+The `/jobs/new` page now acts as an AI-assisted job discovery surface. The backend owns search, normalization, deduplication, and ranking through `/api/v1/job-search/*`; frontend components never scrape directly.
+
+The local default source is `MockJobSourceProvider`, and mock results are labeled in the UI. `GreenhouseJobSourceProvider` is an extension adapter for configured public Greenhouse board tokens through `GREENHOUSE_BOARDS`, but it is opt-in and uses HTTPS requests with timeouts. One provider failure is reported in the response without failing the whole search.
+
+Discovered jobs are transient until the user clicks `Save job`, which maps the normalized result into the existing `JobPosting` table for the authenticated user.
+
 ## AI Boundary
 
 AI calls are isolated behind provider classes. The application defaults to `AI_PROVIDER=mock` so development and tests can run without an API key. `OpenAIProvider` is available when `AI_PROVIDER=openai` and `OPENAI_API_KEY` is configured.

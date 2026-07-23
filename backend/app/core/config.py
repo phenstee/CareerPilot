@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     ai_provider: str = "mock"
     openai_model: str = "gpt-4o-mini"
+    greenhouse_boards_raw: str = Field(default="", alias="GREENHOUSE_BOARDS")
     frontend_origin: str = "http://localhost:3000"
     cors_origins_raw: str = Field(
         default="http://localhost:3000,http://127.0.0.1:3000",
@@ -32,6 +33,10 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins_raw.split(",") if origin.strip()]
+
+    @property
+    def greenhouse_board_tokens(self) -> list[str]:
+        return [token.strip() for token in self.greenhouse_boards_raw.split(",") if token.strip()]
 
 
 @lru_cache

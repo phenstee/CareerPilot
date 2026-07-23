@@ -29,6 +29,8 @@ class JobMatchAnalysisOutput(BaseModel):
 class ResumeSuggestionsOutput(BaseModel):
     keywords: list[str] = Field(default_factory=list, max_length=40)
     relevant_existing_resume_content: list[str] = Field(default_factory=list, max_length=30)
+    suggested_additions: list[str] = Field(default_factory=list, max_length=20)
+    less_important_items: list[str] = Field(default_factory=list, max_length=20)
     suggested_rewrites: list[ResumeRewriteSuggestion] = Field(default_factory=list, max_length=15)
     missing_information_questions: list[str] = Field(default_factory=list, max_length=20)
     application_checklist: list[str] = Field(default_factory=list, max_length=20)
