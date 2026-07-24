@@ -49,16 +49,23 @@ Prompts treat resumes and job descriptions as untrusted data and instruct the mo
 
 ## AI Agents
 
-The protected `/agents` workspace separates AI assistance into three focused workflows:
+The protected `/agents` workspace separates AI assistance into focused workflows:
 
+- Controlled Career Agent: one guarded chat surface for read-only checks and approval-gated application updates.
 - Job Finder Agent: profile or prompt-based job discovery using existing job-search providers.
 - Job Application Agent: saved-job selection, profile review, generated application preview, and explicit user approval for manual use.
 - Job Preparation Agent: saved-job preparation, role overview, strengths and gaps, resume recommendations, study topics, and links into the stored mock-interview workflow.
 
 No agent submits an application automatically. External job content is treated as untrusted input, and authenticated users only operate on their own saved profile, jobs, applications, resume, and generated records.
 
+The controlled agent uses an explicit allowlist. Read-only tools can inspect owned profile, saved jobs, applications, upcoming deadlines, and stored resume suggestions. Database mutations are represented as `AgentActionProposal` rows, validated through specific Pydantic argument schemas, and executed only after the user approves. Proposal lifecycle events are stored in `AgentActionAuditLog` as `proposed`, `approved`, `rejected`, and `executed`.
+
 ## Interview Preparation
 
 Interview preparation is application-scoped. A user can generate an `InterviewSession` for an owned application, which stores generated questions, a preparation plan, strong topics, and weak areas. Typed practice answers are stored as `InterviewAnswer` rows with structured feedback, so users can revisit previous attempts.
 
 Feedback is coaching output only. It can suggest a stronger answer structure or improved outline, but it must not present fabricated accomplishments as if the user said or did them.
+
+## Demo Data
+
+`python -m app.seed` creates a resettable demo account for portfolio walkthroughs. It seeds one user, a Waterloo-style career profile, extracted resume text, saved technology jobs, tracked applications with deadlines, one resume-suggestion analysis, one interview practice session, and a starter controlled-agent conversation. The task model from the original plan was intentionally removed, so demo planning data lives in application deadlines and next actions.

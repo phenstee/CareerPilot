@@ -1,7 +1,20 @@
-import { BriefcaseBusiness, FileText, GraduationCap } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  FileText,
+  GraduationCap,
+  ShieldCheck
+} from "lucide-react";
 import Link from "next/link";
 
 const agents = [
+  {
+    title: "Controlled Career Agent",
+    description:
+      "Ask one guarded agent to inspect your career data and propose application updates for approval.",
+    action: "Open controlled agent",
+    href: "/agent",
+    Icon: ShieldCheck
+  },
   {
     title: "Job Finder Agent",
     description:
@@ -30,7 +43,7 @@ const agents = [
 
 export function AgentsHome() {
   return (
-    <div className="grid gap-5 lg:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
       {agents.map(({ title, description, action, href, Icon }) => (
         <Link
           key={title}

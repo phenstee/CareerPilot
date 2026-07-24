@@ -2,9 +2,9 @@
 
 CareerPilot is an AI-assisted job application and interview workspace for university students and early-career technology candidates. The core tracker is designed to work without AI, while later AI features will use a mock provider by default and require explicit user action before sending profile, resume, or job data to a model.
 
-## Phase 1 Status
+## Project Status
 
-This repository currently contains the Phase 7 foundation:
+This repository contains the complete CareerPilot MVP foundation:
 
 - FastAPI backend with `/api/v1/health`
 - Next.js App Router frontend starter
@@ -22,13 +22,21 @@ This repository currently contains the Phase 7 foundation:
 - Application tracking with stages, stage history, filters, and dashboard counts
 - Mock/OpenAI AI provider boundary
 - AI Agents workspace for job finding, application preparation, and job preparation
+- Controlled career agent with approval-gated application updates and audit logs
 - Stored resume-tailoring suggestions for saved jobs
 - AI-assisted job discovery with profile search, prompt search, mock source results, ranking, and save-to-jobs flow
 - Interview preparation sessions with generated questions, typed practice answers, structured feedback, and stored attempts
+- Development seed data for a demo account and portfolio walkthrough
 
 ## Screenshots
 
-Screenshots will be added after the main application pages are implemented.
+Screenshots can be added from these representative local pages:
+
+- `/dashboard`
+- `/profile`
+- `/agents/job-finder`
+- `/agent`
+- `/applications/{id}/interview`
 
 ## Technology Stack
 
@@ -60,11 +68,23 @@ cp .env.example .env
 docker compose up --build
 ```
 
-3. Open:
+3. In another terminal, apply migrations and seed the demo data:
+
+```bash
+docker compose run --rm backend alembic upgrade head
+docker compose run --rm backend python -m app.seed
+```
+
+4. Open:
 
 - Frontend: http://localhost:3000
 - Backend health: http://localhost:8000/api/v1/health
 - API docs: http://localhost:8000/docs
+
+Demo login:
+
+- Email: `demo@careerpilot.dev`
+- Password: `demo-password`
 
 Browser auth calls are proxied through the frontend at `/api/v1/*` so the HttpOnly session cookie belongs to the same host as the app.
 
@@ -85,6 +105,20 @@ npm install
 npm run dev
 ```
 
+If the frontend runs outside Docker while the backend runs on the host, keep `NEXT_PUBLIC_API_URL=http://localhost:8000`.
+
+## Environment Variables
+
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: local Postgres settings.
+- `DATABASE_URL`: SQLAlchemy database URL used by FastAPI and Alembic.
+- `JWT_SECRET`: signing secret for HttpOnly session cookies.
+- `AI_PROVIDER`: `mock` by default, or `openai` for real AI calls.
+- `OPENAI_API_KEY`, `OPENAI_MODEL`: OpenAI settings used only when `AI_PROVIDER=openai`.
+- `GREENHOUSE_BOARDS`: optional comma-separated public Greenhouse board tokens.
+- `NEXT_PUBLIC_API_URL`: browser-visible backend URL.
+- `BACKEND_INTERNAL_URL`: backend URL used by Next.js server-side calls.
+- `CORS_ORIGINS`: allowed frontend origins for browser API requests.
+
 ## Database Migrations
 
 ```bash
@@ -100,7 +134,20 @@ docker compose run --rm backend alembic upgrade head
 
 ## Seed Data
 
-A development seed command will be added after the domain models exist.
+The seed command creates a demo user, Waterloo-style profile, extracted resume text, five saved jobs, tracked applications with deadlines, one stored resume-suggestion analysis, one interview practice session, and a starter controlled-agent conversation.
+
+```bash
+cd backend
+.venv\Scripts\python -m app.seed
+```
+
+With Docker:
+
+```bash
+docker compose run --rm backend python -m app.seed
+```
+
+The seed is idempotent for the demo account: rerunning it replaces `demo@careerpilot.dev` demo data.
 
 ## Running Tests
 
@@ -109,7 +156,13 @@ cd backend
 .venv\Scripts\python -m pytest
 ```
 
-Frontend tests will be added once reusable UI and business logic are introduced.
+```bash
+cd frontend
+npm run lint
+npm run format:check
+npm run test
+npm run build
+```
 
 ## Manual Phase 2 Test
 
@@ -147,7 +200,7 @@ Frontend tests will be added once reusable UI and business logic are introduced.
 
 1. Keep `AI_PROVIDER=mock` for local development.
 2. Create a profile, upload a resume, and save a job posting.
-3. Open `/agents` and confirm Job Finder, Job Application, and Job Preparation agents are listed.
+3. Open `/agents` and confirm Controlled Career, Job Finder, Job Application, and Job Preparation agents are listed.
 4. Open `/agents/job-finder`, search with your profile or a prompt, and confirm results use fit labels rather than numerical scores.
 5. Save a result, then use `Prepare application` or `Prepare for this job`.
 6. In Job Preparation, generate resume advice and confirm recommendations stay grounded in saved profile/resume evidence.
@@ -171,10 +224,25 @@ Frontend tests will be added once reusable UI and business logic are introduced.
 5. Type an answer and click `Submit for feedback`.
 6. Confirm structured feedback appears and remains after refreshing the page.
 
+## Manual Phase 8 Test
+
+1. Sign in and create at least one tracked application.
+2. Open `http://localhost:3000/agent`.
+3. Ask to show upcoming deadlines and confirm no proposal is created.
+4. Ask to move an application to another stage and confirm a proposal appears before the application changes.
+5. Approve the proposal and confirm the application stage updates.
+6. Create a second proposal, reject it, and confirm no application data changes.
+
 ## Current Limitations
 
-The controlled agent, seed data, and final documentation cleanup are planned for later phases.
+- The controlled agent uses deterministic MVP planning; richer natural-language planning can be added behind the same proposal boundary.
+- Job discovery defaults to mock data unless optional providers are configured.
+- Uploaded PDF bytes are not persisted, only metadata and extracted text.
+- The removed task workflow is intentionally out of scope for the current version; action planning is represented through applications, deadlines, and next actions.
 
 ## Future Improvements
 
-- Controlled agent approval workflow and audit logs
+- Richer natural-language planning for the controlled agent
+- Optional screenshot assets for the README
+- Account deletion/export controls
+- More frontend interaction tests for agent approval and interview practice

@@ -136,6 +136,24 @@ Returns one owned interview practice session with questions and previous answer 
 
 Stores a typed practice answer and returns structured feedback. Feedback critiques the answer and may include an improved outline, but it must not claim a fabricated answer is what the user said.
 
-## Planned API Groups
+## Controlled Agent Endpoints
 
-- `/api/v1/agent`
+### `GET /api/v1/agent/conversations`
+
+Lists the signed-in user's controlled agent conversations.
+
+### `GET /api/v1/agent/conversations/{conversation_id}`
+
+Returns one owned agent conversation with messages, action proposals, and audit logs.
+
+### `POST /api/v1/agent/messages`
+
+Stores a user message and returns the agent response. Read-only tools can summarize profile, saved jobs, applications, deadlines, and resume suggestions immediately. Writable actions are returned only as proposals.
+
+### `POST /api/v1/agent/proposals/{proposal_id}/approve`
+
+Approves an owned pending proposal, validates its Pydantic arguments, executes the allowlisted backend action, and logs `approved` plus `executed`.
+
+### `POST /api/v1/agent/proposals/{proposal_id}/reject`
+
+Rejects an owned pending proposal without executing a database mutation and logs `rejected`.
