@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarClock, Loader2 } from "lucide-react";
+import { ArrowRight, Bot, CalendarClock, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { getDashboard } from "@/lib/api";
@@ -53,18 +53,12 @@ export function DashboardSummary() {
       value: dashboard.saved_jobs,
       href: "/jobs",
       action: "Open saved jobs"
-    },
-    {
-      label: "Priority tasks",
-      value: dashboard.priority_tasks,
-      href: "/tasks",
-      action: "Open tasks"
     }
   ];
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2">
         {stats.map((stat) => (
           <Link
             key={stat.label}
@@ -81,7 +75,7 @@ export function DashboardSummary() {
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-2">
         <DashboardPanel title="Upcoming deadlines">
           {dashboard.upcoming_deadlines.length > 0 ? (
             dashboard.upcoming_deadlines.map((application) => (
@@ -103,30 +97,6 @@ export function DashboardSummary() {
             ))
           ) : (
             <EmptyPanelText>No upcoming deadlines.</EmptyPanelText>
-          )}
-        </DashboardPanel>
-
-        <DashboardPanel title="Follow-ups due">
-          {dashboard.follow_ups_due.length > 0 ? (
-            dashboard.follow_ups_due.map((application) => (
-              <Link
-                key={application.id}
-                href={`/applications/${application.id}`}
-                className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white"
-              >
-                <p className="text-sm font-semibold text-ink">
-                  {application.company}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  {application.next_action || application.job_title}
-                </p>
-                <p className="mt-2 text-xs text-slate-500">
-                  {formatDate(application.follow_up_date)}
-                </p>
-              </Link>
-            ))
-          ) : (
-            <EmptyPanelText>No follow-ups due.</EmptyPanelText>
           )}
         </DashboardPanel>
 
@@ -162,35 +132,18 @@ export function DashboardSummary() {
             ))}
           </div>
         </DashboardPanel>
-        <DashboardPanel title="AI analyses">
-          {dashboard.recent_analyses.length > 0 ? (
-            dashboard.recent_analyses.map((analysis) => (
-              <Link
-                key={analysis.id}
-                href={`/jobs/${analysis.job_posting_id}`}
-                className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-ink">
-                    {analysis.company}
-                  </p>
-                  {analysis.match_score !== null ? (
-                    <span className="rounded-md bg-lagoon/10 px-2 py-1 text-xs font-semibold text-lagoon">
-                      {analysis.match_score}
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-1 text-sm text-slate-600">
-                  {analysis.analysis_type === "job_match"
-                    ? "Job match"
-                    : "Resume suggestions"}{" "}
-                  for {analysis.job_title}
-                </p>
-              </Link>
-            ))
-          ) : (
-            <EmptyPanelText>No AI analyses yet.</EmptyPanelText>
-          )}
+        <DashboardPanel title="AI Agents" icon="agents">
+          <p className="text-sm leading-6 text-slate-600">
+            Find opportunities, prepare applications, and get ready for
+            interviews.
+          </p>
+          <Link
+            href="/agents"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-lagoon"
+          >
+            Open AI agents
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
         </DashboardPanel>
       </section>
     </div>
@@ -199,15 +152,19 @@ export function DashboardSummary() {
 
 function DashboardPanel({
   title,
-  children
+  children,
+  icon = "calendar"
 }: {
   title: string;
   children: React.ReactNode;
+  icon?: "calendar" | "agents";
 }) {
+  const Icon = icon === "agents" ? Bot : CalendarClock;
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
-        <CalendarClock aria-hidden="true" className="h-4 w-4 text-lagoon" />
+        <Icon aria-hidden="true" className="h-4 w-4 text-lagoon" />
         <h2 className="text-lg font-semibold text-ink">{title}</h2>
       </div>
       <div className="space-y-3">{children}</div>

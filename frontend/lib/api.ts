@@ -107,10 +107,6 @@ export const APPLICATION_STAGES = [
 
 export type ApplicationStage = (typeof APPLICATION_STAGES)[number];
 
-export const TASK_PRIORITIES = ["Low", "Medium", "High"] as const;
-
-export type TaskPriority = (typeof TASK_PRIORITIES)[number];
-
 export type ApplicationPayload = {
   job_posting_id: string;
   stage: ApplicationStage;
@@ -148,51 +144,10 @@ export type ApplicationListResponse = {
   counts_by_stage: Record<ApplicationStage, number>;
 };
 
-export type CareerTaskPayload = {
-  application_id: string | null;
-  title: string;
-  explanation: string;
-  priority: TaskPriority;
-  estimated_effort: string;
-  related_skill: string;
-  suggested_deadline: string | null;
-  is_completed: boolean;
-};
-
-export type CareerTask = CareerTaskPayload & {
-  id: string;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
-  application_company: string | null;
-  application_role: string | null;
-};
-
-export type CareerTaskListResponse = {
-  items: CareerTask[];
-  total: number;
-};
-
 export type ResumeRewriteSuggestion = {
   original_text: string;
   suggested_text: string;
   rationale: string;
-};
-
-export type JobMatchAnalysisOutput = {
-  overall_match_score: number;
-  score_explanation: string;
-  matching_skills: string[];
-  missing_or_weak_skills: string[];
-  relevant_experiences_and_projects: string[];
-  important_job_requirements: string[];
-  recommended_preparation_priorities: string[];
-  potential_resume_improvements: string[];
-  portfolio_project_ideas: string[];
-  uncertainties: string[];
-  supported_facts: string[];
-  suggestions_for_improvement: string[];
-  unknowns: string[];
 };
 
 export type ResumeSuggestionsOutput = {
@@ -211,16 +166,68 @@ export type JobAnalysis = {
   job_posting_id: string;
   job_title: string;
   company: string;
-  analysis_type: "job_match" | "resume_suggestions";
+  analysis_type: "resume_suggestions";
   provider: string;
-  match_score: number | null;
-  result: JobMatchAnalysisOutput | ResumeSuggestionsOutput;
+  result: ResumeSuggestionsOutput;
   created_at: string;
   updated_at: string;
 };
 
 export type JobAnalysisListResponse = {
   items: JobAnalysis[];
+  total: number;
+};
+
+export type InterviewQuestionCategory =
+  | "behavioral"
+  | "technical"
+  | "job_description"
+  | "projects_resume";
+
+export type InterviewFeedbackOutput = {
+  strong_points: string[];
+  unclear_points: string[];
+  missing_points: string[];
+  stronger_answer_structure: string[];
+  improved_outline: string[];
+  overall_feedback: string;
+};
+
+export type InterviewAnswer = {
+  id: string;
+  question_id: string;
+  answer_text: string;
+  feedback: InterviewFeedbackOutput;
+  provider: string;
+  created_at: string;
+};
+
+export type InterviewQuestion = {
+  id: string;
+  category: InterviewQuestionCategory;
+  question_text: string;
+  rationale: string;
+  display_order: number;
+  answers: InterviewAnswer[];
+  created_at: string;
+};
+
+export type InterviewSession = {
+  id: string;
+  application_id: string;
+  job_title: string;
+  company: string;
+  provider: string;
+  preparation_plan: string[];
+  strong_topics: string[];
+  weak_areas: string[];
+  questions: InterviewQuestion[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type InterviewSessionListResponse = {
+  items: InterviewSession[];
   total: number;
 };
 
@@ -233,7 +240,6 @@ export type JobSearchFilters = {
   >;
   preferred_role: string;
   date_posted: "Any time" | "Past 24 hours" | "Past week" | "Past month";
-  minimum_match_score: number;
 };
 
 export type NormalizedJobResult = {
@@ -255,8 +261,8 @@ export type NormalizedJobResult = {
   description: string;
   requirements: string[];
   skills: string[];
-  match_score: number;
-  match_reasons: string[];
+  fit_label: "Strong fit" | "Possible fit" | "Stretch opportunity";
+  profile_evidence: string[];
   qualification_gaps: string[];
   is_mock: boolean;
 };
@@ -279,13 +285,9 @@ export type SaveDiscoveredJobResponse = {
 export type DashboardResponse = {
   active_applications: number;
   saved_jobs: number;
-  priority_tasks: number;
   counts_by_stage: Record<ApplicationStage, number>;
   upcoming_deadlines: TrackedApplication[];
-  follow_ups_due: TrackedApplication[];
   recent_jobs: JobPosting[];
-  recent_analyses: JobAnalysis[];
-  priority_task_items: CareerTask[];
   today: string;
 };
 
@@ -583,94 +585,9 @@ export async function deleteApplication(applicationId: string): Promise<void> {
   }
 }
 
-export async function listTasks(params?: {
-  include_completed?: boolean;
-}): Promise<CareerTaskListResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.include_completed !== undefined) {
-    searchParams.set("include_completed", String(params.include_completed));
-  }
-  const query = searchParams.toString();
-  const response = await fetch(
-    `${getApiBaseUrl()}/api/v1/tasks${query ? `?${query}` : ""}`,
-    {
-      credentials: "include",
-      cache: "no-store"
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<CareerTaskListResponse>;
-}
-
-export async function createTask(
-  payload: CareerTaskPayload
-): Promise<CareerTask> {
-  const response = await fetch(`${getApiBaseUrl()}/api/v1/tasks`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<CareerTask>;
-}
-
-export async function updateTask(
-  taskId: string,
-  payload: CareerTaskPayload
-): Promise<CareerTask> {
-  const response = await fetch(`${getApiBaseUrl()}/api/v1/tasks/${taskId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<CareerTask>;
-}
-
-export async function completeTask(taskId: string): Promise<CareerTask> {
-  const response = await fetch(
-    `${getApiBaseUrl()}/api/v1/tasks/${taskId}/complete`,
-    {
-      method: "PATCH",
-      credentials: "include"
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<CareerTask>;
-}
-
-export async function deleteTask(taskId: string): Promise<void> {
-  const response = await fetch(`${getApiBaseUrl()}/api/v1/tasks/${taskId}`, {
-    method: "DELETE",
-    credentials: "include"
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-}
-
 export async function listAnalyses(params?: {
   job_posting_id?: string;
-  analysis_type?: "job_match" | "resume_suggestions";
+  analysis_type?: "resume_suggestions";
 }): Promise<JobAnalysisListResponse> {
   const searchParams = new URLSearchParams();
   if (params?.job_posting_id)
@@ -693,23 +610,6 @@ export async function listAnalyses(params?: {
   return response.json() as Promise<JobAnalysisListResponse>;
 }
 
-export async function createJobMatchAnalysis(
-  jobPostingId: string
-): Promise<JobAnalysis> {
-  const response = await fetch(`${getApiBaseUrl()}/api/v1/analyses/job-match`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ job_posting_id: jobPostingId })
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<JobAnalysis>;
-}
-
 export async function createResumeSuggestions(
   jobPostingId: string
 ): Promise<JobAnalysis> {
@@ -728,6 +628,70 @@ export async function createResumeSuggestions(
   }
 
   return response.json() as Promise<JobAnalysis>;
+}
+
+export async function listInterviewSessions(
+  applicationId: string
+): Promise<InterviewSessionListResponse> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/interviews?application_id=${encodeURIComponent(applicationId)}`,
+    {
+      credentials: "include",
+      cache: "no-store"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<InterviewSessionListResponse>;
+}
+
+export async function createInterviewSession(
+  applicationId: string
+): Promise<InterviewSession> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/interviews/sessions`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ application_id: applicationId })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<InterviewSession>;
+}
+
+export async function answerInterviewQuestion({
+  sessionId,
+  questionId,
+  answerText
+}: {
+  sessionId: string;
+  questionId: string;
+  answerText: string;
+}): Promise<InterviewAnswer> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/interviews/sessions/${sessionId}/questions/${questionId}/answers`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ answer_text: answerText })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<InterviewAnswer>;
 }
 
 export async function searchJobsByProfile(

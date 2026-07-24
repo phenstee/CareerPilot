@@ -132,8 +132,8 @@ def _job(
         description=description,
         requirements=skills,
         skills=skills,
-        match_score=0,
-        match_reasons=[],
+        fit_label="Possible fit",
+        profile_evidence=[],
         qualification_gaps=[],
         is_mock=True,
     )

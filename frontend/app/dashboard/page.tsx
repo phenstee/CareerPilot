@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ListChecks, Send, UserRound } from "lucide-react";
+import { Bot, Send, UserRound } from "lucide-react";
 
 import { DashboardSummary } from "@/components/dashboard-summary";
 import { LogoutButton } from "@/components/logout-button";
@@ -20,8 +20,8 @@ export default async function DashboardPage() {
               {user ? `Welcome, ${user.full_name}` : "Career workspace"}
             </h1>
             <p className="mt-3 max-w-2xl text-slate-600">
-              Track applications, deadlines, follow-ups, priority tasks, saved
-              jobs, your resume, and your profile from one workspace.
+              Track applications, upcoming deadlines, saved jobs, your resume,
+              and your profile from one workspace.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -33,11 +33,11 @@ export default async function DashboardPage() {
               Applications
             </Link>
             <Link
-              href="/tasks"
+              href="/agents"
               className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
             >
-              <ListChecks aria-hidden="true" className="h-4 w-4" />
-              Tasks
+              <Bot aria-hidden="true" className="h-4 w-4" />
+              AI Agents
             </Link>
             <Link
               href="/profile"

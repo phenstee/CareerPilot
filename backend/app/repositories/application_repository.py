@@ -97,21 +97,6 @@ class ApplicationRepository:
         )
         return list(self.db.scalars(statement))
 
-    def follow_ups_due(self, user_id: str, today: date, *, limit: int = 5) -> list[Application]:
-        statement = (
-            select(Application)
-            .options(joinedload(Application.job_posting), selectinload(Application.stage_history))
-            .where(
-                Application.user_id == user_id,
-                Application.follow_up_date.is_not(None),
-                Application.follow_up_date <= today,
-                Application.stage.not_in(("Rejected", "Withdrawn")),
-            )
-            .order_by(Application.follow_up_date.asc())
-            .limit(limit)
-        )
-        return list(self.db.scalars(statement))
-
     def save(self, application: Application) -> Application:
         self.db.add(application)
         self.db.commit()

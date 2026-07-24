@@ -4,7 +4,7 @@ CareerPilot is an AI-assisted job application and interview workspace for univer
 
 ## Phase 1 Status
 
-This repository currently contains the Phase 6 foundation:
+This repository currently contains the Phase 7 foundation:
 
 - FastAPI backend with `/api/v1/health`
 - Next.js App Router frontend starter
@@ -19,10 +19,12 @@ This repository currently contains the Phase 6 foundation:
 - Skills, projects, and experiences stored as user-owned profile data
 - Resume PDF upload, replacement, text extraction, metadata view, and deletion
 - Saved job posting CRUD with search and filters
-- Application tracking with stages, stage history, filters, dashboard counts, and manual tasks
+- Application tracking with stages, stage history, filters, and dashboard counts
 - Mock/OpenAI AI provider boundary
-- Stored job-match analyses and resume-tailoring suggestions for saved jobs
+- AI Agents workspace for job finding, application preparation, and job preparation
+- Stored resume-tailoring suggestions for saved jobs
 - AI-assisted job discovery with profile search, prompt search, mock source results, ranking, and save-to-jobs flow
+- Interview preparation sessions with generated questions, typed practice answers, structured feedback, and stored attempts
 
 ## Screenshots
 
@@ -139,30 +141,39 @@ Frontend tests will be added once reusable UI and business logic are introduced.
 2. Click `Track application`.
 3. Open `/applications`, switch between board and table views, and filter by stage/company/role/date.
 4. Open the application detail page and change its stage.
-5. Open `/tasks`, create a task with a deadline, complete it, edit it, and delete it.
+5. Open `/dashboard` and confirm application counts, upcoming deadlines, and recent jobs are summarized.
 
-## Manual Phase 6 Test
+## Manual AI Agents Test
 
 1. Keep `AI_PROVIDER=mock` for local development.
 2. Create a profile, upload a resume, and save a job posting.
-3. Open the saved job detail page.
-4. Click `Analyze match` and confirm a stored match score and structured recommendations appear.
-5. Click `Resume suggestions` and confirm keywords, checklist items, and non-fabricated rewrite guidance appear.
-6. Open `/dashboard` and confirm recent AI analyses are listed.
+3. Open `/agents` and confirm Job Finder, Job Application, and Job Preparation agents are listed.
+4. Open `/agents/job-finder`, search with your profile or a prompt, and confirm results use fit labels rather than numerical scores.
+5. Save a result, then use `Prepare application` or `Prepare for this job`.
+6. In Job Preparation, generate resume advice and confirm recommendations stay grounded in saved profile/resume evidence.
 
 ## Manual AI Job Search Test
 
-1. Sign in and open `http://localhost:3000/jobs/new`.
+1. Sign in and open `http://localhost:3000/agents/job-finder`.
 2. Choose `Use my profile`, adjust filters, and click `Find jobs for me`.
 3. Switch to `Describe what you want`, click an example prompt, and click `Search with AI`.
-4. Confirm mock results are labeled, ranked, and explain match reasons and gaps.
+4. Confirm mock results are labeled, ranked, and explain profile evidence and gaps without numerical scores.
 5. Click `Save job` on a result, then open the saved job from `/jobs`.
 
 `GREENHOUSE_BOARDS` can be set to comma-separated public Greenhouse board tokens for opt-in public board searches. The local default remains the mock provider, and mock results are not presented as live jobs.
 
+## Manual Phase 7 Test
+
+1. Sign in and create a profile, saved job, and tracked application.
+2. Open the application detail page and click `Practice interview`.
+3. Click `Generate prep session`.
+4. Step through generated behavioral, technical, job-description, and project/resume questions.
+5. Type an answer and click `Submit for feedback`.
+6. Confirm structured feedback appears and remains after refreshing the page.
+
 ## Current Limitations
 
-Interview preparation, the controlled agent, seed data, and final documentation cleanup are planned for later phases.
+The controlled agent, seed data, and final documentation cleanup are planned for later phases.
 
 ## Future Improvements
 

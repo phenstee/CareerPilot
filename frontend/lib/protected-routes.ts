@@ -4,7 +4,7 @@ export const protectedPrefixes = [
   "/resume",
   "/jobs",
   "/applications",
-  "/tasks",
+  "/agents",
   "/agent",
   "/settings"
 ];

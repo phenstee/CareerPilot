@@ -3,7 +3,9 @@ from abc import ABC, abstractmethod
 from app.models.job import JobPosting
 from app.models.profile import CareerProfile
 from app.models.resume import Resume
-from app.schemas.analysis import JobMatchAnalysisOutput, ResumeSuggestionsOutput
+from app.models.tracker import Application
+from app.schemas.analysis import ResumeSuggestionsOutput
+from app.schemas.interview import InterviewFeedbackOutput, InterviewPrepOutput
 
 
 class AIProviderError(Exception):
@@ -14,16 +16,6 @@ class BaseAIProvider(ABC):
     name: str
 
     @abstractmethod
-    def analyze_job_match(
-        self,
-        *,
-        job: JobPosting,
-        profile: CareerProfile | None,
-        resume: Resume | None,
-    ) -> JobMatchAnalysisOutput:
-        pass
-
-    @abstractmethod
     def suggest_resume_tailoring(
         self,
         *,
@@ -31,4 +23,28 @@ class BaseAIProvider(ABC):
         profile: CareerProfile | None,
         resume: Resume | None,
     ) -> ResumeSuggestionsOutput:
+        pass
+
+    @abstractmethod
+    def generate_interview_prep(
+        self,
+        *,
+        application: Application,
+        job: JobPosting,
+        profile: CareerProfile | None,
+        resume: Resume | None,
+    ) -> InterviewPrepOutput:
+        pass
+
+    @abstractmethod
+    def evaluate_interview_answer(
+        self,
+        *,
+        application: Application,
+        job: JobPosting,
+        profile: CareerProfile | None,
+        resume: Resume | None,
+        question: str,
+        answer: str,
+    ) -> InterviewFeedbackOutput:
         pass

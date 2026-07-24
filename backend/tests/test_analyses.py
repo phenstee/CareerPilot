@@ -51,7 +51,7 @@ def _job_payload() -> dict[str, str | None]:
     }
 
 
-def test_mock_job_match_and_resume_suggestions_are_stored(client: TestClient, monkeypatch) -> None:
+def test_mock_resume_suggestions_are_stored(client: TestClient, monkeypatch) -> None:
     monkeypatch.setattr("app.services.resume_service.extract_pdf_text", lambda contents: "Python\nReact\nFastAPI project")
     _register(client)
     assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
@@ -61,24 +61,17 @@ def test_mock_job_match_and_resume_suggestions_are_stored(client: TestClient, mo
     )
     job = client.post("/api/v1/jobs", json=_job_payload()).json()
 
-    match = client.post("/api/v1/analyses/job-match", json={"job_posting_id": job["id"]})
-    assert match.status_code == 201
-    match_body = match.json()
-    assert match_body["analysis_type"] == "job_match"
-    assert match_body["provider"] == "mock"
-    assert 0 <= match_body["result"]["overall_match_score"] <= 100
-    assert "React" in match_body["result"]["matching_skills"]
-
     suggestions = client.post("/api/v1/analyses/resume-suggestions", json={"job_posting_id": job["id"]})
     assert suggestions.status_code == 201
     assert suggestions.json()["analysis_type"] == "resume_suggestions"
+    assert "match_score" not in suggestions.json()
     assert "React" in suggestions.json()["result"]["keywords"]
     assert suggestions.json()["result"]["suggested_additions"]
     assert suggestions.json()["result"]["less_important_items"]
 
     listing = client.get("/api/v1/analyses", params={"job_posting_id": job["id"]})
     assert listing.status_code == 200
-    assert listing.json()["total"] == 2
+    assert listing.json()["total"] == 1
 
 
 def test_analysis_requires_owned_job(client: TestClient) -> None:
@@ -87,5 +80,5 @@ def test_analysis_requires_owned_job(client: TestClient) -> None:
     client.post("/api/v1/auth/logout")
 
     _register(client, "analysis-other@example.com")
-    response = client.post("/api/v1/analyses/job-match", json={"job_posting_id": job["id"]})
+    response = client.post("/api/v1/analyses/resume-suggestions", json={"job_posting_id": job["id"]})
     assert response.status_code == 404

@@ -6,6 +6,7 @@ describe("isProtectedPath", () => {
   it("matches protected route roots and nested pages", () => {
     expect(isProtectedPath("/dashboard")).toBe(true);
     expect(isProtectedPath("/jobs/123")).toBe(true);
+    expect(isProtectedPath("/agents/job-prep")).toBe(true);
     expect(isProtectedPath("/applications/abc/interview")).toBe(true);
   });
 

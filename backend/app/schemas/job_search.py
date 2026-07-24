@@ -16,7 +16,6 @@ class JobSearchFilters(BaseModel):
     experience_levels: list[ExperienceLevel] = Field(default_factory=list, max_length=5)
     preferred_role: str = Field(default="", max_length=255)
     date_posted: DatePosted = "Any time"
-    minimum_match_score: int = Field(default=0, ge=0, le=100)
 
     @field_validator("location", "preferred_role")
     @classmethod
@@ -62,8 +61,8 @@ class NormalizedJobResult(BaseModel):
     description: str
     requirements: list[str]
     skills: list[str]
-    match_score: int = Field(ge=0, le=100)
-    match_reasons: list[str]
+    fit_label: Literal["Strong fit", "Possible fit", "Stretch opportunity"] = "Possible fit"
+    profile_evidence: list[str]
     qualification_gaps: list[str]
     is_mock: bool = False
 

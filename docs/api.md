@@ -108,21 +108,34 @@ Saves one discovered job through the existing saved-job system. The backend reje
 
 ### `GET /api/v1/analyses`
 
-Lists stored AI analysis results for the signed-in user. Supports `job_posting_id`, `analysis_type`, `skip`, and `limit`.
-
-### `POST /api/v1/analyses/job-match`
-
-Creates and stores a structured job-match analysis for an owned saved job. The provider compares only the saved job description, saved career profile, and extracted resume text.
+Lists stored resume-suggestion results for the signed-in user. Supports `job_posting_id`, `analysis_type`, `skip`, and `limit`.
 
 ### `POST /api/v1/analyses/resume-suggestions`
 
-Creates and stores structured resume-tailoring suggestions for an owned saved job. The response may suggest rewrites, but it must not fabricate resume bullets or overwrite the uploaded resume.
+Creates and stores structured resume-tailoring suggestions for an owned saved job. This is surfaced through the Job Preparation Agent. The response may suggest rewrites, but it must not fabricate resume bullets or overwrite the uploaded resume.
 
 ### `GET /api/v1/analyses/{analysis_id}`
 
 Returns one owned stored analysis result.
 
+## Interview Endpoints
+
+### `GET /api/v1/interviews`
+
+Lists interview preparation sessions for an owned application. Requires `application_id`.
+
+### `POST /api/v1/interviews/sessions`
+
+Generates and stores interview questions, preparation plan, strong topics, and weak areas for an owned application.
+
+### `GET /api/v1/interviews/sessions/{session_id}`
+
+Returns one owned interview practice session with questions and previous answer attempts.
+
+### `POST /api/v1/interviews/sessions/{session_id}/questions/{question_id}/answers`
+
+Stores a typed practice answer and returns structured feedback. Feedback critiques the answer and may include an improved outline, but it must not claim a fabricated answer is what the user said.
+
 ## Planned API Groups
 
-- `/api/v1/interviews`
 - `/api/v1/agent`

@@ -17,7 +17,7 @@ def list_analyses(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     job_posting_id: str | None = None,
-    analysis_type: Literal["job_match", "resume_suggestions"] | None = None,
+    analysis_type: Literal["resume_suggestions"] | None = None,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
 ) -> JobAnalysisListResponse:
@@ -28,20 +28,6 @@ def list_analyses(
         skip=skip,
         limit=limit,
     )
-
-
-@router.post("/job-match", response_model=JobAnalysisResponse, status_code=status.HTTP_201_CREATED)
-def create_job_match_analysis(
-    payload: AnalysisCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
-) -> JobAnalysisResponse:
-    try:
-        return AnalysisService(db).create_job_match_analysis(current_user.id, payload)
-    except AnalysisJobNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job posting not found.") from exc
-    except AIProviderError as exc:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
 
 @router.post("/resume-suggestions", response_model=JobAnalysisResponse, status_code=status.HTTP_201_CREATED)

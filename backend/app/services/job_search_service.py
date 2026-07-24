@@ -84,9 +84,9 @@ class JobSearchService:
         notes = "\n".join(
             [
                 f"Discovered via {result.source}.",
-                f"Match score: {result.match_score}",
-                "Reasons:",
-                *[f"- {reason}" for reason in result.match_reasons],
+                f"Fit label: {result.fit_label}",
+                "Relevant profile evidence:",
+                *[f"- {reason}" for reason in result.profile_evidence],
                 "Possible gaps:",
                 *[f"- {gap}" for gap in result.qualification_gaps],
             ]
@@ -181,7 +181,6 @@ def interpret_prompt(prompt: str) -> tuple[JobSearchFilters, list[str]]:
             experience_levels=experience_levels,
             preferred_role=role,
             date_posted="Any time",
-            minimum_match_score=0,
         ),
         keywords,
     )
@@ -195,7 +194,7 @@ def rank_and_filter_results(
 ) -> list[NormalizedJobResult]:
     profile_keywords = set(_profile_keywords(profile))
     search_keywords = {keyword.lower() for keyword in keywords}
-    ranked: list[NormalizedJobResult] = []
+    ranked: list[tuple[int, NormalizedJobResult]] = []
     for result in results:
         score = 35
         reasons: list[str] = []
@@ -233,12 +232,17 @@ def rank_and_filter_results(
 
         missing = [skill for skill in result.skills if skill.lower() not in profile_keywords]
         gaps.extend([f"Profile does not clearly show {skill}." for skill in missing[:4]])
-        result.match_score = min(100, score)
-        result.match_reasons = reasons or ["The role matched the broad search criteria."]
+        score = min(100, score)
+        if score >= 75:
+            result.fit_label = "Strong fit"
+        elif score >= 52:
+            result.fit_label = "Possible fit"
+        else:
+            result.fit_label = "Stretch opportunity"
+        result.profile_evidence = reasons or ["The role matched the broad search criteria."]
         result.qualification_gaps = gaps[:5]
-        if result.match_score >= filters.minimum_match_score:
-            ranked.append(result)
-    return sorted(ranked, key=lambda item: item.match_score, reverse=True)
+        ranked.append((score, result))
+    return [result for _, result in sorted(ranked, key=lambda item: item[0], reverse=True)]
 
 
 def dedupe_results(results: list[NormalizedJobResult]) -> list[NormalizedJobResult]:

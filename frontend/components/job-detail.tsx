@@ -13,7 +13,6 @@ import {
   listApplications
 } from "@/lib/api";
 import { JobForm } from "@/components/job-form";
-import { JobAnalysisPanel } from "@/components/job-analysis-panel";
 
 export function JobDetail() {
   const params = useParams<{ id: string }>();
@@ -144,6 +143,18 @@ export function JobDetail() {
               )}
               Track application
             </button>
+            <Link
+              href={`/agents/job-application?job=${job.id}`}
+              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            >
+              Prepare application
+            </Link>
+            <Link
+              href={`/agents/job-prep?job=${job.id}`}
+              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            >
+              Prepare for job
+            </Link>
             <button
               type="button"
               onClick={() => setIsEditing(true)}
@@ -179,7 +190,6 @@ export function JobDetail() {
           </section>
         ) : null}
       </article>
-      <JobAnalysisPanel jobId={job.id} />
     </>
   );
 }

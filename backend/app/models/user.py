@@ -41,11 +41,11 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    career_tasks: Mapped[list["CareerTask"]] = relationship(
+    job_analyses: Mapped[list["JobAnalysis"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    job_analyses: Mapped[list["JobAnalysis"]] = relationship(
+    interview_sessions: Mapped[list["InterviewSession"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

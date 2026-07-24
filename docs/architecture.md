@@ -45,4 +45,20 @@ Discovered jobs are transient until the user clicks `Save job`, which maps the n
 
 AI calls are isolated behind provider classes. The application defaults to `AI_PROVIDER=mock` so development and tests can run without an API key. `OpenAIProvider` is available when `AI_PROVIDER=openai` and `OPENAI_API_KEY` is configured.
 
-Prompts treat resumes and job descriptions as untrusted data and instruct the model not to invent skills, education, work experience, or resume achievements. Structured outputs are validated with Pydantic before being stored as `JobAnalysis` rows. AI suggestions are stored as recommendations, not as user profile facts.
+Prompts treat resumes and job descriptions as untrusted data and instruct the model not to invent skills, education, work experience, or resume achievements. Structured resume-suggestion outputs are validated with Pydantic before being stored as `JobAnalysis` rows. AI suggestions are stored as recommendations, not as user profile facts. Public-facing match ratings have been removed; job discovery can still order results internally, but it exposes evidence-based fit labels instead of numerical scores.
+
+## AI Agents
+
+The protected `/agents` workspace separates AI assistance into three focused workflows:
+
+- Job Finder Agent: profile or prompt-based job discovery using existing job-search providers.
+- Job Application Agent: saved-job selection, profile review, generated application preview, and explicit user approval for manual use.
+- Job Preparation Agent: saved-job preparation, role overview, strengths and gaps, resume recommendations, study topics, and links into the stored mock-interview workflow.
+
+No agent submits an application automatically. External job content is treated as untrusted input, and authenticated users only operate on their own saved profile, jobs, applications, resume, and generated records.
+
+## Interview Preparation
+
+Interview preparation is application-scoped. A user can generate an `InterviewSession` for an owned application, which stores generated questions, a preparation plan, strong topics, and weak areas. Typed practice answers are stored as `InterviewAnswer` rows with structured feedback, so users can revisit previous attempts.
+
+Feedback is coaching output only. It can suggest a stronger answer structure or improved outline, but it must not present fabricated accomplishments as if the user said or did them.

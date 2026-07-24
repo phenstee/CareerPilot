@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 
-ANALYSIS_TYPES = ("job_match", "resume_suggestions")
+ANALYSIS_TYPES = ("resume_suggestions",)
 
 
 class JobAnalysis(Base):
@@ -27,7 +27,6 @@ class JobAnalysis(Base):
     )
     analysis_type: Mapped[str] = mapped_column(String(40), nullable=False)
     provider: Mapped[str] = mapped_column(String(40), nullable=False)
-    match_score: Mapped[int | None] = mapped_column(nullable=True)
     result: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -46,7 +45,7 @@ class JobAnalysis(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "analysis_type IN ('job_match', 'resume_suggestions')",
+            "analysis_type IN ('resume_suggestions')",
             name="ck_job_analyses_analysis_type",
         ),
     )

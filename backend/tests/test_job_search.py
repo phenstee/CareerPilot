@@ -52,7 +52,6 @@ def test_profile_based_search_ranks_results(client: TestClient) -> None:
             "experience_levels": ["Internship"],
             "preferred_role": "AI",
             "date_posted": "Any time",
-            "minimum_match_score": 40,
         },
     )
 
@@ -60,7 +59,8 @@ def test_profile_based_search_ranks_results(client: TestClient) -> None:
     body = response.json()
     assert body["mode"] == "profile"
     assert body["results"]
-    assert body["results"][0]["match_score"] >= 40
+    assert body["results"][0]["fit_label"] in {"Strong fit", "Possible fit", "Stretch opportunity"}
+    assert "match_score" not in body["results"][0]
     assert body["results"][0]["is_mock"] is True
 
 
@@ -150,12 +150,13 @@ def test_prompt_conversion_ranking_and_deduping_helpers() -> None:
         description="Python APIs",
         requirements=["Python"],
         skills=["Python"],
-        match_score=0,
-        match_reasons=[],
+        fit_label="Possible fit",
+        profile_evidence=[],
         qualification_gaps=[],
     )
     duplicate = first.model_copy(update={"external_id": "b"})
     deduped = dedupe_results([first, duplicate])
     assert len(deduped) == 1
     ranked = rank_and_filter_results(deduped, filters, ["Python"], None)
-    assert ranked[0].match_score > 35
+    assert ranked[0].fit_label in {"Strong fit", "Possible fit", "Stretch opportunity"}
+    assert ranked[0].profile_evidence

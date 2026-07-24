@@ -54,8 +54,8 @@ class GreenhouseJobSourceProvider(BaseJobSourceProvider):
                             description="Open role from a public Greenhouse board. Open the original posting for full details.",
                             requirements=[],
                             skills=[],
-                            match_score=0,
-                            match_reasons=[],
+                            fit_label="Possible fit",
+                            profile_evidence=[],
                             qualification_gaps=[],
                             is_mock=False,
                         )

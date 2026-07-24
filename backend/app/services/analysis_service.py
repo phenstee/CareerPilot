@@ -11,7 +11,6 @@ from app.schemas.analysis import (
     AnalysisCreateRequest,
     JobAnalysisListResponse,
     JobAnalysisResponse,
-    JobMatchAnalysisOutput,
     ResumeSuggestionsOutput,
 )
 
@@ -55,20 +54,6 @@ class AnalysisService:
             raise AnalysisNotFoundError
         return serialize_analysis(analysis)
 
-    def create_job_match_analysis(self, user_id: str, payload: AnalysisCreateRequest) -> JobAnalysisResponse:
-        job, profile, resume = self._get_owned_context(user_id, payload.job_posting_id)
-        provider = get_ai_provider()
-        output = provider.analyze_job_match(job=job, profile=profile, resume=resume)
-        analysis = JobAnalysis(
-            user_id=user_id,
-            job_posting_id=job.id,
-            analysis_type="job_match",
-            provider=provider.name,
-            match_score=output.overall_match_score,
-            result=output.model_dump(),
-        )
-        return serialize_analysis(self.repository.save(analysis))
-
     def create_resume_suggestions(self, user_id: str, payload: AnalysisCreateRequest) -> JobAnalysisResponse:
         job, profile, resume = self._get_owned_context(user_id, payload.job_posting_id)
         provider = get_ai_provider()
@@ -78,7 +63,6 @@ class AnalysisService:
             job_posting_id=job.id,
             analysis_type="resume_suggestions",
             provider=provider.name,
-            match_score=None,
             result=output.model_dump(),
         )
         return serialize_analysis(self.repository.save(analysis))
@@ -95,10 +79,7 @@ class AnalysisService:
 
 
 def serialize_analysis(analysis: JobAnalysis) -> JobAnalysisResponse:
-    if analysis.analysis_type == "job_match":
-        result = JobMatchAnalysisOutput.model_validate(analysis.result)
-    else:
-        result = ResumeSuggestionsOutput.model_validate(analysis.result)
+    result = ResumeSuggestionsOutput.model_validate(analysis.result)
     return JobAnalysisResponse(
         id=analysis.id,
         job_posting_id=analysis.job_posting_id,
@@ -106,7 +87,6 @@ def serialize_analysis(analysis: JobAnalysis) -> JobAnalysisResponse:
         company=analysis.job_posting.company,
         analysis_type=analysis.analysis_type,
         provider=analysis.provider,
-        match_score=analysis.match_score,
         result=result,
         created_at=analysis.created_at,
         updated_at=analysis.updated_at,

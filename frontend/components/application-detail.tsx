@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save, Trash2 } from "lucide-react";
+import { Loader2, Mic, Save, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -162,6 +163,13 @@ export function ApplicationDetail() {
             <Trash2 aria-hidden="true" className="h-4 w-4" />
             Delete
           </button>
+          <Link
+            href={`/applications/${application.id}/interview`}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+          >
+            <Mic aria-hidden="true" className="h-4 w-4" />
+            Practice interview
+          </Link>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
