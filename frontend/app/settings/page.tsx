@@ -76,12 +76,6 @@ export default async function SettingsPage() {
               >
                 Open AI agents
               </Link>
-              <Link
-                href="/agent"
-                className="inline-flex justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400"
-              >
-                Controlled agent
-              </Link>
             </div>
           </section>
 
@@ -89,9 +83,9 @@ export default async function SettingsPage() {
             <h2 className="text-lg font-semibold text-ink">Data controls</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               This MVP stores profile details, saved jobs, application records,
-              extracted resume text, generated analyses, interview practice, and
-              agent audit logs in the project database. Uploaded PDFs are not
-              stored as original files.
+              extracted resume text, generated analyses, and interview practice
+              in the project database. Uploaded PDFs are not stored as original
+              files.
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <Link

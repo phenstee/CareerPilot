@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, normalize_email
 from app.database.session import SessionLocal
-from app.models.agent import AgentConversation, AgentMessage
 from app.models.analysis import JobAnalysis
 from app.models.interview import InterviewAnswer, InterviewQuestion, InterviewSession
 from app.models.job import JobPosting
@@ -252,24 +251,6 @@ def seed_demo_data(db: Session, *, reset: bool = True) -> User:
                 "overall_feedback": "Good start. Add a concrete technical decision and result.",
             },
         )
-    )
-
-    conversation = AgentConversation(user_id=user.id, title="Demo career check-in")
-    db.add(conversation)
-    db.flush()
-    db.add_all(
-        [
-            AgentMessage(
-                conversation_id=conversation.id,
-                role="user",
-                content="Show my upcoming deadlines",
-            ),
-            AgentMessage(
-                conversation_id=conversation.id,
-                role="assistant",
-                content="Upcoming deadlines:\n2026-07-30: AI Engineering Intern at Boreal AI Labs\n2026-08-01: Frontend Platform Intern at Northwind Commerce",
-            ),
-        ]
     )
 
     db.commit()

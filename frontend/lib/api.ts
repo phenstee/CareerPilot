@@ -263,6 +263,8 @@ export type NormalizedJobResult = {
   skills: string[];
   fit_label: "Strong fit" | "Possible fit" | "Stretch opportunity";
   profile_evidence: string[];
+  match_score?: number;
+  match_reasons?: string[];
   qualification_gaps: string[];
   is_mock: boolean;
 };
@@ -289,54 +291,6 @@ export type DashboardResponse = {
   upcoming_deadlines: TrackedApplication[];
   recent_jobs: JobPosting[];
   today: string;
-};
-
-export type AgentAuditLog = {
-  id: string;
-  proposal_id: string;
-  event: "proposed" | "approved" | "rejected" | "executed";
-  note: string;
-  created_at: string;
-};
-
-export type AgentActionProposal = {
-  id: string;
-  conversation_id: string;
-  action_type:
-    | "update_application_stage"
-    | "set_follow_up_date"
-    | "set_application_next_action";
-  title: string;
-  explanation: string;
-  arguments: Record<string, unknown>;
-  status: "proposed" | "approved" | "rejected" | "executed";
-  created_at: string;
-  updated_at: string;
-  executed_at: string | null;
-  audit_logs: AgentAuditLog[];
-};
-
-export type AgentMessage = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  created_at: string;
-};
-
-export type AgentConversation = {
-  id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-  messages: AgentMessage[];
-  proposals: AgentActionProposal[];
-};
-
-export type AgentRunResponse = {
-  conversation: AgentConversation;
-  assistant_message: AgentMessage;
-  proposals: AgentActionProposal[];
-  allowed_tools: string[];
 };
 
 export function getApiBaseUrl(): string {
@@ -805,80 +759,6 @@ export async function getDashboard(): Promise<DashboardResponse> {
   }
 
   return response.json() as Promise<DashboardResponse>;
-}
-
-export async function listAgentConversations(): Promise<AgentConversation[]> {
-  const response = await fetch(
-    `${getApiBaseUrl()}/api/v1/agent/conversations`,
-    {
-      credentials: "include",
-      cache: "no-store"
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<AgentConversation[]>;
-}
-
-export async function sendAgentMessage(payload: {
-  conversation_id?: string | null;
-  message: string;
-}): Promise<AgentRunResponse> {
-  const response = await fetch(`${getApiBaseUrl()}/api/v1/agent/messages`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<AgentRunResponse>;
-}
-
-export async function approveAgentProposal(
-  proposalId: string
-): Promise<AgentActionProposal> {
-  const response = await fetch(
-    `${getApiBaseUrl()}/api/v1/agent/proposals/${proposalId}/approve`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ note: "" })
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<AgentActionProposal>;
-}
-
-export async function rejectAgentProposal(
-  proposalId: string
-): Promise<AgentActionProposal> {
-  const response = await fetch(
-    `${getApiBaseUrl()}/api/v1/agent/proposals/${proposalId}/reject`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ note: "" })
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(await parseApiError(response));
-  }
-
-  return response.json() as Promise<AgentActionProposal>;
 }
 
 export async function login(payload: AuthPayload): Promise<AuthResponse> {

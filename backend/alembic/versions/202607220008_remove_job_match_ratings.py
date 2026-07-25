@@ -18,20 +18,20 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     op.execute("DELETE FROM job_analyses WHERE analysis_type = 'job_match'")
-    op.drop_constraint("ck_job_analyses_analysis_type", "job_analyses", type_="check")
-    op.create_check_constraint(
-        "ck_job_analyses_analysis_type",
-        "job_analyses",
-        "analysis_type IN ('resume_suggestions')",
-    )
-    op.drop_column("job_analyses", "match_score")
+    with op.batch_alter_table("job_analyses") as batch_op:
+        batch_op.drop_constraint("ck_job_analyses_analysis_type", type_="check")
+        batch_op.create_check_constraint(
+            "ck_job_analyses_analysis_type",
+            "analysis_type IN ('resume_suggestions')",
+        )
+        batch_op.drop_column("match_score")
 
 
 def downgrade() -> None:
-    op.add_column("job_analyses", sa.Column("match_score", sa.Integer(), nullable=True))
-    op.drop_constraint("ck_job_analyses_analysis_type", "job_analyses", type_="check")
-    op.create_check_constraint(
-        "ck_job_analyses_analysis_type",
-        "job_analyses",
-        "analysis_type IN ('job_match', 'resume_suggestions')",
-    )
+    with op.batch_alter_table("job_analyses") as batch_op:
+        batch_op.add_column(sa.Column("match_score", sa.Integer(), nullable=True))
+        batch_op.drop_constraint("ck_job_analyses_analysis_type", type_="check")
+        batch_op.create_check_constraint(
+            "ck_job_analyses_analysis_type",
+            "analysis_type IN ('job_match', 'resume_suggestions')",
+        )

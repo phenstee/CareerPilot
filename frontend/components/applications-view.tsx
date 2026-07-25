@@ -12,6 +12,16 @@ import {
   TrackedApplication
 } from "@/lib/api";
 
+const HIDDEN_TRACKER_STAGES = new Set<ApplicationStage>([
+  "Saved",
+  "Online Assessment",
+  "Withdrawn"
+]);
+
+const VISIBLE_TRACKER_STAGES = APPLICATION_STAGES.filter(
+  (stage) => !HIDDEN_TRACKER_STAGES.has(stage)
+);
+
 function formatDate(value: string | null): string {
   if (!value) return "Not set";
   return new Intl.DateTimeFormat("en", {
@@ -83,7 +93,7 @@ export function ApplicationsView() {
             className="rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
           >
             <option value="">All stages</option>
-            {APPLICATION_STAGES.map((applicationStage) => (
+            {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
               <option key={applicationStage} value={applicationStage}>
                 {applicationStage}
               </option>
@@ -151,7 +161,7 @@ export function ApplicationsView() {
       {applicationsQuery.data && applicationsQuery.data.total > 0 ? (
         view === "board" ? (
           <div className="grid gap-4 xl:grid-cols-4">
-            {APPLICATION_STAGES.map((applicationStage) => (
+            {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
               <section
                 key={applicationStage}
                 className="min-h-40 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"

@@ -404,6 +404,10 @@ function JobResultCard({
     result.salary_min && result.salary_max
       ? `${result.salary_currency} ${result.salary_min.toLocaleString()}-${result.salary_max.toLocaleString()}`
       : "Salary not listed";
+  const fitLabel = result.fit_label ?? legacyFitLabel(result.match_score);
+  const profileEvidence = result.profile_evidence ?? result.match_reasons ?? [];
+  const skills = result.skills ?? result.requirements ?? [];
+  const gaps = result.qualification_gaps ?? [];
 
   return (
     <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -411,7 +415,7 @@ function JobResultCard({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-lagoon/10 px-2 py-1 text-xs font-semibold text-lagoon">
-              {result.fit_label}
+              {fitLabel}
             </span>
             <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
               {result.workplace_type}
@@ -494,12 +498,9 @@ function JobResultCard({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <ResultList title="Required skills" items={result.skills} />
-        <ResultList
-          title="Relevant profile evidence"
-          items={result.profile_evidence}
-        />
-        <ResultList title="Possible gaps" items={result.qualification_gaps} />
+        <ResultList title="Required skills" items={skills} />
+        <ResultList title="Relevant profile evidence" items={profileEvidence} />
+        <ResultList title="Possible gaps" items={gaps} />
       </div>
       <p className="mt-4 text-xs text-slate-500">
         Source: {result.source}
@@ -535,4 +536,11 @@ function ResultList({ title, items }: { title: string; items: string[] }) {
       )}
     </section>
   );
+}
+
+function legacyFitLabel(score?: number) {
+  if (typeof score !== "number") return "Possible fit";
+  if (score >= 75) return "Strong fit";
+  if (score >= 45) return "Possible fit";
+  return "Stretch opportunity";
 }

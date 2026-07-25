@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.agent import router as agent_router
 from app.api.auth import router as auth_router
 from app.api.applications import router as applications_router
 from app.api.analyses import router as analyses_router
@@ -39,7 +38,6 @@ def create_app() -> FastAPI:
     app.include_router(applications_router, prefix=settings.api_v1_prefix)
     app.include_router(analyses_router, prefix=settings.api_v1_prefix)
     app.include_router(interviews_router, prefix=settings.api_v1_prefix)
-    app.include_router(agent_router, prefix=settings.api_v1_prefix)
     app.include_router(dashboard_router, prefix=settings.api_v1_prefix)
 
     return app

@@ -6,6 +6,13 @@ import Link from "next/link";
 
 import { getDashboard } from "@/lib/api";
 
+const HIDDEN_DASHBOARD_STAGES = new Set([
+  "Saved",
+  "Preparing",
+  "Online Assessment",
+  "Withdrawn"
+]);
+
 function formatDate(value: string | null): string {
   if (!value) return "Not set";
   return new Intl.DateTimeFormat("en", {
@@ -41,6 +48,9 @@ export function DashboardSummary() {
   }
 
   const dashboard = dashboardQuery.data;
+  const visibleStageCounts = Object.entries(dashboard.counts_by_stage).filter(
+    ([stage]) => !HIDDEN_DASHBOARD_STAGES.has(stage)
+  );
   const stats = [
     {
       label: "Active applications",
@@ -100,28 +110,9 @@ export function DashboardSummary() {
           )}
         </DashboardPanel>
 
-        <DashboardPanel title="Recent jobs">
-          {dashboard.recent_jobs.length > 0 ? (
-            dashboard.recent_jobs.map((job) => (
-              <Link
-                key={job.id}
-                href={`/jobs/${job.id}`}
-                className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white"
-              >
-                <p className="text-sm font-semibold text-ink">{job.title}</p>
-                <p className="mt-1 text-sm text-slate-600">{job.company}</p>
-              </Link>
-            ))
-          ) : (
-            <EmptyPanelText>No saved jobs yet.</EmptyPanelText>
-          )}
-        </DashboardPanel>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
         <DashboardPanel title="Stage counts">
           <div className="grid gap-2 sm:grid-cols-2">
-            {Object.entries(dashboard.counts_by_stage).map(([stage, count]) => (
+            {visibleStageCounts.map(([stage, count]) => (
               <div
                 key={stage}
                 className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
@@ -132,6 +123,9 @@ export function DashboardSummary() {
             ))}
           </div>
         </DashboardPanel>
+      </section>
+
+      <section>
         <DashboardPanel title="AI Agents" icon="agents">
           <p className="text-sm leading-6 text-slate-600">
             Find opportunities, prepare applications, and get ready for

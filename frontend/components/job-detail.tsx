@@ -1,18 +1,28 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Loader2, Send, Trash2 } from "lucide-react";
+import { ExternalLink, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
+  ApplicationStage,
   createApplication,
   deleteJob,
   getJob,
-  listApplications
+  listApplications,
+  updateApplication
 } from "@/lib/api";
 import { JobForm } from "@/components/job-form";
+
+const JOB_DETAIL_STATUSES: ApplicationStage[] = [
+  "Preparing",
+  "Applied",
+  "Interview",
+  "Offer",
+  "Rejected"
+];
 
 export function JobDetail() {
   const params = useParams<{ id: string }>();
@@ -23,6 +33,10 @@ export function JobDetail() {
     queryKey: ["job", params.id],
     queryFn: () => getJob(params.id)
   });
+  const applicationsQuery = useQuery({
+    queryKey: ["applications", "job-status", params.id],
+    queryFn: () => listApplications()
+  });
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteJob(params.id),
@@ -32,37 +46,40 @@ export function JobDetail() {
       router.refresh();
     }
   });
-  const trackMutation = useMutation({
-    mutationFn: async () => {
-      try {
-        return await createApplication({
+  const statusMutation = useMutation({
+    mutationFn: async (stage: ApplicationStage) => {
+      const existing = applicationsQuery.data?.items.find(
+        (application) => application.job_posting_id === params.id
+      );
+
+      if (!existing) {
+        return createApplication({
           job_posting_id: params.id,
-          stage: "Preparing",
+          stage,
           date_applied: null,
           deadline: null,
           follow_up_date: null,
           notes: "",
           important_contacts: [],
-          next_action: "Prepare application materials"
+          next_action:
+            stage === "Preparing" ? "Prepare application materials" : ""
         });
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message.includes("already exists")
-        ) {
-          const applications = await listApplications();
-          const existing = applications.items.find(
-            (application) => application.job_posting_id === params.id
-          );
-          if (existing) return existing;
-        }
-        throw error;
       }
+
+      return updateApplication(existing.id, {
+        job_posting_id: existing.job_posting_id,
+        stage,
+        date_applied: existing.date_applied,
+        deadline: existing.deadline,
+        follow_up_date: existing.follow_up_date,
+        notes: existing.notes,
+        important_contacts: existing.important_contacts,
+        next_action: existing.next_action
+      });
     },
-    onSuccess: (application) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      router.push(`/applications/${application.id}`);
       router.refresh();
     }
   });
@@ -87,6 +104,13 @@ export function JobDetail() {
   }
 
   const job = jobQuery.data;
+  const application = applicationsQuery.data?.items.find(
+    (item) => item.job_posting_id === job.id
+  );
+  const currentStatus =
+    application && JOB_DETAIL_STATUSES.includes(application.stage)
+      ? application.stage
+      : "Preparing";
 
   if (isEditing) {
     return (
@@ -130,19 +154,6 @@ export function JobDetail() {
                 Open job
               </Link>
             ) : null}
-            <button
-              type="button"
-              onClick={() => trackMutation.mutate()}
-              disabled={trackMutation.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              {trackMutation.isPending ? (
-                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send aria-hidden="true" className="h-4 w-4" />
-              )}
-              Track application
-            </button>
             <Link
               href={`/agents/job-application?job=${job.id}`}
               className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
@@ -173,6 +184,51 @@ export function JobDetail() {
             </button>
           </div>
         </div>
+
+        <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-ink">
+                Application status
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {application
+                  ? "This saved job is in your application tracker."
+                  : "Choose a status to add this job to your tracker."}
+              </p>
+            </div>
+            <label className="flex items-center gap-2">
+              <span className="sr-only">Application status</span>
+              {statusMutation.isPending ? (
+                <Loader2
+                  aria-hidden="true"
+                  className="h-4 w-4 animate-spin text-lagoon"
+                />
+              ) : null}
+              <select
+                value={currentStatus}
+                onChange={(event) =>
+                  statusMutation.mutate(event.target.value as ApplicationStage)
+                }
+                disabled={
+                  applicationsQuery.isLoading || statusMutation.isPending
+                }
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20 disabled:cursor-not-allowed disabled:bg-slate-100"
+              >
+                {JOB_DETAIL_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {statusMutation.isError ? (
+            <p className="mt-3 text-sm text-orange-800">
+              Unable to update application status.
+            </p>
+          ) : null}
+        </section>
 
         <section className="mt-6">
           <h3 className="text-base font-semibold text-ink">Description</h3>

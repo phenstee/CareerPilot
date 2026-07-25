@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 
-from app.models.agent import AgentConversation
 from app.models.analysis import JobAnalysis
 from app.models.interview import InterviewSession
 from app.models.job import JobPosting
@@ -20,7 +19,6 @@ def test_seed_demo_data_creates_complete_demo_account(db_session: Session) -> No
     assert db_session.query(Resume).filter_by(user_id=user.id).one().filename.endswith(".pdf")
     assert db_session.query(JobAnalysis).filter_by(user_id=user.id).count() == 1
     assert db_session.query(InterviewSession).filter_by(user_id=user.id).count() == 1
-    assert db_session.query(AgentConversation).filter_by(user_id=user.id).count() == 1
 
 
 def test_seed_demo_data_is_idempotent_with_reset(db_session: Session) -> None:

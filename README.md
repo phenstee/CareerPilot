@@ -22,7 +22,6 @@ This repository contains the complete CareerPilot MVP foundation:
 - Application tracking with stages, stage history, filters, and dashboard counts
 - Mock/OpenAI AI provider boundary
 - AI Agents workspace for job finding, application preparation, and job preparation
-- Controlled career agent with approval-gated application updates and audit logs
 - Stored resume-tailoring suggestions for saved jobs
 - AI-assisted job discovery with profile search, prompt search, mock source results, ranking, and save-to-jobs flow
 - Interview preparation sessions with generated questions, typed practice answers, structured feedback, and stored attempts
@@ -35,7 +34,6 @@ Screenshots can be added from these representative local pages:
 - `/dashboard`
 - `/profile`
 - `/agents/job-finder`
-- `/agent`
 - `/applications/{id}/interview`
 
 ## Technology Stack
@@ -134,7 +132,7 @@ docker compose run --rm backend alembic upgrade head
 
 ## Seed Data
 
-The seed command creates a demo user, Waterloo-style profile, extracted resume text, five saved jobs, tracked applications with deadlines, one stored resume-suggestion analysis, one interview practice session, and a starter controlled-agent conversation.
+The seed command creates a demo user, Waterloo-style profile, extracted resume text, five saved jobs, tracked applications with deadlines, one stored resume-suggestion analysis, and one interview practice session.
 
 ```bash
 cd backend
@@ -200,7 +198,7 @@ npm run build
 
 1. Keep `AI_PROVIDER=mock` for local development.
 2. Create a profile, upload a resume, and save a job posting.
-3. Open `/agents` and confirm Controlled Career, Job Finder, Job Application, and Job Preparation agents are listed.
+3. Open `/agents` and confirm Job Finder, Job Application, and Job Preparation agents are listed.
 4. Open `/agents/job-finder`, search with your profile or a prompt, and confirm results use fit labels rather than numerical scores.
 5. Save a result, then use `Prepare application` or `Prepare for this job`.
 6. In Job Preparation, generate resume advice and confirm recommendations stay grounded in saved profile/resume evidence.
@@ -224,25 +222,14 @@ npm run build
 5. Type an answer and click `Submit for feedback`.
 6. Confirm structured feedback appears and remains after refreshing the page.
 
-## Manual Phase 8 Test
-
-1. Sign in and create at least one tracked application.
-2. Open `http://localhost:3000/agent`.
-3. Ask to show upcoming deadlines and confirm no proposal is created.
-4. Ask to move an application to another stage and confirm a proposal appears before the application changes.
-5. Approve the proposal and confirm the application stage updates.
-6. Create a second proposal, reject it, and confirm no application data changes.
-
 ## Current Limitations
 
-- The controlled agent uses deterministic MVP planning; richer natural-language planning can be added behind the same proposal boundary.
 - Job discovery defaults to mock data unless optional providers are configured.
 - Uploaded PDF bytes are not persisted, only metadata and extracted text.
 - The removed task workflow is intentionally out of scope for the current version; action planning is represented through applications, deadlines, and next actions.
 
 ## Future Improvements
 
-- Richer natural-language planning for the controlled agent
 - Optional screenshot assets for the README
 - Account deletion/export controls
 - More frontend interaction tests for agent approval and interview practice

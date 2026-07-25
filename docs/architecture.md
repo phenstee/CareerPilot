@@ -51,14 +51,11 @@ Prompts treat resumes and job descriptions as untrusted data and instruct the mo
 
 The protected `/agents` workspace separates AI assistance into focused workflows:
 
-- Controlled Career Agent: one guarded chat surface for read-only checks and approval-gated application updates.
 - Job Finder Agent: profile or prompt-based job discovery using existing job-search providers.
 - Job Application Agent: saved-job selection, profile review, generated application preview, and explicit user approval for manual use.
 - Job Preparation Agent: saved-job preparation, role overview, strengths and gaps, resume recommendations, study topics, and links into the stored mock-interview workflow.
 
 No agent submits an application automatically. External job content is treated as untrusted input, and authenticated users only operate on their own saved profile, jobs, applications, resume, and generated records.
-
-The controlled agent uses an explicit allowlist. Read-only tools can inspect owned profile, saved jobs, applications, upcoming deadlines, and stored resume suggestions. Database mutations are represented as `AgentActionProposal` rows, validated through specific Pydantic argument schemas, and executed only after the user approves. Proposal lifecycle events are stored in `AgentActionAuditLog` as `proposed`, `approved`, `rejected`, and `executed`.
 
 ## Interview Preparation
 
@@ -68,4 +65,4 @@ Feedback is coaching output only. It can suggest a stronger answer structure or 
 
 ## Demo Data
 
-`python -m app.seed` creates a resettable demo account for portfolio walkthroughs. It seeds one user, a Waterloo-style career profile, extracted resume text, saved technology jobs, tracked applications with deadlines, one resume-suggestion analysis, one interview practice session, and a starter controlled-agent conversation. The task model from the original plan was intentionally removed, so demo planning data lives in application deadlines and next actions.
+`python -m app.seed` creates a resettable demo account for portfolio walkthroughs. It seeds one user, a Waterloo-style career profile, extracted resume text, saved technology jobs, tracked applications with deadlines, one resume-suggestion analysis, and one interview practice session. The task model from the original plan was intentionally removed, so demo planning data lives in application deadlines and next actions.

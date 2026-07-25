@@ -49,15 +49,3 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    agent_conversations: Mapped[list["AgentConversation"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
-    agent_action_proposals: Mapped[list["AgentActionProposal"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
-    agent_action_audit_logs: Mapped[list["AgentActionAuditLog"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )

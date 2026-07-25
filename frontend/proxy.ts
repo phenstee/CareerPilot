@@ -28,7 +28,6 @@ export const config = {
     "/jobs/:path*",
     "/applications/:path*",
     "/agents/:path*",
-    "/agent/:path*",
     "/settings/:path*"
   ]
 };
