@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.ai.base import AIProviderError
 from app.api.deps import get_current_user, get_db
 from app.models.user import User
-from app.schemas.analysis import AnalysisCreateRequest, JobAnalysisListResponse, JobAnalysisResponse
+from app.schemas.analysis import AnalysisCreateRequest, AnalysisType, JobAnalysisListResponse, JobAnalysisResponse
 from app.services.analysis_service import AnalysisJobNotFoundError, AnalysisNotFoundError, AnalysisService
 
 router = APIRouter(prefix="/analyses", tags=["analyses"])
@@ -17,7 +17,7 @@ def list_analyses(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     job_posting_id: str | None = None,
-    analysis_type: Literal["resume_suggestions"] | None = None,
+    analysis_type: AnalysisType | None = None,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
 ) -> JobAnalysisListResponse:

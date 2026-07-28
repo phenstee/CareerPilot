@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.ai_status import router as ai_status_router
+from app.api.agents import router as agents_router
 from app.api.applications import router as applications_router
 from app.api.analyses import router as analyses_router
 from app.api.dashboard import router as dashboard_router
@@ -30,11 +32,13 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health_router, prefix=settings.api_v1_prefix)
+    app.include_router(ai_status_router, prefix=settings.api_v1_prefix)
     app.include_router(auth_router, prefix=settings.api_v1_prefix)
     app.include_router(profile_router, prefix=settings.api_v1_prefix)
     app.include_router(resume_router, prefix=settings.api_v1_prefix)
     app.include_router(jobs_router, prefix=settings.api_v1_prefix)
     app.include_router(job_search_router, prefix=settings.api_v1_prefix)
+    app.include_router(agents_router, prefix=settings.api_v1_prefix)
     app.include_router(applications_router, prefix=settings.api_v1_prefix)
     app.include_router(analyses_router, prefix=settings.api_v1_prefix)
     app.include_router(interviews_router, prefix=settings.api_v1_prefix)

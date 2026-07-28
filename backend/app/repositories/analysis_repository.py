@@ -41,6 +41,26 @@ class AnalysisRepository:
         )
         return self.db.scalar(statement)
 
+    def get_latest_for_user(
+        self,
+        user_id: str,
+        *,
+        job_posting_id: str,
+        analysis_type: str,
+    ) -> JobAnalysis | None:
+        statement = (
+            select(JobAnalysis)
+            .options(joinedload(JobAnalysis.job_posting))
+            .where(
+                JobAnalysis.user_id == user_id,
+                JobAnalysis.job_posting_id == job_posting_id,
+                JobAnalysis.analysis_type == analysis_type,
+            )
+            .order_by(JobAnalysis.created_at.desc())
+            .limit(1)
+        )
+        return self.db.scalar(statement)
+
     def save(self, analysis: JobAnalysis) -> JobAnalysis:
         self.db.add(analysis)
         self.db.commit()

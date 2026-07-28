@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.ai.base import AIProviderError
 from app.api.deps import get_current_user, get_db
 from app.models.user import User
 from app.schemas.interview import (
@@ -51,6 +52,8 @@ def create_interview_session(
         return InterviewService(db).create_session(current_user.id, payload)
     except InterviewApplicationNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found.") from exc
+    except AIProviderError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
 
 @router.get("/sessions/{session_id}", response_model=InterviewSessionResponse)
@@ -83,3 +86,5 @@ def answer_interview_question(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interview session not found.") from exc
     except InterviewQuestionNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interview question not found.") from exc
+    except AIProviderError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc

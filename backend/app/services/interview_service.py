@@ -70,6 +70,7 @@ class InterviewService:
             user_id=user_id,
             application_id=application.id,
             provider=provider.name,
+            provider_model=provider.model_name,
             preparation_plan=output.preparation_plan,
             strong_topics=output.strong_topics,
             weak_areas=output.weak_areas,
@@ -117,6 +118,7 @@ class InterviewService:
             answer_text=payload.answer_text,
             feedback=feedback.model_dump(),
             provider=provider.name,
+            provider_model=provider.model_name,
         )
         return serialize_answer(self.repository.save_answer(answer))
 
@@ -154,6 +156,7 @@ def serialize_session(session: InterviewSession) -> InterviewSessionResponse:
         job_title=job.title,
         company=job.company,
         provider=session.provider,
+        provider_model=session.provider_model,
         preparation_plan=session.preparation_plan,
         strong_topics=session.strong_topics,
         weak_areas=session.weak_areas,
@@ -182,5 +185,6 @@ def serialize_answer(answer: InterviewAnswer) -> InterviewAnswerResponse:
         answer_text=answer.answer_text,
         feedback=InterviewFeedbackOutput.model_validate(answer.feedback),
         provider=answer.provider,
+        provider_model=answer.provider_model,
         created_at=answer.created_at,
     )

@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from app.ai.base import AIProviderError
+
 
 def _register(client: TestClient, email: str = "interview@example.com") -> None:
     response = client.post(
@@ -116,3 +118,36 @@ def test_interview_sessions_require_owned_application(client: TestClient) -> Non
     assert client.get("/api/v1/interviews", params={"application_id": application["id"]}).status_code == 404
     assert client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]}).status_code == 404
     assert client.get(f"/api/v1/interviews/sessions/{session['id']}").status_code == 404
+
+
+def test_interview_provider_failures_return_503(client: TestClient, monkeypatch) -> None:
+    def raise_provider_error():
+        raise AIProviderError("AI analysis is temporarily unavailable.")
+
+    monkeypatch.setattr("app.services.interview_service.get_ai_provider", raise_provider_error)
+    _register(client, "interview-failure@example.com")
+    application = _create_application(client)
+
+    response = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]})
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "AI analysis is temporarily unavailable."
+
+
+def test_interview_answer_provider_failures_return_503(client: TestClient, monkeypatch) -> None:
+    _register(client, "answer-failure@example.com")
+    application = _create_application(client)
+    session = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]}).json()
+    question = session["questions"][0]
+
+    def raise_provider_error():
+        raise AIProviderError("AI analysis is temporarily unavailable.")
+
+    monkeypatch.setattr("app.services.interview_service.get_ai_provider", raise_provider_error)
+    response = client.post(
+        f"/api/v1/interviews/sessions/{session['id']}/questions/{question['id']}/answers",
+        json={"answer_text": "I built a React and FastAPI project and explained the tradeoffs clearly."},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "AI analysis is temporarily unavailable."

@@ -20,9 +20,10 @@ This repository contains the complete CareerPilot MVP foundation:
 - Resume PDF upload, replacement, text extraction, metadata view, and deletion
 - Saved job posting CRUD with search and filters
 - Application tracking with stages, stage history, filters, and dashboard counts
-- Mock/OpenAI AI provider boundary
-- AI Agents workspace for job finding, application preparation, and job preparation
+- Mock/OpenAI AI provider boundary with backend-only API key handling
+- AI Agents workspace for job finding, backend-powered application drafting, and backend-powered job preparation
 - Stored resume-tailoring suggestions for saved jobs
+- Stored application drafts, role analyses, and preparation plans for saved jobs
 - AI-assisted job discovery with profile search, prompt search, mock source results, ranking, and save-to-jobs flow
 - Interview preparation sessions with generated questions, typed practice answers, structured feedback, and stored attempts
 - Development seed data for a demo account and portfolio walkthrough
@@ -111,11 +112,46 @@ If the frontend runs outside Docker while the backend runs on the host, keep `NE
 - `DATABASE_URL`: SQLAlchemy database URL used by FastAPI and Alembic.
 - `JWT_SECRET`: signing secret for HttpOnly session cookies.
 - `AI_PROVIDER`: `mock` by default, or `openai` for real AI calls.
-- `OPENAI_API_KEY`, `OPENAI_MODEL`: OpenAI settings used only when `AI_PROVIDER=openai`.
+- `OPENAI_API_KEY`: backend-only OpenAI key used only when `AI_PROVIDER=openai`.
+- `OPENAI_MODEL`: model name used by the backend OpenAI provider.
+- `OPENAI_TIMEOUT_SECONDS`, `OPENAI_MAX_RETRIES`: request timeout and retry controls for OpenAI calls.
 - `GREENHOUSE_BOARDS`: optional comma-separated public Greenhouse board tokens.
 - `NEXT_PUBLIC_API_URL`: browser-visible backend URL.
 - `BACKEND_INTERNAL_URL`: backend URL used by Next.js server-side calls.
 - `CORS_ORIGINS`: allowed frontend origins for browser API requests.
+
+### Local Mock Mode
+
+```env
+AI_PROVIDER=mock
+OPENAI_API_KEY=
+```
+
+Mock mode requires no API key and returns deterministic development data through the same backend endpoints used by real AI workflows.
+
+### OpenAI Mode
+
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=your-key-here
+OPENAI_MODEL=your-configured-model
+```
+
+The OpenAI key is read only by the FastAPI backend. Do not put it in any `NEXT_PUBLIC_*` variable.
+
+After changing AI environment variables in Docker, recreate the backend:
+
+```powershell
+docker compose up -d --force-recreate backend
+```
+
+Safe provider verification, after signing in:
+
+```powershell
+curl.exe -b cookies.txt http://localhost:3000/api/v1/ai/status
+```
+
+The response reports the active provider, configured model, and whether a key is configured. It never returns the key.
 
 ## Database Migrations
 
@@ -196,12 +232,26 @@ npm run build
 
 ## Manual AI Agents Test
 
-1. Keep `AI_PROVIDER=mock` for local development.
+1. Keep `AI_PROVIDER=mock` for local deterministic development, or configure `AI_PROVIDER=openai` with a backend-only key.
 2. Create a profile, upload a resume, and save a job posting.
 3. Open `/agents` and confirm Job Finder, Job Application, and Job Preparation agents are listed.
 4. Open `/agents/job-finder`, search with your profile or a prompt, and confirm results use fit labels rather than numerical scores.
 5. Save a result, then use `Prepare application` or `Prepare for this job`.
-6. In Job Preparation, generate resume advice and confirm recommendations stay grounded in saved profile/resume evidence.
+6. In Job Application, click `Generate` and confirm the backend returns application summary, keywords, grounded emphasis, questions for missing information, cover letter draft, autofill preview, and warnings.
+7. In Job Preparation, generate role analysis, resume advice, and preparation plan. Confirm recommendations stay grounded in saved profile/resume evidence and unknowns remain explicit.
+
+Real AI workflows currently include:
+
+- Resume suggestions: `POST /api/v1/analyses/resume-suggestions`
+- Application draft: `POST /api/v1/agents/application-draft`
+- Role analysis: `POST /api/v1/agents/role-analysis`
+- Preparation plan: `POST /api/v1/agents/preparation-plan`
+- Interview prep and answer feedback: `POST /api/v1/interviews/sessions` and `POST /api/v1/interviews/sessions/{session_id}/questions/{question_id}/answers`
+
+Deterministic workflows remain:
+
+- Core CRUD for profile, resume metadata, saved jobs, and application tracker
+- Mock provider outputs when `AI_PROVIDER=mock`
 
 ## Manual AI Job Search Test
 

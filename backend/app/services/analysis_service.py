@@ -9,9 +9,12 @@ from app.repositories.profile_repository import ProfileRepository
 from app.repositories.resume_repository import ResumeRepository
 from app.schemas.analysis import (
     AnalysisCreateRequest,
+    ApplicationDraftOutput,
     JobAnalysisListResponse,
     JobAnalysisResponse,
+    PreparationPlanOutput,
     ResumeSuggestionsOutput,
+    RoleAnalysisOutput,
 )
 
 
@@ -63,6 +66,7 @@ class AnalysisService:
             job_posting_id=job.id,
             analysis_type="resume_suggestions",
             provider=provider.name,
+            provider_model=provider.model_name,
             result=output.model_dump(),
         )
         return serialize_analysis(self.repository.save(analysis))
@@ -79,7 +83,14 @@ class AnalysisService:
 
 
 def serialize_analysis(analysis: JobAnalysis) -> JobAnalysisResponse:
-    result = ResumeSuggestionsOutput.model_validate(analysis.result)
+    result_types = {
+        "resume_suggestions": ResumeSuggestionsOutput,
+        "application_draft": ApplicationDraftOutput,
+        "role_analysis": RoleAnalysisOutput,
+        "preparation_plan": PreparationPlanOutput,
+    }
+    result_type = result_types[analysis.analysis_type]
+    result = result_type.model_validate(analysis.result)
     return JobAnalysisResponse(
         id=analysis.id,
         job_posting_id=analysis.job_posting_id,
@@ -87,6 +98,7 @@ def serialize_analysis(analysis: JobAnalysis) -> JobAnalysisResponse:
         company=analysis.job_posting.company,
         analysis_type=analysis.analysis_type,
         provider=analysis.provider,
+        provider_model=analysis.provider_model,
         result=result,
         created_at=analysis.created_at,
         updated_at=analysis.updated_at,

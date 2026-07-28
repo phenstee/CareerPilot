@@ -5,7 +5,16 @@ from app.models.job import JobPosting
 from app.models.profile import CareerProfile
 from app.models.resume import Resume
 from app.models.tracker import Application
-from app.schemas.analysis import ResumeSuggestionsOutput
+from app.schemas.analysis import (
+    ApplicationDraftOutput,
+    ApplicationEmphasis,
+    AutofillField,
+    EvidenceItem,
+    PreparationPlanOutput,
+    QualificationGap,
+    ResumeSuggestionsOutput,
+    RoleAnalysisOutput,
+)
 from app.schemas.interview import InterviewFeedbackOutput, InterviewGeneratedQuestion, InterviewPrepOutput
 
 COMMON_TECH_SKILLS = (
@@ -29,6 +38,189 @@ COMMON_TECH_SKILLS = (
 
 class MockAIProvider(BaseAIProvider):
     name = "mock"
+    model_name = "mock-deterministic"
+
+    def generate_application_draft(
+        self,
+        *,
+        job: JobPosting,
+        profile: CareerProfile | None,
+        resume: Resume | None,
+        application: Application | None,
+    ) -> ApplicationDraftOutput:
+        requirement_keywords = _job_keywords(job.description)
+        matching = _matching_skills(profile, resume, requirement_keywords)
+        projects = _relevant_projects_and_experiences(profile, requirement_keywords)
+        full_name = profile.full_name if profile else ""
+        education = ", ".join(item for item in (profile.school if profile else "", profile.program if profile else "") if item)
+        warnings = [
+            "Review all generated text manually before using it in an application.",
+            "Sensitive questions require your explicit answer and are not inferred.",
+        ]
+        if resume is None:
+            warnings.append("No resume is uploaded, so resume evidence is unavailable.")
+        if profile is None:
+            warnings.append("No profile is saved, so profile evidence is unavailable.")
+
+        return ApplicationDraftOutput(
+            application_summary=(
+                f"Prepare a truthful application for {job.title} at {job.company}. "
+                f"Emphasize evidence for {', '.join(matching[:4]) or 'the role requirements'} and leave unknowns for user confirmation."
+            ),
+            keywords=_title_case_keywords(requirement_keywords)[:12],
+            emphasis=[
+                ApplicationEmphasis(
+                    item=item,
+                    evidence="Saved profile or resume text mentions a related project, experience, or skill.",
+                    reason="This evidence connects the candidate to requirements in the selected job posting.",
+                )
+                for item in (projects[:5] or [f"Skill evidence: {skill}" for skill in matching[:5]])
+            ],
+            missing_information_questions=[
+                "What is your work authorization status for this role?",
+                "Do you need sponsorship now or in the future?",
+                "What is your earliest truthful start date?",
+                "Can you add a measured impact for your most relevant project?",
+            ],
+            cover_letter=(
+                f"Dear {job.company} team,\n\n"
+                f"I am interested in the {job.title} role. "
+                f"My background{f' in {education}' if education else ''} and evidence with "
+                f"{', '.join(matching[:4]) or 'the skills reflected in my saved profile'} make this opportunity relevant to my goals.\n\n"
+                "I would focus my application on the projects and experiences already saved in my CareerPilot profile and resume, "
+                "without adding qualifications that are not supported by that evidence.\n\n"
+                f"Sincerely,\n{full_name or 'Your name'}"
+            ),
+            autofill_preview=[
+                AutofillField(
+                    field="Full name",
+                    proposed_answer=full_name or None,
+                    evidence="Career profile",
+                    requires_confirmation=not bool(full_name),
+                ),
+                AutofillField(
+                    field="Education",
+                    proposed_answer=education or None,
+                    evidence="Career profile",
+                    requires_confirmation=not bool(education),
+                ),
+                AutofillField(
+                    field="Relevant skills",
+                    proposed_answer=", ".join(matching[:8]) or None,
+                    evidence="Career profile, resume text, and selected job posting",
+                    requires_confirmation=True,
+                ),
+                AutofillField(
+                    field="Work authorization",
+                    proposed_answer=None,
+                    evidence="Sensitive field; no inference allowed",
+                    requires_confirmation=True,
+                ),
+            ],
+            warnings=warnings,
+        )
+
+    def analyze_role(
+        self,
+        *,
+        job: JobPosting,
+        profile: CareerProfile | None,
+        resume: Resume | None,
+    ) -> RoleAnalysisOutput:
+        requirement_keywords = _job_keywords(job.description)
+        matching = _matching_skills(profile, resume, requirement_keywords)
+        missing = [
+            skill
+            for skill in COMMON_TECH_SKILLS
+            if skill.lower() in requirement_keywords and skill not in matching
+        ]
+        responsibilities = _sentences(job.description)[:6] or [f"Review the {job.title} posting and identify core duties."]
+
+        return RoleAnalysisOutput(
+            role_summary=f"{job.title} at {job.company} appears focused on {', '.join(_title_case_keywords(requirement_keywords)[:5]) or 'the posted responsibilities'}.",
+            responsibilities=responsibilities,
+            required_skills=_title_case_keywords(requirement_keywords)[:12],
+            preferred_skills=[],
+            technologies=[skill for skill in COMMON_TECH_SKILLS if skill.lower() in requirement_keywords],
+            strengths=[
+                EvidenceItem(
+                    claim=f"Candidate has evidence for {skill}.",
+                    evidence="Saved profile or resume contains this skill or a closely related project.",
+                )
+                for skill in matching[:8]
+            ],
+            gaps=[
+                QualificationGap(
+                    requirement=skill,
+                    current_evidence=None,
+                    severity="medium",
+                    recommendation=f"Prepare a truthful explanation of your current {skill} experience or identify a project that demonstrates it.",
+                )
+                for skill in missing[:8]
+            ],
+            uncertainties=[
+                "Confirm interview format and exact seniority expectations from the employer.",
+                *([] if resume else ["No resume is uploaded, so resume-based fit is unknown."]),
+            ],
+            preparation_priorities=[
+                f"Prepare a concrete example involving {skill}." for skill in (matching[:4] or _title_case_keywords(requirement_keywords)[:4])
+            ]
+            or ["Map each listed requirement to one truthful project, course, or experience."],
+        )
+
+    def create_preparation_plan(
+        self,
+        *,
+        job: JobPosting,
+        profile: CareerProfile | None,
+        resume: Resume | None,
+        role_analysis: RoleAnalysisOutput,
+        application: Application | None,
+    ) -> PreparationPlanOutput:
+        technologies = role_analysis.technologies or role_analysis.required_skills[:5]
+        return PreparationPlanOutput(
+            essential_topics=[
+                f"{topic}: prepare one truthful example and one tradeoff." for topic in technologies[:6]
+            ]
+            or ["Review the role responsibilities and map each to saved evidence."],
+            optional_topics=[
+                "Company product research",
+                "Questions for the interviewer",
+                "Extra project story for follow-up questions",
+            ],
+            technical_practice=[
+                f"Explain how you used or would learn {topic} in the context of this role." for topic in technologies[:5]
+            ],
+            behavioral_practice=[
+                "Prepare a STAR story about learning quickly.",
+                "Prepare a STAR story about teamwork and communication.",
+                "Prepare a STAR story about debugging or handling ambiguity.",
+            ],
+            research_tasks=[
+                f"Read the original {job.company} posting and note three source-of-truth requirements.",
+                "Review company product, team, and internship/new-grad expectations.",
+                "Prepare two questions that cannot be answered from the job posting alone.",
+            ],
+            staged_plan=[
+                "Stage 1: Map job requirements to profile and resume evidence.",
+                "Stage 2: Refresh the highest-priority technical topics.",
+                "Stage 3: Practice behavioral and project explanations aloud.",
+                "Stage 4: Review notes and confirm logistics before the interview.",
+            ],
+            concrete_exercises=[
+                "Write a 60-second role-fit pitch grounded in saved evidence.",
+                "Rewrite one resume bullet without inventing metrics.",
+                "Answer one technical question and identify missing detail.",
+            ],
+            completion_checklist=[
+                "Role requirements mapped to evidence",
+                "Resume advice reviewed",
+                "Project walkthrough practiced",
+                "Behavioral examples prepared",
+                "Questions for interviewer prepared",
+                "Sensitive or unknown application details confirmed manually",
+            ],
+        )
 
     def suggest_resume_tailoring(
         self,
@@ -229,6 +421,15 @@ def _user_skills(profile: CareerProfile | None, resume: Resume | None) -> set[st
     return {skill.lower() for skill in COMMON_TECH_SKILLS if skill.lower() in joined}
 
 
+def _matching_skills(profile: CareerProfile | None, resume: Resume | None, requirement_keywords: set[str]) -> list[str]:
+    user_skills = _user_skills(profile, resume)
+    return [
+        skill
+        for skill in COMMON_TECH_SKILLS
+        if skill.lower() in requirement_keywords and skill.lower() in user_skills
+    ]
+
+
 def _relevant_projects_and_experiences(profile: CareerProfile | None, requirement_keywords: set[str]) -> list[str]:
     if profile is None:
         return []
@@ -258,3 +459,7 @@ def _profile_skill_names(profile: CareerProfile | None) -> list[str]:
 
 def _title_case_keywords(keywords: set[str]) -> list[str]:
     return sorted(keyword.upper() if keyword == "api" else keyword.title() for keyword in keywords)
+
+
+def _sentences(value: str) -> list[str]:
+    return [item.strip() for item in re.split(r"(?<=[.!?])\s+", value) if item.strip()]

@@ -31,6 +31,7 @@ class InterviewSession(Base):
         index=True,
     )
     provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    provider_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     preparation_plan: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     strong_topics: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     weak_areas: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
@@ -109,6 +110,7 @@ class InterviewAnswer(Base):
     answer_text: Mapped[str] = mapped_column(Text, nullable=False)
     feedback: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
     provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    provider_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

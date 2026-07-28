@@ -4,16 +4,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, FileText, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import {
+  createPreparationPlan,
+  createRoleAnalysis,
   createResumeSuggestions,
   getProfile,
-  JobPosting,
   listApplications,
   listAnalyses,
   listJobs,
-  ProfileResponse,
+  PreparationPlanOutput,
+  QualificationGap,
+  RoleAnalysisOutput,
   ResumeSuggestionsOutput
 } from "@/lib/api";
 
@@ -42,26 +45,66 @@ export function JobPreparationAgent() {
       }),
     enabled: Boolean(selectedJobId)
   });
+  const roleAnalysisQuery = useQuery({
+    queryKey: ["analyses", selectedJobId, "role_analysis"],
+    queryFn: () =>
+      listAnalyses({
+        job_posting_id: selectedJobId,
+        analysis_type: "role_analysis"
+      }),
+    enabled: Boolean(selectedJobId)
+  });
+  const planQuery = useQuery({
+    queryKey: ["analyses", selectedJobId, "preparation_plan"],
+    queryFn: () =>
+      listAnalyses({
+        job_posting_id: selectedJobId,
+        analysis_type: "preparation_plan"
+      }),
+    enabled: Boolean(selectedJobId)
+  });
 
   const jobs = jobsQuery.data?.items ?? [];
   const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null;
   const application = applicationsQuery.data?.items.find(
     (item) => item.job_posting_id === selectedJobId
   );
-  const latestSuggestions = suggestionsQuery.data?.items[0]?.result;
-  const prep = useMemo(
-    () =>
-      selectedJob && profileQuery.data
-        ? buildPreparation(selectedJob, profileQuery.data, latestSuggestions)
-        : null,
-    [latestSuggestions, profileQuery.data, selectedJob]
-  );
+  const latestSuggestions = suggestionsQuery.data?.items[0]?.result as
+    | ResumeSuggestionsOutput
+    | undefined;
+  const latestRoleAnalysisItem = roleAnalysisQuery.data?.items[0];
+  const latestRoleAnalysis = latestRoleAnalysisItem?.result as
+    | RoleAnalysisOutput
+    | undefined;
+  const latestPlan = planQuery.data?.items[0]?.result as
+    | PreparationPlanOutput
+    | undefined;
 
   const suggestionMutation = useMutation({
     mutationFn: () => createResumeSuggestions(selectedJobId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["analyses", selectedJobId, "resume_suggestions"]
+      });
+    }
+  });
+  const roleAnalysisMutation = useMutation({
+    mutationFn: () => createRoleAnalysis(selectedJobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["analyses", selectedJobId, "role_analysis"]
+      });
+    }
+  });
+  const planMutation = useMutation({
+    mutationFn: () =>
+      createPreparationPlan({
+        jobPostingId: selectedJobId,
+        roleAnalysisId: latestRoleAnalysisItem?.id
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["analyses", selectedJobId, "preparation_plan"]
       });
     }
   });
@@ -145,40 +188,92 @@ export function JobPreparationAgent() {
         </div>
       </aside>
 
-      {selectedJob && prep ? (
+      {selectedJob ? (
         <section className="space-y-5">
           <AgentPanel title="Role overview">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <ListBlock
-                title="Core responsibilities"
-                items={prep.responsibilities}
-              />
-              <ListBlock
-                title="Important technologies"
-                items={prep.technologies}
-              />
-              <ListBlock
-                title="Experience expectations"
-                items={prep.expectations}
-              />
-              <Info
-                label="Location and employment"
-                value={`${selectedJob.location || "Location not set"} - ${selectedJob.employment_type || "Type not set"}`}
-              />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-6 text-slate-600">
+                Generate a backend role analysis from the saved job, profile,
+                and resume before building the preparation plan.
+              </p>
+              <button
+                type="button"
+                onClick={() => roleAnalysisMutation.mutate()}
+                disabled={!selectedJobId || roleAnalysisMutation.isPending}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {roleAnalysisMutation.isPending ? (
+                  <Loader2
+                    aria-hidden="true"
+                    className="h-4 w-4 animate-spin"
+                  />
+                ) : (
+                  <Sparkles aria-hidden="true" className="h-4 w-4" />
+                )}
+                {latestRoleAnalysis
+                  ? "Regenerate analysis"
+                  : "Generate analysis"}
+              </button>
             </div>
+            {roleAnalysisMutation.isError ? (
+              <ErrorMessage error={roleAnalysisMutation.error} />
+            ) : null}
+            {latestRoleAnalysis ? (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm leading-6 text-slate-700">
+                  {latestRoleAnalysis.role_summary}
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <ListBlock
+                    title="Core responsibilities"
+                    items={latestRoleAnalysis.responsibilities}
+                  />
+                  <ListBlock
+                    title="Required skills"
+                    items={latestRoleAnalysis.required_skills}
+                  />
+                  <ListBlock
+                    title="Preferred skills"
+                    items={latestRoleAnalysis.preferred_skills}
+                  />
+                  <ListBlock
+                    title="Important technologies"
+                    items={latestRoleAnalysis.technologies}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-slate-500">
+                No role analysis generated yet.
+              </p>
+            )}
           </AgentPanel>
 
           <AgentPanel title="Strengths and gaps">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <ListBlock
-                title="Relevant profile evidence"
-                items={prep.strengths}
-              />
-              <ListBlock
-                title="Missing or unclear qualifications"
-                items={prep.gaps}
-              />
-            </div>
+            {latestRoleAnalysis ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <EvidenceBlock
+                  title="Relevant evidence"
+                  items={latestRoleAnalysis.strengths}
+                />
+                <GapBlock
+                  title="Missing or unclear qualifications"
+                  items={latestRoleAnalysis.gaps}
+                />
+                <ListBlock
+                  title="Uncertainties"
+                  items={latestRoleAnalysis.uncertainties}
+                />
+                <ListBlock
+                  title="Preparation priorities"
+                  items={latestRoleAnalysis.preparation_priorities}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">
+                Generate role analysis to see strengths, gaps, and priorities.
+              </p>
+            )}
           </AgentPanel>
 
           <AgentPanel title="Resume recommendations">
@@ -207,16 +302,19 @@ export function JobPreparationAgent() {
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
               <ListBlock
                 title="Add or emphasize"
-                items={prep.resumeAdditions}
+                items={latestSuggestions?.suggested_additions ?? []}
               />
               <ListBlock
                 title="Less important for this job"
-                items={prep.lessImportant}
+                items={latestSuggestions?.less_important_items ?? []}
               />
-              <ListBlock title="Keywords" items={prep.keywords} />
+              <ListBlock
+                title="Keywords"
+                items={latestSuggestions?.keywords ?? []}
+              />
               <ListBlock
                 title="Questions before editing"
-                items={prep.resumeQuestions}
+                items={latestSuggestions?.missing_information_questions ?? []}
               />
             </div>
           </AgentPanel>
@@ -229,7 +327,7 @@ export function JobPreparationAgent() {
               />
               <Info
                 label="Inference"
-                value={`The role appears connected to ${prep.technologies.slice(0, 3).join(", ") || "the listed job responsibilities"}.`}
+                value={`The role appears connected to ${latestRoleAnalysis?.technologies.slice(0, 3).join(", ") || "the listed job responsibilities"}.`}
               />
               <Info
                 label="Unavailable"
@@ -238,12 +336,95 @@ export function JobPreparationAgent() {
             </div>
           </AgentPanel>
 
+          <AgentPanel title="Preparation plan">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-6 text-slate-600">
+                Build a staged plan from the latest role analysis.
+              </p>
+              <button
+                type="button"
+                onClick={() => planMutation.mutate()}
+                disabled={
+                  !selectedJobId ||
+                  !latestRoleAnalysis ||
+                  planMutation.isPending
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {planMutation.isPending ? (
+                  <Loader2
+                    aria-hidden="true"
+                    className="h-4 w-4 animate-spin"
+                  />
+                ) : (
+                  <Sparkles aria-hidden="true" className="h-4 w-4" />
+                )}
+                {latestPlan ? "Regenerate plan" : "Generate plan"}
+              </button>
+            </div>
+            {planMutation.isError ? (
+              <ErrorMessage error={planMutation.error} />
+            ) : null}
+            {!latestRoleAnalysis ? (
+              <p className="mt-4 text-sm text-slate-500">
+                Generate role analysis first.
+              </p>
+            ) : null}
+          </AgentPanel>
+
+          {latestPlan ? (
+            <>
+              <AgentPanel title="Technical topics to study">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <ListBlock
+                    title="Essential"
+                    items={latestPlan.essential_topics}
+                  />
+                  <ListBlock
+                    title="Optional"
+                    items={latestPlan.optional_topics}
+                  />
+                  <ListBlock
+                    title="Technical practice"
+                    items={latestPlan.technical_practice}
+                  />
+                  <ListBlock
+                    title="Concrete exercises"
+                    items={latestPlan.concrete_exercises}
+                  />
+                </div>
+              </AgentPanel>
+
+              <AgentPanel title="Behavioral and research preparation">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <ListBlock
+                    title="Behavioral practice"
+                    items={latestPlan.behavioral_practice}
+                  />
+                  <ListBlock
+                    title="Research tasks"
+                    items={latestPlan.research_tasks}
+                  />
+                </div>
+              </AgentPanel>
+            </>
+          ) : null}
+
           <AgentPanel title="Interview-question preparation">
             <div className="grid gap-4 lg:grid-cols-2">
-              <ListBlock title="Likely questions" items={prep.questions} />
+              <ListBlock
+                title="Preparation priorities"
+                items={latestRoleAnalysis?.preparation_priorities ?? []}
+              />
               <ListBlock
                 title="Suggested answer structure"
-                items={prep.answerStructure}
+                items={[
+                  "Situation",
+                  "Task",
+                  "Action you personally took",
+                  "Result or learning",
+                  "Connection back to this role"
+                ]}
               />
             </div>
             {application ? (
@@ -262,16 +443,9 @@ export function JobPreparationAgent() {
             )}
           </AgentPanel>
 
-          <AgentPanel title="Technical topics to study">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <ListBlock title="Essential" items={prep.studyEssential} />
-              <ListBlock title="Optional" items={prep.studyOptional} />
-            </div>
-          </AgentPanel>
-
           <AgentPanel title="Preparation checklist">
             <div className="space-y-2">
-              {prep.checklist.map((item) => (
+              {(latestPlan?.completion_checklist ?? []).map((item) => (
                 <label
                   key={item}
                   className="flex items-center gap-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"
@@ -298,6 +472,11 @@ export function JobPreparationAgent() {
                   ) : null}
                 </label>
               ))}
+              {!latestPlan ? (
+                <p className="text-sm text-slate-500">
+                  Generate a preparation plan to get a checklist.
+                </p>
+              ) : null}
             </div>
           </AgentPanel>
         </section>
@@ -308,102 +487,6 @@ export function JobPreparationAgent() {
       )}
     </div>
   );
-}
-
-function buildPreparation(
-  job: JobPosting,
-  profile: ProfileResponse,
-  suggestions?: ResumeSuggestionsOutput
-) {
-  const text = job.description.toLowerCase();
-  const skills = [...profile.technical_skills, ...profile.soft_skills];
-  const technologies = skills.filter((skill) =>
-    text.includes(skill.toLowerCase())
-  );
-  const strengths = [
-    ...technologies.map((skill) => `Profile skill: ${skill}`),
-    ...profile.projects
-      .slice(0, 3)
-      .map((project) => `Project evidence: ${project.name}`),
-    ...profile.experiences
-      .slice(0, 2)
-      .map(
-        (experience) =>
-          `Experience evidence: ${experience.position} at ${experience.organization}`
-      )
-  ];
-  return {
-    responsibilities: splitSentences(job.description).slice(0, 5),
-    technologies: technologies.length
-      ? technologies
-      : ["Review the posting and tag important technologies in your profile."],
-    expectations: [
-      job.employment_type || "Employment type not listed",
-      "Use the posting to confirm seniority and interview format."
-    ],
-    strengths: strengths.length
-      ? strengths
-      : [
-          "Add projects, experiences, and skills to your profile for stronger evidence."
-        ],
-    gaps: skills.length
-      ? [
-          "Confirm any required skill not already in your profile.",
-          "Add measurable outcomes for relevant projects."
-        ]
-      : ["Profile has no saved skills."],
-    resumeAdditions: suggestions?.suggested_additions?.length
-      ? suggestions.suggested_additions
-      : ["Generate resume advice to get job-specific recommendations."],
-    lessImportant: suggestions?.less_important_items?.length
-      ? suggestions.less_important_items
-      : ["General content not tied to this role can usually be shortened."],
-    keywords: suggestions?.keywords?.length
-      ? suggestions.keywords
-      : technologies,
-    resumeQuestions: suggestions?.missing_information_questions?.length
-      ? suggestions.missing_information_questions
-      : ["What measurable outcome can you add to the most relevant project?"],
-    questions: [
-      `Why are you interested in ${job.company}?`,
-      `Walk me through a project that relates to ${technologies[0] || "this role"}.`,
-      "Tell me about a time you had to learn a technical concept quickly.",
-      "How would you explain your contribution to your strongest project?"
-    ],
-    answerStructure: [
-      "Situation",
-      "Task",
-      "Action you personally took",
-      "Result or learning",
-      "Connection back to this role"
-    ],
-    studyEssential: (technologies.length
-      ? technologies
-      : skills.slice(0, 4)
-    ).map((skill) => `${skill}: know where you used it and one tradeoff.`),
-    studyOptional: [
-      "Company product research",
-      "Questions for the interviewer",
-      "One extra project story"
-    ],
-    checklist: [
-      "Research the company and product area",
-      "Review job responsibilities",
-      "Revise resume bullets for this job",
-      "Prepare project explanations",
-      "Practice behavioral stories",
-      "Review technical topics",
-      "Prepare questions for the interviewer",
-      "Confirm interview logistics"
-    ]
-  };
-}
-
-function splitSentences(value: string) {
-  return value
-    .split(/(?<=[.!?])\s+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function LoadingPanel() {
@@ -451,6 +534,79 @@ function ListBlock({ title, items }: { title: string; items: string[] }) {
         <p className="mt-2 text-sm text-slate-500">Not available.</p>
       )}
     </section>
+  );
+}
+
+function EvidenceBlock({
+  title,
+  items
+}: {
+  title: string;
+  items: RoleAnalysisOutput["strengths"];
+}) {
+  return (
+    <section>
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      {items.length > 0 ? (
+        <ul className="mt-2 space-y-2">
+          {items.map((item, index) => (
+            <li
+              key={`${item.claim}-${index}`}
+              className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+            >
+              <span className="block font-semibold text-ink">{item.claim}</span>
+              <span className="mt-1 block">Evidence: {item.evidence}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-slate-500">Not available.</p>
+      )}
+    </section>
+  );
+}
+
+function GapBlock({
+  title,
+  items
+}: {
+  title: string;
+  items: QualificationGap[];
+}) {
+  return (
+    <section>
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      {items.length > 0 ? (
+        <ul className="mt-2 space-y-2">
+          {items.map((item, index) => (
+            <li
+              key={`${item.requirement}-${index}`}
+              className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+            >
+              <span className="block font-semibold text-ink">
+                {item.requirement}
+              </span>
+              <span className="mt-1 block">
+                Evidence: {item.current_evidence ?? "Not found"}
+              </span>
+              <span className="mt-1 block">
+                Severity: {item.severity}. {item.recommendation}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-slate-500">Not available.</p>
+      )}
+    </section>
+  );
+}
+
+function ErrorMessage({ error }: { error: unknown }) {
+  return (
+    <div className="mt-4 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+      {error instanceof Error ? error.message : "Unable to generate AI output."}
+    </div>
   );
 }
 

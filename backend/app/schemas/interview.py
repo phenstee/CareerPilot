@@ -50,6 +50,7 @@ class InterviewAnswerResponse(BaseModel):
     answer_text: str
     feedback: InterviewFeedbackOutput
     provider: str
+    provider_model: str | None = None
     created_at: datetime
 
 
@@ -69,6 +70,7 @@ class InterviewSessionResponse(BaseModel):
     job_title: str
     company: str
     provider: str
+    provider_model: str | None = None
     preparation_plan: list[str]
     strong_topics: list[str]
     weak_areas: list[str]

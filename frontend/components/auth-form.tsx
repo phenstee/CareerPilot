@@ -26,11 +26,17 @@ type AuthFormValues = {
 
 type AuthFormProps = {
   mode: "login" | "register";
+  initialError?: string | null;
+  nextPath?: string | null;
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  initialError = null,
+  nextPath
+}: AuthFormProps) {
   const router = useRouter();
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(initialError);
   const {
     register: registerField,
     handleSubmit,
@@ -57,8 +63,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         await login({ email: values.email, password: values.password });
       }
 
-      const nextPath = new URLSearchParams(window.location.search).get("next");
-      router.push(nextPath ?? "/dashboard");
+      const redirectPath =
+        nextPath ?? new URLSearchParams(window.location.search).get("next");
+      router.push(redirectPath ?? "/dashboard");
       router.refresh();
     } catch (error) {
       setFormError(
@@ -72,7 +79,18 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
+    <form
+      action={
+        mode === "register"
+          ? "/api/auth/fallback-register"
+          : "/api/auth/fallback-login"
+      }
+      className="space-y-5"
+      method="post"
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
+    >
+      {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
+
       {mode === "register" ? (
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Full name</span>

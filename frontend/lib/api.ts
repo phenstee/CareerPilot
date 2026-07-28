@@ -161,14 +161,85 @@ export type ResumeSuggestionsOutput = {
   uncertainties?: string[];
 };
 
+export type ApplicationEmphasis = {
+  item: string;
+  evidence: string;
+  reason: string;
+};
+
+export type AutofillField = {
+  field: string;
+  proposed_answer: string | null;
+  evidence: string | null;
+  requires_confirmation: boolean;
+};
+
+export type ApplicationDraftOutput = {
+  application_summary: string;
+  keywords: string[];
+  emphasis: ApplicationEmphasis[];
+  missing_information_questions: string[];
+  cover_letter: string;
+  autofill_preview: AutofillField[];
+  warnings: string[];
+};
+
+export type EvidenceItem = {
+  claim: string;
+  evidence: string;
+};
+
+export type QualificationGap = {
+  requirement: string;
+  current_evidence: string | null;
+  severity: "low" | "medium" | "high" | "unknown";
+  recommendation: string;
+};
+
+export type RoleAnalysisOutput = {
+  role_summary: string;
+  responsibilities: string[];
+  required_skills: string[];
+  preferred_skills: string[];
+  technologies: string[];
+  strengths: EvidenceItem[];
+  gaps: QualificationGap[];
+  uncertainties: string[];
+  preparation_priorities: string[];
+};
+
+export type PreparationPlanOutput = {
+  essential_topics: string[];
+  optional_topics: string[];
+  technical_practice: string[];
+  behavioral_practice: string[];
+  research_tasks: string[];
+  staged_plan: string[];
+  concrete_exercises: string[];
+  completion_checklist: string[];
+};
+
+export type AnalysisType =
+  | "resume_suggestions"
+  | "application_draft"
+  | "role_analysis"
+  | "preparation_plan";
+
+export type AnalysisResult =
+  | ResumeSuggestionsOutput
+  | ApplicationDraftOutput
+  | RoleAnalysisOutput
+  | PreparationPlanOutput;
+
 export type JobAnalysis = {
   id: string;
   job_posting_id: string;
   job_title: string;
   company: string;
-  analysis_type: "resume_suggestions";
+  analysis_type: AnalysisType;
   provider: string;
-  result: ResumeSuggestionsOutput;
+  provider_model: string | null;
+  result: AnalysisResult;
   created_at: string;
   updated_at: string;
 };
@@ -176,6 +247,12 @@ export type JobAnalysis = {
 export type JobAnalysisListResponse = {
   items: JobAnalysis[];
   total: number;
+};
+
+export type AIStatusResponse = {
+  provider: string;
+  model: string | null;
+  api_key_configured: boolean;
 };
 
 export type InterviewQuestionCategory =
@@ -199,6 +276,7 @@ export type InterviewAnswer = {
   answer_text: string;
   feedback: InterviewFeedbackOutput;
   provider: string;
+  provider_model: string | null;
   created_at: string;
 };
 
@@ -218,6 +296,7 @@ export type InterviewSession = {
   job_title: string;
   company: string;
   provider: string;
+  provider_model: string | null;
   preparation_plan: string[];
   strong_topics: string[];
   weak_areas: string[];
@@ -315,6 +394,19 @@ export async function getHealth(): Promise<HealthResponse> {
   }
 
   return response.json() as Promise<HealthResponse>;
+}
+
+export async function getAIStatus(): Promise<AIStatusResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/ai/status`, {
+    credentials: "include",
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<AIStatusResponse>;
 }
 
 async function parseApiError(response: Response): Promise<string> {
@@ -589,7 +681,7 @@ export async function deleteApplication(applicationId: string): Promise<void> {
 
 export async function listAnalyses(params?: {
   job_posting_id?: string;
-  analysis_type?: "resume_suggestions";
+  analysis_type?: AnalysisType;
 }): Promise<JobAnalysisListResponse> {
   const searchParams = new URLSearchParams();
   if (params?.job_posting_id)
@@ -630,6 +722,79 @@ export async function createResumeSuggestions(
   }
 
   return response.json() as Promise<JobAnalysis>;
+}
+
+export async function createApplicationDraft(
+  jobPostingId: string
+): Promise<JobAnalysis & { result: ApplicationDraftOutput }> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/agents/application-draft`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ job_posting_id: jobPostingId })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<
+    JobAnalysis & { result: ApplicationDraftOutput }
+  >;
+}
+
+export async function createRoleAnalysis(
+  jobPostingId: string
+): Promise<JobAnalysis & { result: RoleAnalysisOutput }> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/agents/role-analysis`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ job_posting_id: jobPostingId })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<
+    JobAnalysis & { result: RoleAnalysisOutput }
+  >;
+}
+
+export async function createPreparationPlan({
+  jobPostingId,
+  roleAnalysisId
+}: {
+  jobPostingId: string;
+  roleAnalysisId?: string;
+}): Promise<JobAnalysis & { result: PreparationPlanOutput }> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/agents/preparation-plan`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        job_posting_id: jobPostingId,
+        role_analysis_id: roleAnalysisId ?? null
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<
+    JobAnalysis & { result: PreparationPlanOutput }
+  >;
 }
 
 export async function listInterviewSessions(

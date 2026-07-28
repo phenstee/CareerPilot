@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from app.ai.base import AIProviderError
+
 
 def _register(client: TestClient, email: str = "analysis@example.com") -> None:
     response = client.post(
@@ -82,3 +84,103 @@ def test_analysis_requires_owned_job(client: TestClient) -> None:
     _register(client, "analysis-other@example.com")
     response = client.post("/api/v1/analyses/resume-suggestions", json={"job_posting_id": job["id"]})
     assert response.status_code == 404
+
+
+def test_application_draft_role_analysis_and_preparation_plan_are_stored(client: TestClient) -> None:
+    _register(client, "agents@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+
+    draft = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
+    assert draft.status_code == 201
+    assert draft.json()["analysis_type"] == "application_draft"
+    assert draft.json()["provider"] == "mock"
+    assert draft.json()["provider_model"] == "mock-deterministic"
+    assert draft.json()["result"]["cover_letter"]
+    assert draft.json()["result"]["autofill_preview"]
+
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    assert role.status_code == 201
+    role_json = role.json()
+    assert role_json["analysis_type"] == "role_analysis"
+    assert role_json["result"]["role_summary"]
+    assert role_json["result"]["preparation_priorities"]
+
+    plan = client.post(
+        "/api/v1/agents/preparation-plan",
+        json={"job_posting_id": job["id"], "role_analysis_id": role_json["id"]},
+    )
+    assert plan.status_code == 201
+    assert plan.json()["analysis_type"] == "preparation_plan"
+    assert plan.json()["result"]["completion_checklist"]
+
+    listing = client.get("/api/v1/analyses", params={"job_posting_id": job["id"]})
+    assert listing.status_code == 200
+    assert listing.json()["total"] == 3
+
+
+def test_preparation_plan_requires_role_analysis(client: TestClient) -> None:
+    _register(client, "plan-missing@example.com")
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+
+    response = client.post("/api/v1/agents/preparation-plan", json={"job_posting_id": job["id"]})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Generate role analysis before creating a preparation plan."
+
+
+def test_agent_workflows_require_owned_job(client: TestClient) -> None:
+    _register(client, "agent-owner@example.com")
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    client.post("/api/v1/auth/logout")
+
+    _register(client, "agent-other@example.com")
+    response = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
+    assert response.status_code == 404
+
+
+def test_ai_status_never_exposes_key(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ai_provider", "openai")
+    monkeypatch.setattr(settings, "openai_api_key", "sk-secret-value")
+    monkeypatch.setattr(settings, "openai_model", "gpt-test-model")
+
+    _register(client, "status@example.com")
+    response = client.get("/api/v1/ai/status")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body == {
+        "provider": "openai",
+        "model": "gpt-test-model",
+        "api_key_configured": True,
+    }
+    assert "sk-secret-value" not in response.text
+
+
+def test_application_draft_provider_failure_returns_503(client: TestClient, monkeypatch) -> None:
+    def raise_provider_error():
+        raise AIProviderError("AI analysis is temporarily unavailable.")
+
+    monkeypatch.setattr("app.services.agent_service.get_ai_provider", raise_provider_error)
+    _register(client, "agent-failure@example.com")
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+
+    response = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "AI analysis is temporarily unavailable."
+
+
+def test_resume_suggestions_provider_failure_returns_503(client: TestClient, monkeypatch) -> None:
+    def raise_provider_error():
+        raise AIProviderError("AI analysis is temporarily unavailable.")
+
+    monkeypatch.setattr("app.services.analysis_service.get_ai_provider", raise_provider_error)
+    _register(client, "resume-failure@example.com")
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+
+    response = client.post("/api/v1/analyses/resume-suggestions", json={"job_posting_id": job["id"]})
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "AI analysis is temporarily unavailable."
