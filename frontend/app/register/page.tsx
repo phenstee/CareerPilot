@@ -19,6 +19,14 @@ function getAuthErrorMessage(error?: string): string | null {
     return "An account with this email already exists.";
   }
 
+  if (error === "beta") {
+    return "Enter a valid beta access code to create an account.";
+  }
+
+  if (error === "rate-limit") {
+    return "Too many registration attempts. Please wait before trying again.";
+  }
+
   if (error === "unavailable") {
     return "CareerPilot could not reach the auth server. Please try again.";
   }

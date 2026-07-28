@@ -1,41 +1,8 @@
 import { type NextRequest } from "next/server";
 
 import { getApiBaseUrl } from "@/lib/api";
-
-const localFrontendOrigins = new Set([
-  "http://localhost:3000",
-  "http://127.0.0.1:3000"
-]);
-
-function getRequestOrigin(request: NextRequest): string {
-  const origin = request.headers.get("origin");
-  if (origin && localFrontendOrigins.has(origin)) {
-    return origin;
-  }
-
-  const referer = request.headers.get("referer");
-  if (referer) {
-    const refererUrl = new URL(referer);
-    if (localFrontendOrigins.has(refererUrl.origin)) {
-      return refererUrl.origin;
-    }
-  }
-
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
-
-function safeNextPath(value: FormDataEntryValue | null): string {
-  if (typeof value !== "string") {
-    return "/dashboard";
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) {
-    return "/dashboard";
-  }
-
-  return trimmed;
-}
+import { getRequestOrigin } from "@/lib/app-origin";
+import { sanitizeRedirectPath } from "@/lib/redirects";
 
 function redirectTo(request: NextRequest, path: string): Response {
   const location = new URL(path, getRequestOrigin(request));
@@ -67,7 +34,10 @@ export async function POST(request: NextRequest): Promise<Response> {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
-  const nextPath = safeNextPath(formData.get("next"));
+  const rawNextPath = formData.get("next");
+  const nextPath = sanitizeRedirectPath(
+    typeof rawNextPath === "string" ? rawNextPath : null
+  );
 
   if (typeof email !== "string" || typeof password !== "string") {
     return redirectToLogin(request, "missing", nextPath);
@@ -84,6 +54,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   if (!response.ok) {
+    if (response.status === 429) {
+      return redirectToLogin(request, "rate-limit", nextPath);
+    }
     return redirectToLogin(request, "invalid", nextPath);
   }
 

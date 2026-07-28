@@ -9,6 +9,7 @@ class RegisterRequest(BaseModel):
     email: str = Field(min_length=5, max_length=255)
     full_name: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=8, max_length=128)
+    beta_access_code: str | None = Field(default=None, max_length=200)
 
     @field_validator("email")
     @classmethod

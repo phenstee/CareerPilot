@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const agents = [
   {
-    title: "Job Finder Agent",
+    title: "Smart Job Finder",
     description:
       "Search for jobs based on your profile, skills, experience, and career preferences.",
     action: "Find jobs",

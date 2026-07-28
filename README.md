@@ -115,6 +115,9 @@ If the frontend runs outside Docker while the backend runs on the host, keep `NE
 - `JWT_SECRET`: signing secret for HttpOnly session cookies.
 - `AUTH_COOKIE_SECURE`: set `true` in HTTPS production deployments.
 - `AUTH_COOKIE_SAMESITE`: `lax`, `strict`, or `none`; `none` requires secure cookies.
+- `APP_URL`: canonical frontend origin used for safe auth redirects; required in production.
+- `BETA_ACCESS_CODE`: optional closed-beta invite code required during registration when set.
+- `*_RATE_LIMIT_COUNT`, `*_RATE_LIMIT_WINDOW_SECONDS`: basic in-memory rate-limit controls for auth, resume upload, AI generation, and job search endpoints.
 - `AI_PROVIDER`: `mock` by default, or `openai` for real AI calls.
 - `OPENAI_API_KEY`: backend-only OpenAI key used only when `AI_PROVIDER=openai`.
 - `OPENAI_MODEL`: model name used by the backend OpenAI provider.
@@ -208,8 +211,8 @@ npm run build
 GitHub Actions runs on pushes to `main` and on pull requests:
 
 - Backend: installs Python dependencies, runs Alembic migrations against PostgreSQL, imports `app.main`, and runs pytest in `AI_PROVIDER=mock` mode.
-- Frontend: runs `npm ci`, linting, Vitest tests, production build, and TypeScript type checking.
-- Docker: validates the development Docker Compose configuration.
+- Frontend: runs `npm ci`, linting, formatting checks, Vitest tests, production build, and TypeScript type checking.
+- Docker: validates development and production Compose configuration and builds production backend/frontend images.
 
 CI never requires or calls OpenAI and does not contain secrets.
 
@@ -231,6 +234,7 @@ DATABASE_URL=postgresql+psycopg://user:password@host:5432/database
 JWT_SECRET=<long-random-secret-at-least-32-characters>
 AUTH_COOKIE_SECURE=true
 AUTH_COOKIE_SAMESITE=lax
+APP_URL=https://your-frontend.example
 CORS_ORIGINS=https://your-frontend.example
 NEXT_PUBLIC_API_URL=https://your-backend.example
 BACKEND_INTERNAL_URL=https://your-backend.example
@@ -245,7 +249,7 @@ OPENAI_API_KEY=<backend-only-openai-key>
 OPENAI_MODEL=<model-name>
 ```
 
-Production safety checks reject the known development JWT secret, weak production JWT secrets, insecure production cookies, wildcard CORS origins, invalid AI providers, and `AI_PROVIDER=openai` without an API key.
+Production safety checks reject missing `APP_URL`, the known development JWT secret, weak production JWT secrets, insecure production cookies, wildcard CORS origins, invalid AI providers, and `AI_PROVIDER=openai` without an API key.
 
 Production backend start command:
 
@@ -325,7 +329,7 @@ Deterministic workflows remain:
 
 1. Sign in and open `http://localhost:3000/agents/job-finder`.
 2. Choose `Use my profile`, adjust filters, and click `Find jobs for me`.
-3. Switch to `Describe what you want`, click an example prompt, and click `Search with AI`.
+3. Switch to `Describe what you want`, click an example prompt, and click `Search jobs`.
 4. Confirm mock results are labeled, ranked, and explain profile evidence and gaps without numerical scores.
 5. Click `Save job` on a result, then open the saved job from `/jobs`.
 
@@ -344,6 +348,7 @@ Deterministic workflows remain:
 
 - Job discovery defaults to mock data unless optional providers are configured.
 - Uploaded PDF bytes are not persisted, only metadata and extracted text.
+- Next.js is pinned to `16.3.0-preview.9` because npm audit currently resolves the active PostCSS advisory through that release line; revisit when the stable line contains the same fix.
 - The removed task workflow is intentionally out of scope for the current version; action planning is represented through applications, deadlines, and next actions.
 
 ## Future Improvements

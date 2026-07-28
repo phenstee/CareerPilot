@@ -1,9 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.core.config import settings
+from app.core.rate_limit import RateLimitRule, enforce_user_rate_limit
 from app.models.user import User
 from app.schemas.resume import ResumeResponse, ResumeTextResponse
 from app.services.resume_service import ResumeNotFoundError, ResumeService, ResumeValidationError
@@ -32,10 +34,17 @@ def get_resume_text(
 
 @router.post("", response_model=ResumeResponse)
 async def upload_resume(
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     file: UploadFile = File(...),
 ) -> ResumeResponse:
+    del request
+    enforce_user_rate_limit(
+        current_user.id,
+        "resume:upload",
+        RateLimitRule(settings.resume_upload_rate_limit_count, settings.resume_upload_rate_limit_window_seconds),
+    )
     try:
         return await ResumeService(db).upload_resume(current_user.id, file)
     except ResumeValidationError as exc:

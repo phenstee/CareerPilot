@@ -1,7 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Loader2, Send } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Send
+} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -21,7 +28,8 @@ export function JobApplicationAgent() {
   const searchParams = useSearchParams();
   const preselectedJobId = searchParams.get("job");
   const [selectedJobId, setSelectedJobId] = useState(preselectedJobId ?? "");
-  const [approved, setApproved] = useState(false);
+  const [reviewedDraftId, setReviewedDraftId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
 
   const jobsQuery = useQuery({
@@ -41,9 +49,13 @@ export function JobApplicationAgent() {
   const jobs = jobsQuery.data?.items ?? [];
   const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null;
   const profile = profileQuery.data ?? null;
-  const latestDraft = draftQuery.data?.items[0]?.result as
+  const latestDraftItem = draftQuery.data?.items[0];
+  const latestDraft = latestDraftItem?.result as
     | ApplicationDraftOutput
     | undefined;
+  const draftReviewed = Boolean(
+    latestDraftItem?.id && reviewedDraftId === latestDraftItem.id
+  );
 
   const draftMutation = useMutation({
     mutationFn: () => createApplicationDraft(selectedJobId),
@@ -51,9 +63,16 @@ export function JobApplicationAgent() {
       queryClient.invalidateQueries({
         queryKey: ["analyses", selectedJobId, "application_draft"]
       });
-      setApproved(false);
+      setReviewedDraftId(null);
+      setCopied(false);
     }
   });
+
+  async function copyCoverLetter() {
+    if (!latestDraft?.cover_letter) return;
+    await navigator.clipboard.writeText(latestDraft.cover_letter);
+    setCopied(true);
+  }
 
   if (jobsQuery.isLoading || profileQuery.isLoading) {
     return <LoadingPanel />;
@@ -90,7 +109,8 @@ export function JobApplicationAgent() {
               type="button"
               onClick={() => {
                 setSelectedJobId(job.id);
-                setApproved(false);
+                setReviewedDraftId(null);
+                setCopied(false);
               }}
               className={`w-full rounded-md border px-3 py-3 text-left text-sm transition ${
                 selectedJobId === job.id
@@ -146,6 +166,7 @@ export function JobApplicationAgent() {
           {latestDraft ? (
             <>
               <AgentPanel title="Step 4: Prepared application materials">
+                {latestDraftItem?.is_stale ? <StaleNotice /> : null}
                 <p className="mb-4 text-sm leading-6 text-slate-700">
                   {latestDraft.application_summary}
                 </p>
@@ -182,7 +203,7 @@ export function JobApplicationAgent() {
                 </div>
               </AgentPanel>
 
-              <AgentPanel title="Step 6: Review and approval">
+              <AgentPanel title="Step 6: Review and manual use">
                 <div className="flex items-start gap-3 rounded-md border border-coral/20 bg-coral/10 p-3 text-sm text-orange-800">
                   <AlertTriangle aria-hidden="true" className="h-5 w-5" />
                   <p>
@@ -190,20 +211,44 @@ export function JobApplicationAgent() {
                     website. Review everything manually before using it.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setApproved(true)}
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
-                >
-                  {approved ? (
-                    <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
-                  ) : (
-                    <Send aria-hidden="true" className="h-4 w-4" />
-                  )}
-                  {approved
-                    ? "Approved for manual use"
-                    : "Approve and continue"}
-                </button>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      latestDraftItem
+                        ? setReviewedDraftId(latestDraftItem.id)
+                        : null
+                    }
+                    className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                  >
+                    {draftReviewed ? (
+                      <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+                    ) : (
+                      <Send aria-hidden="true" className="h-4 w-4" />
+                    )}
+                    {draftReviewed
+                      ? "Reviewed for manual use"
+                      : "Mark draft reviewed"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={copyCoverLetter}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                  >
+                    <Copy aria-hidden="true" className="h-4 w-4" />
+                    {copied ? "Copied" : "Copy cover letter"}
+                  </button>
+                  {selectedJob.job_url ? (
+                    <Link
+                      href={selectedJob.job_url}
+                      target="_blank"
+                      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                    >
+                      <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                      Open job
+                    </Link>
+                  ) : null}
+                </div>
               </AgentPanel>
             </>
           ) : (
@@ -248,25 +293,25 @@ function EmphasisBlock({
   title: string;
   items: ApplicationEmphasis[];
 }) {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      {items.length > 0 ? (
-        <ul className="mt-2 space-y-2">
-          {items.map((item, index) => (
-            <li
-              key={`${item.item}-${index}`}
-              className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
-            >
-              <span className="block font-semibold text-ink">{item.item}</span>
-              <span className="mt-1 block">Evidence: {item.evidence}</span>
-              <span className="mt-1 block">Why it matters: {item.reason}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm text-slate-500">Not available.</p>
-      )}
+      <ul className="mt-2 space-y-2">
+        {items.map((item, index) => (
+          <li
+            key={`${item.item}-${index}`}
+            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+          >
+            <span className="block font-semibold text-ink">{item.item}</span>
+            <span className="mt-1 block">Evidence: {item.evidence}</span>
+            <span className="mt-1 block">Why it matters: {item.reason}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -348,6 +393,10 @@ function AgentPanel({
 }
 
 function ListBlock({ title, items }: { title: string; items: string[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
@@ -372,6 +421,18 @@ function Info({ label, value }: { label: string; value: string }) {
         {label}
       </p>
       <p className="mt-1 text-sm text-ink">{value || "Not saved"}</p>
+    </div>
+  );
+}
+
+function StaleNotice() {
+  return (
+    <div className="mb-4 flex items-start gap-2 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+      <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
+      <p>
+        This draft may be stale because the job, profile, resume, or application
+        notes changed. Regenerate it before relying on it.
+      </p>
     </div>
   );
 }

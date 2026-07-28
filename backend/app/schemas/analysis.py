@@ -105,6 +105,8 @@ class JobAnalysisResponse(BaseModel):
     analysis_type: AnalysisType
     provider: str
     provider_model: str | None = None
+    is_stale: bool = False
+    source_role_analysis_id: str | None = None
     result: AnalysisResult
     created_at: datetime
     updated_at: datetime

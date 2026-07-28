@@ -1,7 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, FileText, Loader2, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FileText,
+  Loader2,
+  Sparkles
+} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -24,7 +30,9 @@ export function JobPreparationAgent() {
   const searchParams = useSearchParams();
   const preselectedJobId = searchParams.get("job");
   const [selectedJobId, setSelectedJobId] = useState(preselectedJobId ?? "");
-  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  const [completedByPlan, setCompletedByPlan] = useState<
+    Record<string, string[]>
+  >({});
   const queryClient = useQueryClient();
 
   const jobsQuery = useQuery({
@@ -69,16 +77,22 @@ export function JobPreparationAgent() {
   const application = applicationsQuery.data?.items.find(
     (item) => item.job_posting_id === selectedJobId
   );
-  const latestSuggestions = suggestionsQuery.data?.items[0]?.result as
+  const latestSuggestionsItem = suggestionsQuery.data?.items[0];
+  const latestSuggestions = latestSuggestionsItem?.result as
     | ResumeSuggestionsOutput
     | undefined;
   const latestRoleAnalysisItem = roleAnalysisQuery.data?.items[0];
   const latestRoleAnalysis = latestRoleAnalysisItem?.result as
     | RoleAnalysisOutput
     | undefined;
-  const latestPlan = planQuery.data?.items[0]?.result as
+  const latestPlanItem = planQuery.data?.items[0];
+  const latestPlan = latestPlanItem?.result as
     | PreparationPlanOutput
     | undefined;
+  const latestPlanId = latestPlanItem?.id ?? "";
+  const completedItems = new Set(
+    latestPlanId ? (completedByPlan[latestPlanId] ?? []) : []
+  );
 
   const suggestionMutation = useMutation({
     mutationFn: () => createResumeSuggestions(selectedJobId),
@@ -220,6 +234,7 @@ export function JobPreparationAgent() {
             ) : null}
             {latestRoleAnalysis ? (
               <div className="mt-4 space-y-4">
+                {latestRoleAnalysisItem?.is_stale ? <StaleNotice /> : null}
                 <p className="text-sm leading-6 text-slate-700">
                   {latestRoleAnalysis.role_summary}
                 </p>
@@ -252,6 +267,11 @@ export function JobPreparationAgent() {
           <AgentPanel title="Strengths and gaps">
             {latestRoleAnalysis ? (
               <div className="grid gap-4 lg:grid-cols-2">
+                {latestRoleAnalysisItem?.is_stale ? (
+                  <div className="lg:col-span-2">
+                    <StaleNotice />
+                  </div>
+                ) : null}
                 <EvidenceBlock
                   title="Relevant evidence"
                   items={latestRoleAnalysis.strengths}
@@ -300,6 +320,17 @@ export function JobPreparationAgent() {
               </button>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              {latestSuggestionsItem?.is_stale ? (
+                <div className="lg:col-span-2">
+                  <StaleNotice />
+                </div>
+              ) : null}
+              <ListBlock
+                title="Already relevant"
+                items={
+                  latestSuggestions?.relevant_existing_resume_content ?? []
+                }
+              />
               <ListBlock
                 title="Add or emphasize"
                 items={latestSuggestions?.suggested_additions ?? []}
@@ -315,6 +346,17 @@ export function JobPreparationAgent() {
               <ListBlock
                 title="Questions before editing"
                 items={latestSuggestions?.missing_information_questions ?? []}
+              />
+              <RewriteBlock
+                items={latestSuggestions?.suggested_rewrites ?? []}
+              />
+              <ListBlock
+                title="Application checklist"
+                items={latestSuggestions?.application_checklist ?? []}
+              />
+              <ListBlock
+                title="Uncertainties"
+                items={latestSuggestions?.uncertainties ?? []}
               />
             </div>
           </AgentPanel>
@@ -376,6 +418,15 @@ export function JobPreparationAgent() {
             <>
               <AgentPanel title="Technical topics to study">
                 <div className="grid gap-4 lg:grid-cols-2">
+                  {latestPlanItem?.is_stale ? (
+                    <div className="lg:col-span-2">
+                      <StaleNotice />
+                    </div>
+                  ) : null}
+                  <ListBlock
+                    title="Staged plan"
+                    items={latestPlan.staged_plan}
+                  />
                   <ListBlock
                     title="Essential"
                     items={latestPlan.essential_topics}
@@ -445,33 +496,43 @@ export function JobPreparationAgent() {
 
           <AgentPanel title="Preparation checklist">
             <div className="space-y-2">
-              {(latestPlan?.completion_checklist ?? []).map((item) => (
-                <label
-                  key={item}
-                  className="flex items-center gap-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"
-                >
-                  <input
-                    type="checkbox"
-                    checked={completedItems.has(item)}
-                    onChange={(event) =>
-                      setCompletedItems((current) => {
-                        const next = new Set(current);
-                        if (event.target.checked) next.add(item);
-                        else next.delete(item);
-                        return next;
-                      })
-                    }
-                    className="h-4 w-4 rounded border-slate-300 text-lagoon focus:ring-lagoon"
-                  />
-                  <span>{item}</span>
-                  {completedItems.has(item) ? (
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className="ml-auto h-4 w-4 text-lagoon"
-                    />
-                  ) : null}
-                </label>
-              ))}
+              {(latestPlan?.completion_checklist ?? []).map((item) =>
+                (() => {
+                  const itemKey = `${latestPlanId}:${item}`;
+                  return (
+                    <label
+                      key={itemKey}
+                      className="flex items-center gap-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={completedItems.has(itemKey)}
+                        onChange={(event) =>
+                          setCompletedByPlan((current) => {
+                            const currentItems = new Set(
+                              current[latestPlanId] ?? []
+                            );
+                            if (event.target.checked) currentItems.add(itemKey);
+                            else currentItems.delete(itemKey);
+                            return {
+                              ...current,
+                              [latestPlanId]: [...currentItems]
+                            };
+                          })
+                        }
+                        className="h-4 w-4 rounded border-slate-300 text-lagoon focus:ring-lagoon"
+                      />
+                      <span>{item}</span>
+                      {completedItems.has(itemKey) ? (
+                        <CheckCircle2
+                          aria-hidden="true"
+                          className="ml-auto h-4 w-4 text-lagoon"
+                        />
+                      ) : null}
+                    </label>
+                  );
+                })()
+              )}
               {!latestPlan ? (
                 <p className="text-sm text-slate-500">
                   Generate a preparation plan to get a checklist.
@@ -516,23 +577,52 @@ function AgentPanel({
 }
 
 function ListBlock({ title, items }: { title: string; items: string[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      {items.length > 0 ? (
-        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
-          {items.map((item, index) => (
-            <li
-              key={`${item}-${index}`}
-              className="rounded-md bg-slate-50 px-3 py-2"
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm text-slate-500">Not available.</p>
-      )}
+      <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
+        {items.map((item, index) => (
+          <li
+            key={`${item}-${index}`}
+            className="rounded-md bg-slate-50 px-3 py-2"
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function RewriteBlock({
+  items
+}: {
+  items: ResumeSuggestionsOutput["suggested_rewrites"];
+}) {
+  if (!items || items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h3 className="text-sm font-semibold text-ink">Suggested rewrites</h3>
+      <ul className="mt-2 space-y-2">
+        {items.map((item, index) => (
+          <li
+            key={`${item.original_text}-${index}`}
+            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+          >
+            <span className="block font-semibold text-ink">
+              {item.suggested_text}
+            </span>
+            <span className="mt-1 block">{item.rationale}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -544,24 +634,24 @@ function EvidenceBlock({
   title: string;
   items: RoleAnalysisOutput["strengths"];
 }) {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      {items.length > 0 ? (
-        <ul className="mt-2 space-y-2">
-          {items.map((item, index) => (
-            <li
-              key={`${item.claim}-${index}`}
-              className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
-            >
-              <span className="block font-semibold text-ink">{item.claim}</span>
-              <span className="mt-1 block">Evidence: {item.evidence}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm text-slate-500">Not available.</p>
-      )}
+      <ul className="mt-2 space-y-2">
+        {items.map((item, index) => (
+          <li
+            key={`${item.claim}-${index}`}
+            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+          >
+            <span className="block font-semibold text-ink">{item.claim}</span>
+            <span className="mt-1 block">Evidence: {item.evidence}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -573,32 +663,44 @@ function GapBlock({
   title: string;
   items: QualificationGap[];
 }) {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      {items.length > 0 ? (
-        <ul className="mt-2 space-y-2">
-          {items.map((item, index) => (
-            <li
-              key={`${item.requirement}-${index}`}
-              className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
-            >
-              <span className="block font-semibold text-ink">
-                {item.requirement}
-              </span>
-              <span className="mt-1 block">
-                Evidence: {item.current_evidence ?? "Not found"}
-              </span>
-              <span className="mt-1 block">
-                Severity: {item.severity}. {item.recommendation}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm text-slate-500">Not available.</p>
-      )}
+      <ul className="mt-2 space-y-2">
+        {items.map((item, index) => (
+          <li
+            key={`${item.requirement}-${index}`}
+            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+          >
+            <span className="block font-semibold text-ink">
+              {item.requirement}
+            </span>
+            <span className="mt-1 block">
+              Evidence: {item.current_evidence ?? "Not found"}
+            </span>
+            <span className="mt-1 block">
+              Severity: {item.severity}. {item.recommendation}
+            </span>
+          </li>
+        ))}
+      </ul>
     </section>
+  );
+}
+
+function StaleNotice() {
+  return (
+    <div className="flex items-start gap-2 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+      <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
+      <p>
+        This result may be stale because the job, profile, resume, or source
+        analysis changed. Regenerate it before relying on it.
+      </p>
+    </div>
   );
 }
 

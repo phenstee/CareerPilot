@@ -1,14 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
 from app.core.config import settings
+from app.core.rate_limit import RateLimitRule, enforce_ip_rate_limit
 from app.core.security import create_access_token
 from app.models.user import User
 from app.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, UserResponse
-from app.services.auth_service import AuthService, DuplicateEmailError, InvalidCredentialsError
+from app.services.auth_service import AuthService, DuplicateEmailError, InvalidBetaAccessCodeError, InvalidCredentialsError
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -29,15 +30,27 @@ def _set_session_cookie(response: Response, user: User) -> None:
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def register(
     payload: RegisterRequest,
+    request: Request,
     response: Response,
     db: Annotated[Session, Depends(get_db)],
 ) -> AuthResponse:
+    enforce_ip_rate_limit(
+        request,
+        "auth:register",
+        RateLimitRule(settings.registration_rate_limit_count, settings.registration_rate_limit_window_seconds),
+    )
     try:
         user = AuthService(db).register(
             email=payload.email,
             full_name=payload.full_name,
             password=payload.password,
+            beta_access_code=payload.beta_access_code,
         )
+    except InvalidBetaAccessCodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing beta access code.",
+        ) from exc
     except DuplicateEmailError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -51,9 +64,15 @@ def register(
 @router.post("/login", response_model=AuthResponse)
 def login(
     payload: LoginRequest,
+    request: Request,
     response: Response,
     db: Annotated[Session, Depends(get_db)],
 ) -> AuthResponse:
+    enforce_ip_rate_limit(
+        request,
+        "auth:login",
+        RateLimitRule(settings.login_rate_limit_count, settings.login_rate_limit_window_seconds),
+    )
     try:
         user = AuthService(db).authenticate(email=payload.email, password=payload.password)
     except InvalidCredentialsError as exc:

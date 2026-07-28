@@ -71,7 +71,7 @@ class MockAIProvider(BaseAIProvider):
             emphasis=[
                 ApplicationEmphasis(
                     item=item,
-                    evidence="Saved profile or resume text mentions a related project, experience, or skill.",
+                    evidence=_evidence_for_item(item, profile, resume, requirement_keywords),
                     reason="This evidence connects the candidate to requirements in the selected job posting.",
                 )
                 for item in (projects[:5] or [f"Skill evidence: {skill}" for skill in matching[:5]])
@@ -145,7 +145,7 @@ class MockAIProvider(BaseAIProvider):
             strengths=[
                 EvidenceItem(
                     claim=f"Candidate has evidence for {skill}.",
-                    evidence="Saved profile or resume contains this skill or a closely related project.",
+                    evidence=_evidence_for_keyword(skill, profile, resume),
                 )
                 for skill in matching[:8]
             ],
@@ -443,6 +443,51 @@ def _relevant_projects_and_experiences(profile: CareerProfile | None, requiremen
         if any(keyword in haystack for keyword in requirement_keywords):
             items.append(f"Experience: {experience.position} at {experience.organization}")
     return items[:8]
+
+
+def _evidence_for_item(
+    item: str,
+    profile: CareerProfile | None,
+    resume: Resume | None,
+    requirement_keywords: set[str],
+) -> str:
+    item_lower = item.lower()
+    for prefix in ("Project: ", "Experience: ", "Skill evidence: "):
+        if item.startswith(prefix):
+            item_lower = item.removeprefix(prefix).lower()
+            break
+
+    direct = _evidence_for_keyword(item_lower, profile, resume)
+    if "No saved" not in direct:
+        return direct
+
+    for keyword in sorted(requirement_keywords):
+        evidence = _evidence_for_keyword(keyword, profile, resume)
+        if "No saved" not in evidence:
+            return evidence
+    return "No saved profile or resume evidence was found for this emphasis item."
+
+
+def _evidence_for_keyword(keyword: str, profile: CareerProfile | None, resume: Resume | None) -> str:
+    keyword_lower = keyword.lower()
+    if profile is not None:
+        for project in profile.projects:
+            haystack = f"{project.name} {project.description} {' '.join(project.technologies)}".lower()
+            if keyword_lower in haystack:
+                return f"Project '{project.name}': {project.description}".strip()
+        for experience in profile.experiences:
+            haystack = f"{experience.position} {experience.organization} {experience.description}".lower()
+            if keyword_lower in haystack:
+                return f"Experience '{experience.position}' at {experience.organization}: {experience.description}".strip()
+        for skill in profile.skills:
+            if keyword_lower == skill.name.lower():
+                return f"Saved {skill.category} skill: {skill.name}."
+
+    for line in _resume_lines(resume):
+        if keyword_lower in line.lower():
+            return f"Resume line: {line}"
+
+    return f"No saved profile or resume evidence found for {keyword}."
 
 
 def _resume_lines(resume: Resume | None) -> list[str]:

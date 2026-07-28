@@ -8,6 +8,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.api.deps import get_db
 from app.core.config import settings
+from app.core.rate_limit import rate_limiter
 from app.database.base import Base
 from app.main import app
 from app.models import User  # noqa: F401
@@ -36,8 +37,11 @@ def db_session() -> Generator[Session, None, None]:
 def client(db_session: Session) -> Generator[TestClient, None, None]:
     original_ai_provider = settings.ai_provider
     original_openai_api_key = settings.openai_api_key
+    original_beta_access_code = settings.beta_access_code
     settings.ai_provider = "mock"
     settings.openai_api_key = None
+    settings.beta_access_code = None
+    rate_limiter.clear()
 
     def override_get_db() -> Generator[Session, None, None]:
         yield db_session
@@ -48,5 +52,7 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
         yield test_client
 
     app.dependency_overrides.clear()
+    rate_limiter.clear()
     settings.ai_provider = original_ai_provider
     settings.openai_api_key = original_openai_api_key
+    settings.beta_access_code = original_beta_access_code

@@ -1,10 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.ai.base import AIProviderError
 from app.api.deps import get_current_user, get_db
+from app.core.config import settings
+from app.core.rate_limit import RateLimitRule, enforce_user_rate_limit
 from app.models.user import User
 from app.schemas.interview import (
     InterviewAnswerCreate,
@@ -45,9 +47,16 @@ def list_interview_sessions(
 @router.post("/sessions", response_model=InterviewSessionResponse, status_code=status.HTTP_201_CREATED)
 def create_interview_session(
     payload: InterviewSessionCreate,
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> InterviewSessionResponse:
+    del request
+    enforce_user_rate_limit(
+        current_user.id,
+        "ai:interview-session",
+        RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
+    )
     try:
         return InterviewService(db).create_session(current_user.id, payload)
     except InterviewApplicationNotFoundError as exc:
@@ -77,9 +86,16 @@ def answer_interview_question(
     session_id: str,
     question_id: str,
     payload: InterviewAnswerCreate,
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> InterviewAnswerResponse:
+    del request
+    enforce_user_rate_limit(
+        current_user.id,
+        "ai:interview-answer",
+        RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
+    )
     try:
         return InterviewService(db).answer_question(current_user.id, session_id, question_id, payload)
     except InterviewSessionNotFoundError as exc:

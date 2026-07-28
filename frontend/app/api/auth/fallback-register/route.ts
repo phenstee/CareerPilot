@@ -1,28 +1,7 @@
 import { type NextRequest } from "next/server";
 
 import { getApiBaseUrl } from "@/lib/api";
-
-const localFrontendOrigins = new Set([
-  "http://localhost:3000",
-  "http://127.0.0.1:3000"
-]);
-
-function getRequestOrigin(request: NextRequest): string {
-  const origin = request.headers.get("origin");
-  if (origin && localFrontendOrigins.has(origin)) {
-    return origin;
-  }
-
-  const referer = request.headers.get("referer");
-  if (referer) {
-    const refererUrl = new URL(referer);
-    if (localFrontendOrigins.has(refererUrl.origin)) {
-      return refererUrl.origin;
-    }
-  }
-
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
+import { getRequestOrigin } from "@/lib/app-origin";
 
 function redirectTo(request: NextRequest, path: string): Response {
   const location = new URL(path, getRequestOrigin(request));
@@ -46,6 +25,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   const fullName = formData.get("full_name");
   const email = formData.get("email");
   const password = formData.get("password");
+  const betaAccessCode = formData.get("beta_access_code");
 
   if (
     typeof fullName !== "string" ||
@@ -61,7 +41,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     body: JSON.stringify({
       full_name: fullName,
       email,
-      password
+      password,
+      beta_access_code:
+        typeof betaAccessCode === "string" ? betaAccessCode : undefined
     })
   }).catch(() => null);
 
@@ -70,6 +52,12 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   if (!response.ok) {
+    if (response.status === 403) {
+      return redirectToRegister(request, "beta");
+    }
+    if (response.status === 429) {
+      return redirectToRegister(request, "rate-limit");
+    }
     return redirectToRegister(
       request,
       response.status === 409 ? "duplicate" : "missing"

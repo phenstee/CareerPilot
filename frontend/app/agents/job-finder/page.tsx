@@ -9,7 +9,7 @@ export default function JobFinderAgentPage() {
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
-              Job Finder Agent
+              Smart Job Finder
             </p>
             <h1 className="mt-2 text-3xl font-semibold text-ink">
               Find jobs that fit your direction

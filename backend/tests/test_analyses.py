@@ -1,6 +1,10 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.ai.base import AIProviderError
+from app.models.analysis import JobAnalysis
 
 
 def _register(client: TestClient, email: str = "analysis@example.com") -> None:
@@ -66,6 +70,7 @@ def test_mock_resume_suggestions_are_stored(client: TestClient, monkeypatch) -> 
     suggestions = client.post("/api/v1/analyses/resume-suggestions", json={"job_posting_id": job["id"]})
     assert suggestions.status_code == 201
     assert suggestions.json()["analysis_type"] == "resume_suggestions"
+    assert suggestions.json()["is_stale"] is False
     assert "match_score" not in suggestions.json()
     assert "React" in suggestions.json()["result"]["keywords"]
     assert suggestions.json()["result"]["suggested_additions"]
@@ -74,6 +79,7 @@ def test_mock_resume_suggestions_are_stored(client: TestClient, monkeypatch) -> 
     listing = client.get("/api/v1/analyses", params={"job_posting_id": job["id"]})
     assert listing.status_code == 200
     assert listing.json()["total"] == 1
+    assert listing.json()["items"][0]["is_stale"] is False
 
 
 def test_analysis_requires_owned_job(client: TestClient) -> None:
@@ -98,6 +104,7 @@ def test_application_draft_role_analysis_and_preparation_plan_are_stored(client:
     assert draft.json()["provider_model"] == "mock-deterministic"
     assert draft.json()["result"]["cover_letter"]
     assert draft.json()["result"]["autofill_preview"]
+    assert "Career Tracker" in draft.json()["result"]["emphasis"][0]["evidence"]
 
     role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
     assert role.status_code == 201
@@ -112,11 +119,78 @@ def test_application_draft_role_analysis_and_preparation_plan_are_stored(client:
     )
     assert plan.status_code == 201
     assert plan.json()["analysis_type"] == "preparation_plan"
+    assert plan.json()["is_stale"] is False
+    assert plan.json()["source_role_analysis_id"] == role_json["id"]
     assert plan.json()["result"]["completion_checklist"]
 
     listing = client.get("/api/v1/analyses", params={"job_posting_id": job["id"]})
     assert listing.status_code == 200
     assert listing.json()["total"] == 3
+
+
+def test_analysis_is_stale_after_job_changes(client: TestClient) -> None:
+    _register(client, "stale-job@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+
+    response = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    assert response.status_code == 201
+    assert response.json()["is_stale"] is False
+
+    updated_job = {**_job_payload(), "description": "Build Go services and Kubernetes infrastructure."}
+    assert client.put(f"/api/v1/jobs/{job['id']}", json=updated_job).status_code == 200
+
+    listing = client.get(
+        "/api/v1/analyses",
+        params={"job_posting_id": job["id"], "analysis_type": "role_analysis"},
+    )
+
+    assert listing.status_code == 200
+    assert listing.json()["items"][0]["is_stale"] is True
+
+
+def test_preparation_plan_is_stale_after_new_role_analysis(client: TestClient, db_session: Session) -> None:
+    _register(client, "stale-plan@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    first_role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]}).json()
+    plan = client.post(
+        "/api/v1/agents/preparation-plan",
+        json={"job_posting_id": job["id"], "role_analysis_id": first_role["id"]},
+    ).json()
+
+    second_role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    assert second_role.status_code == 201
+    second_analysis = db_session.get(JobAnalysis, second_role.json()["id"])
+    assert second_analysis is not None
+    second_analysis.created_at = datetime.now(timezone.utc) + timedelta(seconds=5)
+    db_session.commit()
+
+    listing = client.get(
+        "/api/v1/analyses",
+        params={"job_posting_id": job["id"], "analysis_type": "preparation_plan"},
+    )
+
+    assert listing.status_code == 200
+    assert listing.json()["items"][0]["id"] == plan["id"]
+    assert listing.json()["items"][0]["is_stale"] is True
+
+
+def test_ai_rate_limit_is_scoped_per_user(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ai_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "ai_rate_limit_window_seconds", 3600)
+
+    _register(client, "rate-one@example.com")
+    job_one = client.post("/api/v1/jobs", json=_job_payload()).json()
+    assert client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job_one["id"]}).status_code == 201
+    assert client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job_one["id"]}).status_code == 429
+
+    client.post("/api/v1/auth/logout")
+    _register(client, "rate-two@example.com")
+    job_two = client.post("/api/v1/jobs", json=_job_payload()).json()
+    assert client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job_two["id"]}).status_code == 201
 
 
 def test_preparation_plan_requires_role_analysis(client: TestClient) -> None:

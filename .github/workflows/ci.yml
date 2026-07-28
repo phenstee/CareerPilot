@@ -83,6 +83,10 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
+      - name: Check frontend formatting
+        working-directory: frontend
+        run: npm run format:check
+
       - name: Run frontend tests
         working-directory: frontend
         run: npm run test
@@ -104,3 +108,25 @@ jobs:
 
       - name: Validate development Compose config
         run: docker compose config --quiet
+
+      - name: Validate production Compose config
+        env:
+          POSTGRES_PASSWORD: careerpilot
+          DATABASE_URL: postgresql+psycopg://careerpilot:careerpilot@db:5432/careerpilot
+          JWT_SECRET: ci-only-production-secret-value-that-is-long-enough
+          APP_URL: https://careerpilot.example
+          CORS_ORIGINS: https://careerpilot.example
+          NEXT_PUBLIC_API_URL: https://api.careerpilot.example
+          BACKEND_INTERNAL_URL: http://backend:8000
+        run: docker compose -f docker-compose.prod.yml config --quiet
+
+      - name: Build production Docker images
+        env:
+          POSTGRES_PASSWORD: careerpilot
+          DATABASE_URL: postgresql+psycopg://careerpilot:careerpilot@db:5432/careerpilot
+          JWT_SECRET: ci-only-production-secret-value-that-is-long-enough
+          APP_URL: https://careerpilot.example
+          CORS_ORIGINS: https://careerpilot.example
+          NEXT_PUBLIC_API_URL: https://api.careerpilot.example
+          BACKEND_INTERNAL_URL: http://backend:8000
+        run: docker compose -f docker-compose.prod.yml build backend frontend

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { isProtectedPath } from "@/lib/protected-routes";
+import { sanitizeRedirectPath } from "@/lib/redirects";
 
 const sessionCookieName = "careerpilot_session";
 
@@ -13,7 +14,12 @@ export function proxy(request: NextRequest) {
 
   if (!hasSession) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    loginUrl.searchParams.set(
+      "next",
+      sanitizeRedirectPath(
+        `${request.nextUrl.pathname}${request.nextUrl.search}`
+      )
+    );
     return NextResponse.redirect(loginUrl);
   }
 

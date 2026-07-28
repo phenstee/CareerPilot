@@ -63,3 +63,53 @@ def test_logout_clears_session_cookie(client: TestClient) -> None:
 
     assert response.status_code == 204
     assert client.get("/api/v1/auth/me").status_code == 401
+
+
+def test_beta_access_code_is_required_when_configured(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "beta_access_code", "invite-only")
+
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "beta@example.com",
+            "full_name": "Beta Student",
+            "password": "correct horse battery",
+            "beta_access_code": "wrong",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Invalid or missing beta access code."
+    assert "invite-only" not in response.text
+
+    accepted = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "beta@example.com",
+            "full_name": "Beta Student",
+            "password": "correct horse battery",
+            "beta_access_code": "invite-only",
+        },
+    )
+    assert accepted.status_code == 201
+
+
+def test_login_rate_limit_is_enforced(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "login_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "login_rate_limit_window_seconds", 3600)
+
+    first = client.post(
+        "/api/v1/auth/login",
+        json={"email": "missing@example.com", "password": "wrong password"},
+    )
+    second = client.post(
+        "/api/v1/auth/login",
+        json={"email": "missing@example.com", "password": "wrong password"},
+    )
+
+    assert first.status_code == 401
+    assert second.status_code == 429

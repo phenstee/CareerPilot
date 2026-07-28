@@ -20,6 +20,7 @@ export type AuthPayload = {
   email: string;
   password: string;
   full_name?: string;
+  beta_access_code?: string;
 };
 
 export type ProjectInput = {
@@ -239,6 +240,8 @@ export type JobAnalysis = {
   analysis_type: AnalysisType;
   provider: string;
   provider_model: string | null;
+  is_stale: boolean;
+  source_role_analysis_id: string | null;
   result: AnalysisResult;
   created_at: string;
   updated_at: string;
@@ -942,7 +945,7 @@ export async function login(payload: AuthPayload): Promise<AuthResponse> {
 }
 
 export async function register(
-  payload: Required<AuthPayload>
+  payload: AuthPayload & { full_name: string }
 ): Promise<AuthResponse> {
   const response = await fetch(`${getApiBaseUrl()}/api/v1/auth/register`, {
     method: "POST",

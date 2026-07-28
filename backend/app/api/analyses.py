@@ -1,10 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.ai.base import AIProviderError
 from app.api.deps import get_current_user, get_db
+from app.core.config import settings
+from app.core.rate_limit import RateLimitRule, enforce_user_rate_limit
 from app.models.user import User
 from app.schemas.analysis import AnalysisCreateRequest, AnalysisType, JobAnalysisListResponse, JobAnalysisResponse
 from app.services.analysis_service import AnalysisJobNotFoundError, AnalysisNotFoundError, AnalysisService
@@ -33,9 +35,16 @@ def list_analyses(
 @router.post("/resume-suggestions", response_model=JobAnalysisResponse, status_code=status.HTTP_201_CREATED)
 def create_resume_suggestions(
     payload: AnalysisCreateRequest,
+    request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> JobAnalysisResponse:
+    del request
+    enforce_user_rate_limit(
+        current_user.id,
+        "ai:resume-suggestions",
+        RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
+    )
     try:
         return AnalysisService(db).create_resume_suggestions(current_user.id, payload)
     except AnalysisJobNotFoundError as exc:

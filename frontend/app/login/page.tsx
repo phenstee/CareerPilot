@@ -20,6 +20,10 @@ function getAuthErrorMessage(error?: string): string | null {
     return "Invalid email or password.";
   }
 
+  if (error === "rate-limit") {
+    return "Too many sign-in attempts. Please wait before trying again.";
+  }
+
   if (error === "unavailable") {
     return "CareerPilot could not reach the auth server. Please try again.";
   }

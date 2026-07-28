@@ -40,7 +40,7 @@ const promptExamples = [
 ];
 
 const progressMessages = [
-  "Analyzing your profile...",
+  "Matching your saved profile...",
   "Searching job sources...",
   "Organizing the strongest opportunities..."
 ];
@@ -121,7 +121,7 @@ export function JobSearchAgent() {
         <ModeButton
           active={mode === "prompt"}
           title="Describe what you want"
-          description="Write instructions and let CareerPilot convert them into a search."
+          description="Write instructions and let CareerPilot convert them into search filters."
           onClick={() => setMode("prompt")}
         />
       </div>
@@ -221,7 +221,7 @@ export function JobSearchAgent() {
               ) : (
                 <Search aria-hidden="true" className="h-4 w-4" />
               )}
-              Search with AI
+              Search jobs
             </button>
           </div>
         )}

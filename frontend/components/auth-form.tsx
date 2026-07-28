@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { login, register } from "@/lib/api";
+import { sanitizeRedirectPath } from "@/lib/redirects";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
@@ -15,11 +16,13 @@ const loginSchema = z.object({
 });
 
 const registerSchema = loginSchema.extend({
-  full_name: z.string().trim().min(1, "Your name is required.")
+  full_name: z.string().trim().min(1, "Your name is required."),
+  beta_access_code: z.string().trim().optional()
 });
 
 type AuthFormValues = {
   full_name?: string;
+  beta_access_code?: string;
   email: string;
   password: string;
 };
@@ -45,7 +48,7 @@ export function AuthForm({
     resolver: zodResolver(mode === "register" ? registerSchema : loginSchema),
     defaultValues:
       mode === "register"
-        ? { full_name: "", email: "", password: "" }
+        ? { full_name: "", email: "", password: "", beta_access_code: "" }
         : { email: "", password: "" }
   });
 
@@ -57,7 +60,8 @@ export function AuthForm({
         await register({
           full_name: values.full_name ?? "",
           email: values.email,
-          password: values.password
+          password: values.password,
+          beta_access_code: values.beta_access_code
         });
       } else {
         await login({ email: values.email, password: values.password });
@@ -65,7 +69,7 @@ export function AuthForm({
 
       const redirectPath =
         nextPath ?? new URLSearchParams(window.location.search).get("next");
-      router.push(redirectPath ?? "/dashboard");
+      router.push(sanitizeRedirectPath(redirectPath));
       router.refresh();
     } catch (error) {
       setFormError(
@@ -92,19 +96,34 @@ export function AuthForm({
       {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
 
       {mode === "register" ? (
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">Full name</span>
-          <input
-            {...registerField("full_name")}
-            autoComplete="name"
-            className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
-          />
-          {errors.full_name ? (
-            <span className="mt-1 block text-sm text-coral">
-              {errors.full_name.message}
+        <>
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">
+              Full name
             </span>
-          ) : null}
-        </label>
+            <input
+              {...registerField("full_name")}
+              autoComplete="name"
+              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            />
+            {errors.full_name ? (
+              <span className="mt-1 block text-sm text-coral">
+                {errors.full_name.message}
+              </span>
+            ) : null}
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">
+              Beta access code
+            </span>
+            <input
+              {...registerField("beta_access_code")}
+              autoComplete="off"
+              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            />
+          </label>
+        </>
       ) : null}
 
       <label className="block">

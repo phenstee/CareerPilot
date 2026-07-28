@@ -27,6 +27,18 @@ class Settings(BaseSettings):
     auth_cookie_name: str = "careerpilot_session"
     auth_cookie_secure: bool = False
     auth_cookie_samesite: str = "lax"
+    beta_access_code: str | None = None
+    app_url: str | None = None
+    registration_rate_limit_count: int = Field(default=5, ge=1)
+    registration_rate_limit_window_seconds: int = Field(default=3600, ge=1)
+    login_rate_limit_count: int = Field(default=10, ge=1)
+    login_rate_limit_window_seconds: int = Field(default=900, ge=1)
+    resume_upload_rate_limit_count: int = Field(default=10, ge=1)
+    resume_upload_rate_limit_window_seconds: int = Field(default=86400, ge=1)
+    ai_rate_limit_count: int = Field(default=20, ge=1)
+    ai_rate_limit_window_seconds: int = Field(default=3600, ge=1)
+    job_search_rate_limit_count: int = Field(default=60, ge=1)
+    job_search_rate_limit_window_seconds: int = Field(default=3600, ge=1)
     openai_api_key: str | None = None
     ai_provider: str = "mock"
     openai_model: str = "gpt-4o-mini"
@@ -72,6 +84,8 @@ class Settings(BaseSettings):
             raise ValueError("Wildcard CORS origins are not allowed while credentials are enabled.")
 
         if self.is_production:
+            if not self.app_url:
+                raise ValueError("APP_URL is required in production for safe auth redirects.")
             if not self.database_url.strip():
                 raise ValueError("DATABASE_URL is required in production.")
             if self.jwt_secret == DEVELOPMENT_JWT_SECRET or len(self.jwt_secret) < 32:

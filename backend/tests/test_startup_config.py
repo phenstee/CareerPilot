@@ -51,6 +51,7 @@ def test_production_rejects_development_jwt_secret() -> None:
             database_url="postgresql+psycopg://user:pass@db:5432/careerpilot",
             jwt_secret=DEVELOPMENT_JWT_SECRET,
             auth_cookie_secure=True,
+            app_url="https://careerpilot.example",
             CORS_ORIGINS="https://careerpilot.example",
             ai_provider="mock",
         )
@@ -64,6 +65,7 @@ def test_production_rejects_insecure_cookies() -> None:
             database_url="postgresql+psycopg://user:pass@db:5432/careerpilot",
             jwt_secret="a-secure-production-secret-value-123",
             auth_cookie_secure=False,
+            app_url="https://careerpilot.example",
             CORS_ORIGINS="https://careerpilot.example",
             ai_provider="mock",
         )
@@ -74,11 +76,12 @@ def test_production_accepts_safe_mock_configuration() -> None:
         _env_file=None,
         environment="production",
         database_url="postgresql+psycopg://user:pass@db:5432/careerpilot",
-        jwt_secret="a-secure-production-secret-value-123",
-        auth_cookie_secure=True,
-        auth_cookie_samesite="lax",
-        CORS_ORIGINS="https://careerpilot.example",
-        ai_provider="mock",
+            jwt_secret="a-secure-production-secret-value-123",
+            auth_cookie_secure=True,
+            auth_cookie_samesite="lax",
+            app_url="https://careerpilot.example",
+            CORS_ORIGINS="https://careerpilot.example",
+            ai_provider="mock",
     )
 
     assert settings.is_production
