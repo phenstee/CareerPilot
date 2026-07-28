@@ -1,3 +1,5 @@
+import { getConfiguredBackendUrl } from "./backend-url";
+
 export type HealthResponse = {
   status: string;
   service: string;
@@ -380,11 +382,7 @@ export function getApiBaseUrl(): string {
     return "";
   }
 
-  return (
-    process.env.BACKEND_INTERNAL_URL ??
-    process.env.NEXT_PUBLIC_API_URL ??
-    "http://127.0.0.1:8000"
-  );
+  return getConfiguredBackendUrl();
 }
 
 export async function getHealth(): Promise<HealthResponse> {
