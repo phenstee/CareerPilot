@@ -9,7 +9,7 @@ from app.repositories.profile_repository import ProfileRepository
 from app.repositories.resume_repository import ResumeRepository
 from app.schemas.analysis import AnalysisCreateRequest, JobAnalysisResponse, PreparationPlanCreateRequest, RoleAnalysisOutput
 from app.services.analysis_fingerprint import analysis_fingerprint
-from app.services.analysis_service import serialize_analysis
+from app.services.analysis_service import AnalysisService, serialize_analysis
 
 
 class AgentJobNotFoundError(Exception):
@@ -20,8 +20,13 @@ class AgentRoleAnalysisNotFoundError(Exception):
     pass
 
 
+class StaleRoleAnalysisError(Exception):
+    pass
+
+
 class AgentService:
     def __init__(self, db: Session) -> None:
+        self.db = db
         self.analysis_repository = AnalysisRepository(db)
         self.application_repository = ApplicationRepository(db)
         self.job_repository = JobRepository(db)
@@ -77,6 +82,8 @@ class AgentService:
     def create_preparation_plan(self, user_id: str, payload: PreparationPlanCreateRequest) -> JobAnalysisResponse:
         job, profile, resume, application = self._get_owned_context(user_id, payload.job_posting_id)
         role_analysis = self._get_role_analysis(user_id, job.id, payload.role_analysis_id)
+        if AnalysisService(self.db).is_analysis_stale(role_analysis):
+            raise StaleRoleAnalysisError
         role_analysis_output = RoleAnalysisOutput.model_validate(role_analysis.result)
         provider = get_ai_provider()
         output = provider.create_preparation_plan(

@@ -117,14 +117,16 @@ If the frontend runs outside Docker while the backend runs on the host, keep `NE
 - `AUTH_COOKIE_SAMESITE`: `lax`, `strict`, or `none`; `none` requires secure cookies.
 - `APP_URL`: canonical frontend origin used for safe auth redirects; required in production.
 - `BETA_ACCESS_CODE`: optional closed-beta invite code required during registration when set.
-- `*_RATE_LIMIT_COUNT`, `*_RATE_LIMIT_WINDOW_SECONDS`: basic in-memory rate-limit controls for auth, resume upload, AI generation, and job search endpoints.
+- `AI_RATE_LIMIT_COUNT`, `AI_RATE_LIMIT_WINDOW_SECONDS`: total AI generation requests per authenticated user across all AI workflows during the configured window.
+- `JOB_SEARCH_RATE_LIMIT_COUNT`, `JOB_SEARCH_RATE_LIMIT_WINDOW_SECONDS`: total job-search requests per authenticated user across profile and prompt search during the configured window.
+- Registration and login rate limits use the direct client host in this beta. Behind a single reverse proxy, multiple users may share that unauthenticated bucket unless trusted-proxy handling is configured later.
 - `AI_PROVIDER`: `mock` by default, or `openai` for real AI calls.
 - `OPENAI_API_KEY`: backend-only OpenAI key used only when `AI_PROVIDER=openai`.
 - `OPENAI_MODEL`: model name used by the backend OpenAI provider.
 - `OPENAI_TIMEOUT_SECONDS`, `OPENAI_MAX_RETRIES`: request timeout and retry controls for OpenAI calls.
 - `GREENHOUSE_BOARDS`: optional comma-separated public Greenhouse board tokens.
 - `NEXT_PUBLIC_API_URL`: browser-visible backend URL.
-- `BACKEND_INTERNAL_URL`: backend URL used by Next.js server-side calls.
+- `BACKEND_INTERNAL_URL`: backend URL used by Next.js server-side calls and production build-time API rewrites.
 - `CORS_ORIGINS`: allowed frontend origins for browser API requests.
 
 ### Local Mock Mode
@@ -241,6 +243,8 @@ BACKEND_INTERNAL_URL=https://your-backend.example
 AI_PROVIDER=mock
 ```
 
+`BACKEND_INTERNAL_URL` must be available while building the production frontend image because the current Next.js rewrite configuration is evaluated during `next build`.
+
 For OpenAI-backed production, add:
 
 ```env
@@ -311,6 +315,7 @@ Deployment health check:
 5. Save a result, then use `Prepare application` or `Prepare for this job`.
 6. In Job Application, click `Generate` and confirm the backend returns application summary, keywords, grounded emphasis, questions for missing information, cover letter draft, autofill preview, and warnings.
 7. In Job Preparation, generate role analysis, resume advice, and preparation plan. Confirm recommendations stay grounded in saved profile/resume evidence and unknowns remain explicit.
+8. Edit the job, profile, or resume and confirm older role analyses and preparation plans show stale warnings; regenerate role analysis before creating a new preparation plan.
 
 Real AI workflows currently include:
 

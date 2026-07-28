@@ -120,4 +120,28 @@ describe("agent API client", () => {
       "AI analysis is temporarily unavailable."
     );
   });
+
+  it("surfaces stale role-analysis conflicts from preparation-plan requests", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            detail:
+              "The role analysis is outdated. Regenerate it before creating a preparation plan."
+          }),
+          { status: 409, headers: { "Content-Type": "application/json" } }
+        )
+      )
+    );
+
+    await expect(
+      createPreparationPlan({
+        jobPostingId: "job-1",
+        roleAnalysisId: "analysis-1"
+      })
+    ).rejects.toThrow(
+      "The role analysis is outdated. Regenerate it before creating a preparation plan."
+    );
+  });
 });

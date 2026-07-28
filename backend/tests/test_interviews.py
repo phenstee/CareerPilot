@@ -151,3 +151,24 @@ def test_interview_answer_provider_failures_return_503(client: TestClient, monke
 
     assert response.status_code == 503
     assert response.json()["detail"] == "AI analysis is temporarily unavailable."
+
+
+def test_interview_generation_and_feedback_share_ai_limit(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ai_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "ai_rate_limit_window_seconds", 3600)
+
+    _register(client, "interview-rate@example.com")
+    application = _create_application(client)
+    session = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]})
+    assert session.status_code == 201
+    question = session.json()["questions"][0]
+
+    answer = client.post(
+        f"/api/v1/interviews/sessions/{session.json()['id']}/questions/{question['id']}/answers",
+        json={"answer_text": "I built a React and FastAPI project and explained the tradeoffs clearly."},
+    )
+
+    assert answer.status_code == 429
+    assert answer.json()["detail"] == "Too many requests. Please wait before trying again."

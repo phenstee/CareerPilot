@@ -29,7 +29,7 @@ def search_by_profile(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "job-search:profile",
+        "job-search",
         RateLimitRule(settings.job_search_rate_limit_count, settings.job_search_rate_limit_window_seconds),
     )
     return JobSearchService(db).search_by_profile(current_user.id, payload)
@@ -45,7 +45,7 @@ def search_by_prompt(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "job-search:prompt",
+        "job-search",
         RateLimitRule(settings.job_search_rate_limit_count, settings.job_search_rate_limit_window_seconds),
     )
     return JobSearchService(db).search_by_prompt(current_user.id, payload)

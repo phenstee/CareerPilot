@@ -92,9 +92,9 @@ class AnalysisService:
         )
 
     def _serialize_with_stale_status(self, analysis: JobAnalysis) -> JobAnalysisResponse:
-        return serialize_analysis(analysis, is_stale=self._is_stale(analysis))
+        return serialize_analysis(analysis, is_stale=self.is_analysis_stale(analysis))
 
-    def _is_stale(self, analysis: JobAnalysis) -> bool:
+    def is_analysis_stale(self, analysis: JobAnalysis) -> bool:
         if not analysis.source_fingerprint:
             return True
 

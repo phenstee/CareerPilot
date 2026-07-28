@@ -25,6 +25,11 @@ import {
   RoleAnalysisOutput,
   ResumeSuggestionsOutput
 } from "@/lib/api";
+import {
+  analysisQueryKey,
+  canGeneratePreparationPlan,
+  preparationPlanDisabledReason
+} from "@/lib/job-prep-state";
 
 export function JobPreparationAgent() {
   const searchParams = useSearchParams();
@@ -85,6 +90,7 @@ export function JobPreparationAgent() {
   const latestRoleAnalysis = latestRoleAnalysisItem?.result as
     | RoleAnalysisOutput
     | undefined;
+  const roleAnalysisIsStale = Boolean(latestRoleAnalysisItem?.is_stale);
   const latestPlanItem = planQuery.data?.items[0];
   const latestPlan = latestPlanItem?.result as
     | PreparationPlanOutput
@@ -98,7 +104,7 @@ export function JobPreparationAgent() {
     mutationFn: () => createResumeSuggestions(selectedJobId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["analyses", selectedJobId, "resume_suggestions"]
+        queryKey: analysisQueryKey(selectedJobId, "resume_suggestions")
       });
     }
   });
@@ -106,21 +112,40 @@ export function JobPreparationAgent() {
     mutationFn: () => createRoleAnalysis(selectedJobId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["analyses", selectedJobId, "role_analysis"]
+        queryKey: analysisQueryKey(selectedJobId, "role_analysis")
+      });
+      queryClient.invalidateQueries({
+        queryKey: analysisQueryKey(selectedJobId, "preparation_plan")
       });
     }
   });
   const planMutation = useMutation({
-    mutationFn: () =>
-      createPreparationPlan({
+    mutationFn: () => {
+      if (roleAnalysisIsStale) {
+        throw new Error(
+          "The role analysis is outdated. Regenerate it before creating a preparation plan."
+        );
+      }
+      return createPreparationPlan({
         jobPostingId: selectedJobId,
         roleAnalysisId: latestRoleAnalysisItem?.id
-      }),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["analyses", selectedJobId, "preparation_plan"]
+        queryKey: analysisQueryKey(selectedJobId, "preparation_plan")
       });
     }
+  });
+  const planDisabledReason = preparationPlanDisabledReason({
+    hasRoleAnalysis: Boolean(latestRoleAnalysis),
+    roleAnalysisIsStale
+  });
+  const planCanGenerate = canGeneratePreparationPlan({
+    selectedJobId,
+    hasRoleAnalysis: Boolean(latestRoleAnalysis),
+    roleAnalysisIsStale,
+    isPending: planMutation.isPending
   });
 
   if (
@@ -386,11 +411,7 @@ export function JobPreparationAgent() {
               <button
                 type="button"
                 onClick={() => planMutation.mutate()}
-                disabled={
-                  !selectedJobId ||
-                  !latestRoleAnalysis ||
-                  planMutation.isPending
-                }
+                disabled={!planCanGenerate}
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {planMutation.isPending ? (
@@ -407,10 +428,28 @@ export function JobPreparationAgent() {
             {planMutation.isError ? (
               <ErrorMessage error={planMutation.error} />
             ) : null}
-            {!latestRoleAnalysis ? (
-              <p className="mt-4 text-sm text-slate-500">
-                Generate role analysis first.
-              </p>
+            {planDisabledReason ? (
+              <div className="mt-4 flex flex-col gap-3 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800 sm:flex-row sm:items-center sm:justify-between">
+                <p>{planDisabledReason}</p>
+                {roleAnalysisIsStale ? (
+                  <button
+                    type="button"
+                    onClick={() => roleAnalysisMutation.mutate()}
+                    disabled={roleAnalysisMutation.isPending}
+                    className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    {roleAnalysisMutation.isPending ? (
+                      <Loader2
+                        aria-hidden="true"
+                        className="h-4 w-4 animate-spin"
+                      />
+                    ) : (
+                      <Sparkles aria-hidden="true" className="h-4 w-4" />
+                    )}
+                    Regenerate role analysis
+                  </button>
+                ) : null}
+              </div>
             ) : null}
           </AgentPanel>
 

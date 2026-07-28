@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
   pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend:
@@ -102,6 +104,15 @@ jobs:
   docker:
     name: Docker Compose
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_PASSWORD: careerpilot
+      DATABASE_URL: postgresql+psycopg://careerpilot:careerpilot@db:5432/careerpilot
+      JWT_SECRET: ci-only-production-secret-value-that-is-long-enough
+      APP_URL: https://careerpilot-ci.example
+      CORS_ORIGINS: https://careerpilot-ci.example
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      BACKEND_INTERNAL_URL: http://backend:8000
+      AI_PROVIDER: mock
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -110,23 +121,57 @@ jobs:
         run: docker compose config --quiet
 
       - name: Validate production Compose config
-        env:
-          POSTGRES_PASSWORD: careerpilot
-          DATABASE_URL: postgresql+psycopg://careerpilot:careerpilot@db:5432/careerpilot
-          JWT_SECRET: ci-only-production-secret-value-that-is-long-enough
-          APP_URL: https://careerpilot.example
-          CORS_ORIGINS: https://careerpilot.example
-          NEXT_PUBLIC_API_URL: https://api.careerpilot.example
-          BACKEND_INTERNAL_URL: http://backend:8000
         run: docker compose -f docker-compose.prod.yml config --quiet
 
       - name: Build production Docker images
-        env:
-          POSTGRES_PASSWORD: careerpilot
-          DATABASE_URL: postgresql+psycopg://careerpilot:careerpilot@db:5432/careerpilot
-          JWT_SECRET: ci-only-production-secret-value-that-is-long-enough
-          APP_URL: https://careerpilot.example
-          CORS_ORIGINS: https://careerpilot.example
-          NEXT_PUBLIC_API_URL: https://api.careerpilot.example
-          BACKEND_INTERNAL_URL: http://backend:8000
         run: docker compose -f docker-compose.prod.yml build backend frontend
+
+      - name: Smoke test production frontend proxy
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cleanup() {
+            status=$?
+            if [ "$status" -ne 0 ]; then
+              docker compose -f docker-compose.prod.yml logs --no-color || true
+            fi
+            docker compose -f docker-compose.prod.yml down -v --remove-orphans || true
+            exit "$status"
+          }
+          trap cleanup EXIT
+
+          docker compose -f docker-compose.prod.yml up -d
+
+          for attempt in {1..60}; do
+            if docker compose -f docker-compose.prod.yml exec -T db pg_isready -U careerpilot -d careerpilot >/dev/null 2>&1; then
+              break
+            fi
+            sleep 2
+            if [ "$attempt" -eq 60 ]; then
+              echo "PostgreSQL did not become ready"
+              exit 1
+            fi
+          done
+
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error http://localhost:8000/api/v1/health >/dev/null; then
+              break
+            fi
+            sleep 2
+            if [ "$attempt" -eq 60 ]; then
+              echo "Backend health check did not become ready"
+              exit 1
+            fi
+          done
+
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error http://localhost:3000/api/v1/health >/dev/null; then
+              break
+            fi
+            sleep 2
+            if [ "$attempt" -eq 60 ]; then
+              echo "Frontend proxy health check did not become ready"
+              exit 1
+            fi
+          done

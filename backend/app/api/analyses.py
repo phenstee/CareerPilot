@@ -42,7 +42,7 @@ def create_resume_suggestions(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "ai:resume-suggestions",
+        "ai",
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:

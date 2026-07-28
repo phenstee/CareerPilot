@@ -82,6 +82,73 @@ def test_prompt_search_interprets_structured_filters(client: TestClient) -> None
     assert body["results"]
 
 
+def test_job_search_limit_is_shared_across_search_modes(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "job_search_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "job_search_rate_limit_window_seconds", 3600)
+
+    _register(client, "search-limit@example.com")
+    first = client.post(
+        "/api/v1/job-search/profile",
+        json={
+            "location": "Toronto",
+            "workplace_types": ["Hybrid"],
+            "employment_types": ["Internship"],
+            "experience_levels": ["Internship"],
+            "preferred_role": "AI",
+            "date_posted": "Any time",
+        },
+    )
+    second = client.post(
+        "/api/v1/job-search/prompt",
+        json={"prompt": "Remote Python backend internships", "use_profile_context": False},
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert second.json()["detail"] == "Too many requests. Please wait before trying again."
+    assert "job-search" not in second.text
+
+
+def test_ai_and_job_search_limits_are_independent(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "job_search_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "job_search_rate_limit_window_seconds", 3600)
+    monkeypatch.setattr(settings, "ai_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "ai_rate_limit_window_seconds", 3600)
+
+    _register(client, "search-ai-independent@example.com")
+    job_search = client.post(
+        "/api/v1/job-search/prompt",
+        json={"prompt": "Remote Python backend internships", "use_profile_context": False},
+    )
+    job = client.post(
+        "/api/v1/jobs",
+        json={
+            "title": "Full Stack Intern",
+            "company": "Atlas Labs",
+            "location": "Toronto, ON",
+            "job_url": None,
+            "employment_type": "Internship",
+            "description": "Build React, FastAPI, SQL, and Docker services.",
+            "notes": "",
+        },
+    ).json()
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    second_search = client.post(
+        "/api/v1/job-search/prompt",
+        json={"prompt": "Remote Python backend internships", "use_profile_context": False},
+    )
+    second_ai = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
+
+    assert job_search.status_code == 200
+    assert role.status_code == 201
+    assert second_search.status_code == 429
+    assert second_ai.status_code == 429
+
+
 def test_save_discovered_job_and_prevent_duplicates(client: TestClient) -> None:
     _register(client)
     search = client.post(

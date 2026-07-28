@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.rate_limit import RateLimitRule, enforce_user_rate_limit
 from app.models.user import User
 from app.schemas.analysis import AnalysisCreateRequest, JobAnalysisResponse, PreparationPlanCreateRequest
-from app.services.agent_service import AgentJobNotFoundError, AgentRoleAnalysisNotFoundError, AgentService
+from app.services.agent_service import AgentJobNotFoundError, AgentRoleAnalysisNotFoundError, AgentService, StaleRoleAnalysisError
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -24,7 +24,7 @@ def create_application_draft(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "ai:application-draft",
+        "ai",
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:
@@ -45,7 +45,7 @@ def create_role_analysis(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "ai:role-analysis",
+        "ai",
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:
@@ -66,7 +66,7 @@ def create_preparation_plan(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "ai:preparation-plan",
+        "ai",
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:
@@ -75,5 +75,10 @@ def create_preparation_plan(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job posting not found.") from exc
     except AgentRoleAnalysisNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Generate role analysis before creating a preparation plan.") from exc
+    except StaleRoleAnalysisError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The role analysis is outdated. Regenerate it before creating a preparation plan.",
+        ) from exc
     except AIProviderError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc

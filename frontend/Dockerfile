@@ -15,6 +15,8 @@ CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
 FROM deps AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG BACKEND_INTERNAL_URL=http://backend:8000
+ENV BACKEND_INTERNAL_URL=${BACKEND_INTERNAL_URL}
 COPY . .
 RUN npm run build
 

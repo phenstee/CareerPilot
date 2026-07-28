@@ -54,7 +54,7 @@ def create_interview_session(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "ai:interview-session",
+        "ai",
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:
@@ -93,7 +93,7 @@ def answer_interview_question(
     del request
     enforce_user_rate_limit(
         current_user.id,
-        "ai:interview-answer",
+        "ai",
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:

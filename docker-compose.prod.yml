@@ -60,13 +60,15 @@ services:
     build:
       context: ./frontend
       target: production
+      args:
+        BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:8000}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: ${FRONTEND_PORT:-3000}
       APP_URL: ${APP_URL:?Set APP_URL}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?Set NEXT_PUBLIC_API_URL}
-      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:?Set BACKEND_INTERNAL_URL}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:8000}
     ports:
       - "${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}"
     depends_on:

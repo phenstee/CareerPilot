@@ -71,6 +71,20 @@ def test_production_rejects_insecure_cookies() -> None:
         )
 
 
+def test_production_rejects_wildcard_cors_with_credentials() -> None:
+    with pytest.raises(ValidationError, match="Wildcard CORS origins"):
+        Settings(
+            _env_file=None,
+            environment="production",
+            database_url="postgresql+psycopg://user:pass@db:5432/careerpilot",
+            jwt_secret="a-secure-production-secret-value-123",
+            auth_cookie_secure=True,
+            app_url="https://careerpilot.example",
+            CORS_ORIGINS="*",
+            ai_provider="mock",
+        )
+
+
 def test_production_accepts_safe_mock_configuration() -> None:
     settings = Settings(
         _env_file=None,

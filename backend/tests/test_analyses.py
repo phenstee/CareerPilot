@@ -149,6 +149,96 @@ def test_analysis_is_stale_after_job_changes(client: TestClient) -> None:
     assert listing.json()["items"][0]["is_stale"] is True
 
 
+def test_stale_role_analysis_is_rejected_for_preparation_plan(client: TestClient) -> None:
+    _register(client, "stale-plan-reject@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]}).json()
+
+    updated_job = {**_job_payload(), "description": "Build Go services and Kubernetes infrastructure."}
+    assert client.put(f"/api/v1/jobs/{job['id']}", json=updated_job).status_code == 200
+
+    response = client.post(
+        "/api/v1/agents/preparation-plan",
+        json={"job_posting_id": job["id"], "role_analysis_id": role["id"]},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "The role analysis is outdated. Regenerate it before creating a preparation plan."
+
+
+def test_role_analysis_is_stale_after_profile_changes(client: TestClient) -> None:
+    _register(client, "stale-profile@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    assert role.status_code == 201
+
+    updated_profile = _profile_payload()
+    updated_profile["technical_skills"] = ["Go", "Kubernetes"]
+    assert client.put("/api/v1/profile", json=updated_profile).status_code == 200
+
+    listing = client.get(
+        "/api/v1/analyses",
+        params={"job_posting_id": job["id"], "analysis_type": "role_analysis"},
+    )
+
+    assert listing.status_code == 200
+    assert listing.json()["items"][0]["is_stale"] is True
+
+
+def test_role_analysis_is_stale_after_resume_replacement(client: TestClient, monkeypatch) -> None:
+    monkeypatch.setattr("app.services.resume_service.extract_pdf_text", lambda contents: "Python React FastAPI")
+    _register(client, "stale-resume@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    assert client.post(
+        "/api/v1/resume",
+        files={"file": ("resume.pdf", b"%PDF first", "application/pdf")},
+    ).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    assert role.status_code == 201
+
+    monkeypatch.setattr("app.services.resume_service.extract_pdf_text", lambda contents: "Go Kubernetes")
+    assert client.post(
+        "/api/v1/resume",
+        files={"file": ("resume-v2.pdf", b"%PDF second", "application/pdf")},
+    ).status_code == 200
+
+    listing = client.get(
+        "/api/v1/analyses",
+        params={"job_posting_id": job["id"], "analysis_type": "role_analysis"},
+    )
+
+    assert listing.status_code == 200
+    assert listing.json()["items"][0]["is_stale"] is True
+
+
+def test_regenerated_role_analysis_allows_plan_after_stale_rejection(client: TestClient) -> None:
+    _register(client, "regenerate-role@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    stale_role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]}).json()
+
+    updated_job = {**_job_payload(), "description": "Build Go services and Kubernetes infrastructure."}
+    assert client.put(f"/api/v1/jobs/{job['id']}", json=updated_job).status_code == 200
+    stale_response = client.post(
+        "/api/v1/agents/preparation-plan",
+        json={"job_posting_id": job["id"], "role_analysis_id": stale_role["id"]},
+    )
+    assert stale_response.status_code == 409
+
+    fresh_role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    assert fresh_role.status_code == 201
+    plan = client.post(
+        "/api/v1/agents/preparation-plan",
+        json={"job_posting_id": job["id"], "role_analysis_id": fresh_role.json()["id"]},
+    )
+
+    assert plan.status_code == 201
+    assert plan.json()["is_stale"] is False
+
+
 def test_preparation_plan_is_stale_after_new_role_analysis(client: TestClient, db_session: Session) -> None:
     _register(client, "stale-plan@example.com")
     assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
@@ -193,6 +283,45 @@ def test_ai_rate_limit_is_scoped_per_user(client: TestClient, monkeypatch) -> No
     assert client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job_two["id"]}).status_code == 201
 
 
+def test_ai_rate_limit_is_shared_across_workflows(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ai_rate_limit_count", 2)
+    monkeypatch.setattr(settings, "ai_rate_limit_window_seconds", 3600)
+
+    _register(client, "global-ai@example.com")
+    assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
+    job = client.post("/api/v1/jobs", json=_job_payload()).json()
+
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
+    suggestions = client.post("/api/v1/analyses/resume-suggestions", json={"job_posting_id": job["id"]})
+    draft = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
+
+    assert role.status_code == 201
+    assert suggestions.status_code == 201
+    assert draft.status_code == 429
+    assert draft.json()["detail"] == "Too many requests. Please wait before trying again."
+    assert "global-ai" not in draft.text
+    assert "user:" not in draft.text
+
+
+def test_other_user_has_separate_ai_limit(client: TestClient, monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "ai_rate_limit_count", 1)
+    monkeypatch.setattr(settings, "ai_rate_limit_window_seconds", 3600)
+
+    _register(client, "global-ai-one@example.com")
+    job_one = client.post("/api/v1/jobs", json=_job_payload()).json()
+    assert client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job_one["id"]}).status_code == 201
+    assert client.post("/api/v1/agents/application-draft", json={"job_posting_id": job_one["id"]}).status_code == 429
+
+    client.post("/api/v1/auth/logout")
+    _register(client, "global-ai-two@example.com")
+    job_two = client.post("/api/v1/jobs", json=_job_payload()).json()
+    assert client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job_two["id"]}).status_code == 201
+
+
 def test_preparation_plan_requires_role_analysis(client: TestClient) -> None:
     _register(client, "plan-missing@example.com")
     job = client.post("/api/v1/jobs", json=_job_payload()).json()
@@ -210,6 +339,23 @@ def test_agent_workflows_require_owned_job(client: TestClient) -> None:
     _register(client, "agent-other@example.com")
     response = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
     assert response.status_code == 404
+
+
+def test_user_cannot_create_plan_from_another_users_role_analysis(client: TestClient) -> None:
+    _register(client, "role-owner@example.com")
+    owner_job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": owner_job["id"]}).json()
+    client.post("/api/v1/auth/logout")
+
+    _register(client, "role-other@example.com")
+    other_job = client.post("/api/v1/jobs", json=_job_payload()).json()
+    response = client.post(
+        "/api/v1/agents/preparation-plan",
+        json={"job_posting_id": other_job["id"], "role_analysis_id": role["id"]},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Generate role analysis before creating a preparation plan."
 
 
 def test_ai_status_never_exposes_key(client: TestClient, monkeypatch) -> None:
