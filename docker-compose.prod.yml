@@ -1,14 +1,11 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: careerpilot-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-careerpilot}
       POSTGRES_USER: ${POSTGRES_USER:-careerpilot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-careerpilot}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     volumes:
       - careerpilot_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,46 +17,48 @@ services:
   backend:
     build:
       context: ./backend
-      target: development
-    container_name: careerpilot-backend
+      target: production
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://careerpilot:careerpilot@db:5432/careerpilot}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-development}
-      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      ENVIRONMENT: production
+      PORT: ${BACKEND_PORT:-8000}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
       AUTH_COOKIE_SAMESITE: ${AUTH_COOKIE_SAMESITE:-lax}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       AI_PROVIDER: ${AI_PROVIDER:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-20}
       OPENAI_MAX_RETRIES: ${OPENAI_MAX_RETRIES:-1}
       GREENHOUSE_BOARDS: ${GREENHOUSE_BOARDS:-}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Set CORS_ORIGINS}
     ports:
-      - "8000:8000"
-    volumes:
-      - ./backend/app:/app/app
+      - "${BACKEND_PORT:-8000}:${BACKEND_PORT:-8000}"
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.getenv('PORT', '8000') + '/api/v1/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build:
       context: ./frontend
-      target: development
-    container_name: careerpilot-frontend
+      target: production
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:8000}
+      NODE_ENV: production
+      PORT: ${FRONTEND_PORT:-3000}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?Set NEXT_PUBLIC_API_URL}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:?Set BACKEND_INTERNAL_URL}
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   careerpilot_postgres_data:

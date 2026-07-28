@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Bot, CalendarClock, Loader2 } from "lucide-react";
+import { ArrowRight, BarChart3, Bot, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { getDashboard } from "@/lib/api";
@@ -12,15 +12,6 @@ const HIDDEN_DASHBOARD_STAGES = new Set([
   "Online Assessment",
   "Withdrawn"
 ]);
-
-function formatDate(value: string | null): string {
-  if (!value) return "Not set";
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(new Date(`${value}T00:00:00`));
-}
 
 export function DashboardSummary() {
   const dashboardQuery = useQuery({
@@ -85,31 +76,7 @@ export function DashboardSummary() {
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <DashboardPanel title="Upcoming deadlines">
-          {dashboard.upcoming_deadlines.length > 0 ? (
-            dashboard.upcoming_deadlines.map((application) => (
-              <Link
-                key={application.id}
-                href={`/applications/${application.id}`}
-                className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white"
-              >
-                <p className="text-sm font-semibold text-ink">
-                  {application.company}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  {application.job_title}
-                </p>
-                <p className="mt-2 text-xs text-slate-500">
-                  {formatDate(application.deadline)}
-                </p>
-              </Link>
-            ))
-          ) : (
-            <EmptyPanelText>No upcoming deadlines.</EmptyPanelText>
-          )}
-        </DashboardPanel>
-
+      <section>
         <DashboardPanel title="Stage counts">
           <div className="grid gap-2 sm:grid-cols-2">
             {visibleStageCounts.map(([stage, count]) => (
@@ -147,13 +114,13 @@ export function DashboardSummary() {
 function DashboardPanel({
   title,
   children,
-  icon = "calendar"
+  icon = "stage"
 }: {
   title: string;
   children: React.ReactNode;
-  icon?: "calendar" | "agents";
+  icon?: "stage" | "agents";
 }) {
-  const Icon = icon === "agents" ? Bot : CalendarClock;
+  const Icon = icon === "agents" ? Bot : BarChart3;
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -164,8 +131,4 @@ function DashboardPanel({
       <div className="space-y-3">{children}</div>
     </section>
   );
-}
-
-function EmptyPanelText({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-slate-600">{children}</p>;
 }

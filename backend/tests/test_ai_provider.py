@@ -10,6 +10,17 @@ from app.core.config import settings
 from app.schemas.analysis import ApplicationDraftOutput
 
 
+def test_mock_provider_implements_complete_contract() -> None:
+    provider = MockAIProvider()
+
+    assert provider is not None
+    assert not getattr(MockAIProvider, "__abstractmethods__", None)
+
+
+def test_openai_provider_contract_is_complete() -> None:
+    assert not getattr(OpenAIProvider, "__abstractmethods__", None)
+
+
 def test_provider_factory_returns_mock(monkeypatch) -> None:
     monkeypatch.setattr(settings, "ai_provider", "mock")
 
@@ -33,6 +44,13 @@ def test_openai_provider_requires_key(monkeypatch) -> None:
     monkeypatch.setattr(settings, "openai_api_key", None)
 
     with pytest.raises(AIProviderError, match="OpenAI is not configured"):
+        get_ai_provider()
+
+
+def test_provider_factory_rejects_invalid_provider(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "ai_provider", "not-real")
+
+    with pytest.raises(AIProviderError, match="Unsupported AI provider"):
         get_ai_provider()
 
 

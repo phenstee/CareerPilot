@@ -1,5 +1,7 @@
 # CareerPilot
 
+[![CI](https://github.com/phenstee/CareerPilot/actions/workflows/ci.yml/badge.svg)](https://github.com/phenstee/CareerPilot/actions/workflows/ci.yml)
+
 CareerPilot is an AI-assisted job application and interview workspace for university students and early-career technology candidates. The core tracker is designed to work without AI, while later AI features will use a mock provider by default and require explicit user action before sending profile, resume, or job data to a model.
 
 ## Project Status
@@ -67,10 +69,9 @@ cp .env.example .env
 docker compose up --build
 ```
 
-3. In another terminal, apply migrations and seed the demo data:
+3. In another terminal, seed the demo data if desired. The backend container applies migrations before starting:
 
 ```bash
-docker compose run --rm backend alembic upgrade head
 docker compose run --rm backend python -m app.seed
 ```
 
@@ -109,8 +110,11 @@ If the frontend runs outside Docker while the backend runs on the host, keep `NE
 ## Environment Variables
 
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: local Postgres settings.
+- `ENVIRONMENT`: `development`, `test`, or `production`; production enables stricter safety checks.
 - `DATABASE_URL`: SQLAlchemy database URL used by FastAPI and Alembic.
 - `JWT_SECRET`: signing secret for HttpOnly session cookies.
+- `AUTH_COOKIE_SECURE`: set `true` in HTTPS production deployments.
+- `AUTH_COOKIE_SAMESITE`: `lax`, `strict`, or `none`; `none` requires secure cookies.
 - `AI_PROVIDER`: `mock` by default, or `openai` for real AI calls.
 - `OPENAI_API_KEY`: backend-only OpenAI key used only when `AI_PROVIDER=openai`.
 - `OPENAI_MODEL`: model name used by the backend OpenAI provider.
@@ -193,9 +197,73 @@ cd backend
 ```bash
 cd frontend
 npm run lint
+npm run typecheck
 npm run format:check
 npm run test
 npm run build
+```
+
+## Continuous Integration
+
+GitHub Actions runs on pushes to `main` and on pull requests:
+
+- Backend: installs Python dependencies, runs Alembic migrations against PostgreSQL, imports `app.main`, and runs pytest in `AI_PROVIDER=mock` mode.
+- Frontend: runs `npm ci`, linting, Vitest tests, production build, and TypeScript type checking.
+- Docker: validates the development Docker Compose configuration.
+
+CI never requires or calls OpenAI and does not contain secrets.
+
+## Production Deployment
+
+The default `docker-compose.yml` is a development stack. It uses development Docker targets, bind mounts source files, and runs the frontend with `next dev`.
+
+For containerized production, use the production targets directly or the provided production Compose overlay:
+
+```bash
+docker compose -f docker-compose.prod.yml up --build
+```
+
+Required production environment variables:
+
+```env
+ENVIRONMENT=production
+DATABASE_URL=postgresql+psycopg://user:password@host:5432/database
+JWT_SECRET=<long-random-secret-at-least-32-characters>
+AUTH_COOKIE_SECURE=true
+AUTH_COOKIE_SAMESITE=lax
+CORS_ORIGINS=https://your-frontend.example
+NEXT_PUBLIC_API_URL=https://your-backend.example
+BACKEND_INTERNAL_URL=https://your-backend.example
+AI_PROVIDER=mock
+```
+
+For OpenAI-backed production, add:
+
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=<backend-only-openai-key>
+OPENAI_MODEL=<model-name>
+```
+
+Production safety checks reject the known development JWT secret, weak production JWT secrets, insecure production cookies, wildcard CORS origins, invalid AI providers, and `AI_PROVIDER=openai` without an API key.
+
+Production backend start command:
+
+```bash
+alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+```
+
+Production frontend commands:
+
+```bash
+npm run build
+npm run start
+```
+
+Deployment health check:
+
+```text
+/api/v1/health
 ```
 
 ## Manual Phase 2 Test
@@ -228,7 +296,7 @@ npm run build
 2. Click `Track application`.
 3. Open `/applications`, switch between board and table views, and filter by stage/company/role/date.
 4. Open the application detail page and change its stage.
-5. Open `/dashboard` and confirm application counts, upcoming deadlines, and recent jobs are summarized.
+5. Open `/dashboard` and confirm application counts and stage counts are summarized.
 
 ## Manual AI Agents Test
 

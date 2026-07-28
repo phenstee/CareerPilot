@@ -20,8 +20,8 @@ export default async function DashboardPage() {
               {user ? `Welcome, ${user.full_name}` : "Career workspace"}
             </h1>
             <p className="mt-3 max-w-2xl text-slate-600">
-              Track applications, upcoming deadlines, saved jobs, your resume,
-              and your profile from one workspace.
+              Track applications, saved jobs, your resume, and your profile from
+              one workspace.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">

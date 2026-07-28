@@ -102,4 +102,22 @@ describe("agent API client", () => {
       })
     );
   });
+
+  it("surfaces backend generation errors without local fallback content", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            detail: "AI analysis is temporarily unavailable."
+          }),
+          { status: 503, headers: { "Content-Type": "application/json" } }
+        )
+      )
+    );
+
+    await expect(createApplicationDraft("job-1")).rejects.toThrow(
+      "AI analysis is temporarily unavailable."
+    );
+  });
 });
