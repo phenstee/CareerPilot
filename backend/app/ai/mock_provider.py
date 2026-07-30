@@ -65,16 +65,16 @@ class MockAIProvider(BaseAIProvider):
         return ApplicationDraftOutput(
             application_summary=(
                 f"Prepare a truthful application for {job.title} at {job.company}. "
-                f"Emphasize evidence for {', '.join(matching[:4]) or 'the role requirements'} and leave unknowns for user confirmation."
+                f"Emphasize {', '.join(matching[:3]) or 'the strongest saved evidence'} and confirm unknowns manually."
             ),
-            keywords=_title_case_keywords(requirement_keywords)[:12],
+            keywords=_title_case_keywords(requirement_keywords)[:10],
             emphasis=[
                 ApplicationEmphasis(
                     item=item,
                     evidence=_evidence_for_item(item, profile, resume, requirement_keywords),
-                    reason="This evidence connects the candidate to requirements in the selected job posting.",
+                    reason="Use this because it maps directly to a posted requirement.",
                 )
-                for item in (projects[:5] or [f"Skill evidence: {skill}" for skill in matching[:5]])
+                for item in (projects[:4] or [f"Skill evidence: {skill}" for skill in matching[:4]])
             ],
             missing_information_questions=[
                 "What is your work authorization status for this role?",
@@ -84,11 +84,9 @@ class MockAIProvider(BaseAIProvider):
             ],
             cover_letter=(
                 f"Dear {job.company} team,\n\n"
-                f"I am interested in the {job.title} role. "
-                f"My background{f' in {education}' if education else ''} and evidence with "
-                f"{', '.join(matching[:4]) or 'the skills reflected in my saved profile'} make this opportunity relevant to my goals.\n\n"
-                "I would focus my application on the projects and experiences already saved in my CareerPilot profile and resume, "
-                "without adding qualifications that are not supported by that evidence.\n\n"
+                f"I am interested in the {job.title} role. My background{f' in {education}' if education else ''} "
+                f"and evidence with {', '.join(matching[:3]) or 'the skills reflected in my saved profile'} align with the posting.\n\n"
+                "I would emphasize saved projects and experiences while keeping unknown or sensitive details for manual confirmation.\n\n"
                 f"Sincerely,\n{full_name or 'Your name'}"
             ),
             autofill_preview=[
@@ -138,7 +136,7 @@ class MockAIProvider(BaseAIProvider):
 
         return RoleAnalysisOutput(
             role_summary=f"{job.title} at {job.company} appears focused on {', '.join(_title_case_keywords(requirement_keywords)[:5]) or 'the posted responsibilities'}.",
-            responsibilities=responsibilities,
+            responsibilities=responsibilities[:5],
             required_skills=_title_case_keywords(requirement_keywords)[:12],
             preferred_skills=[],
             technologies=[skill for skill in COMMON_TECH_SKILLS if skill.lower() in requirement_keywords],
@@ -147,7 +145,7 @@ class MockAIProvider(BaseAIProvider):
                     claim=f"Candidate has evidence for {skill}.",
                     evidence=_evidence_for_keyword(skill, profile, resume),
                 )
-                for skill in matching[:8]
+                for skill in matching[:6]
             ],
             gaps=[
                 QualificationGap(
@@ -156,7 +154,7 @@ class MockAIProvider(BaseAIProvider):
                     severity="medium",
                     recommendation=f"Prepare a truthful explanation of your current {skill} experience or identify a project that demonstrates it.",
                 )
-                for skill in missing[:8]
+                for skill in missing[:6]
             ],
             uncertainties=[
                 "Confirm interview format and exact seniority expectations from the employer.",
@@ -235,7 +233,7 @@ class MockAIProvider(BaseAIProvider):
             line
             for line in resume_lines
             if any(keyword in line.lower() for keyword in requirement_keywords)
-        ][:8]
+        ][:6]
         user_skills = _user_skills(profile, resume)
         missing = [skill for skill in COMMON_TECH_SKILLS if skill.lower() in requirement_keywords and skill.lower() not in user_skills]
         matching = [skill for skill in COMMON_TECH_SKILLS if skill.lower() in requirement_keywords and skill.lower() in user_skills]
@@ -251,15 +249,15 @@ class MockAIProvider(BaseAIProvider):
             uncertainties.append("No profile has been saved, so suggestions cannot cross-check projects and experience.")
 
         return ResumeSuggestionsOutput(
-            keywords=_title_case_keywords(requirement_keywords)[:15],
+            keywords=_title_case_keywords(requirement_keywords)[:12],
             relevant_existing_resume_content=relevant_lines,
             suggested_additions=[
                 f"Add a truthful bullet, project, or skills line showing {skill} if you have real experience with it."
-                for skill in missing[:8]
+                for skill in missing[:6]
             ]
             or [
                 f"Make your existing {skill} evidence more visible near the top of the resume."
-                for skill in matching[:5]
+                for skill in matching[:4]
             ]
             or ["Add a concise project or experience bullet that directly supports this job's main responsibilities."],
             less_important_items=[

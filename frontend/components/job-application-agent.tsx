@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
-  Loader2,
   Send
 } from "lucide-react";
 import Link from "next/link";
@@ -14,14 +13,25 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import {
+  ActionButton,
+  AgentCard,
+  CompactList,
+  EmptyState,
+  ErrorCallout,
+  JobPicker,
+  LoadingState,
+  PrimaryActionCard,
+  StaleNotice,
+  TagList
+} from "@/components/agent-result-ui";
+import {
   ApplicationDraftOutput,
   ApplicationEmphasis,
   AutofillField,
   createApplicationDraft,
   getProfile,
   listAnalyses,
-  listJobs,
-  ProfileResponse
+  listJobs
 } from "@/lib/api";
 
 export function JobApplicationAgent() {
@@ -46,6 +56,7 @@ export function JobApplicationAgent() {
       }),
     enabled: Boolean(selectedJobId)
   });
+
   const jobs = jobsQuery.data?.items ?? [];
   const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null;
   const profile = profileQuery.data ?? null;
@@ -75,14 +86,12 @@ export function JobApplicationAgent() {
   }
 
   if (jobsQuery.isLoading || profileQuery.isLoading) {
-    return <LoadingPanel />;
+    return <LoadingState message="Loading your saved jobs and profile." />;
   }
 
   if (jobsQuery.isError || profileQuery.isError) {
     return (
-      <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
-        Unable to load saved jobs or profile details.
-      </div>
+      <ErrorCallout message="Unable to load saved jobs or profile details. Refresh the page and try again." />
     );
   }
 
@@ -90,172 +99,204 @@ export function JobApplicationAgent() {
     return (
       <EmptyState
         title="No saved jobs yet"
-        description="Save a job before preparing an application."
+        description="Save a job first, then generate a focused application preview."
       />
     );
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
-      <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
-          Step 1
-        </p>
-        <h2 className="mt-2 text-lg font-semibold text-ink">Select job</h2>
-        <div className="mt-4 space-y-2">
-          {jobs.map((job) => (
-            <button
-              key={job.id}
-              type="button"
-              onClick={() => {
-                setSelectedJobId(job.id);
-                setReviewedDraftId(null);
-                setCopied(false);
-              }}
-              className={`w-full rounded-md border px-3 py-3 text-left text-sm transition ${
-                selectedJobId === job.id
-                  ? "border-lagoon bg-lagoon/5"
-                  : "border-slate-200 bg-white hover:border-slate-300"
-              }`}
-            >
-              <span className="block font-semibold text-ink">{job.title}</span>
-              <span className="mt-1 block text-slate-600">{job.company}</span>
-            </button>
-          ))}
-        </div>
-      </aside>
+    <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
+      <JobPicker
+        jobs={jobs}
+        selectedJobId={selectedJobId}
+        onSelect={(jobId) => {
+          setSelectedJobId(jobId);
+          setReviewedDraftId(null);
+          setCopied(false);
+        }}
+        getMeta={(job) => job.location || "Location not set"}
+      />
 
       {selectedJob && profile ? (
         <section className="space-y-5">
-          <AgentPanel title="Step 2: Review profile information">
-            <ProfileReview profile={profile} />
-          </AgentPanel>
-
-          <AgentPanel title="Step 3: Generate application materials">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-6 text-slate-600">
-                CareerPilot will use your saved job, profile, resume, and
-                application notes from the backend.
-              </p>
-              <button
-                type="button"
-                onClick={() => draftMutation.mutate()}
-                disabled={!selectedJobId || draftMutation.isPending}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {draftMutation.isPending ? (
-                  <Loader2
-                    aria-hidden="true"
-                    className="h-4 w-4 animate-spin"
-                  />
-                ) : (
-                  <Send aria-hidden="true" className="h-4 w-4" />
-                )}
-                {latestDraft ? "Regenerate" : "Generate"}
-              </button>
+          <PrimaryActionCard
+            eyebrow="Application"
+            title={`${selectedJob.title} at ${selectedJob.company}`}
+            description="Generate a concise, manual-use application preview from your saved job, profile, resume, and application notes."
+            action={{
+              label: latestDraft
+                ? "Regenerate application preview"
+                : "Generate application preview",
+              onClick: () => draftMutation.mutate(),
+              disabled: !selectedJobId,
+              loading: draftMutation.isPending,
+              icon: <Send aria-hidden="true" className="h-4 w-4" />
+            }}
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              <StatusTile
+                label="Status"
+                value={latestDraft ? "Preview ready" : "Not generated"}
+              />
+              <StatusTile
+                label="Next action"
+                value={
+                  latestDraft
+                    ? "Review top fixes"
+                    : "Generate one focused draft"
+                }
+              />
+              <StatusTile
+                label="Profile"
+                value={profile.full_name || "Profile loaded"}
+              />
             </div>
             {draftMutation.isError ? (
-              <div className="mt-4 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
-                {draftMutation.error instanceof Error
-                  ? draftMutation.error.message
-                  : "Unable to generate application materials."}
-              </div>
+              <ErrorCallout
+                message={
+                  draftMutation.error instanceof Error
+                    ? draftMutation.error.message
+                    : "Unable to generate application materials."
+                }
+                action={{
+                  label: "Retry",
+                  onClick: () => draftMutation.mutate()
+                }}
+              />
             ) : null}
-          </AgentPanel>
+          </PrimaryActionCard>
 
           {latestDraft ? (
             <>
-              <AgentPanel title="Step 4: Prepared application materials">
-                {latestDraftItem?.is_stale ? <StaleNotice /> : null}
-                <p className="mb-4 text-sm leading-6 text-slate-700">
-                  {latestDraft.application_summary}
-                </p>
+              <AgentCard title="Application readiness">
+                {latestDraftItem?.is_stale ? (
+                  <StaleNotice message="This preview may be stale because the job, profile, resume, or notes changed. Regenerate it before relying on it." />
+                ) : null}
+                <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+                  <div>
+                    <p className="max-w-3xl text-sm leading-6 text-slate-700">
+                      {latestDraft.application_summary}
+                    </p>
+                    <div className="mt-4">
+                      <TagList items={latestDraft.keywords} limit={10} />
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-4">
+                    <h3 className="text-sm font-semibold text-ink">
+                      Recommended next action
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Resolve required missing information, then copy the cover
+                      letter for manual review.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-2">
+                      <ActionButton
+                        action={{
+                          label: copied ? "Cover letter copied" : "Copy cover letter",
+                          onClick: copyCoverLetter,
+                          icon: <Copy aria-hidden="true" className="h-4 w-4" />
+                        }}
+                        primary
+                      />
+                      {selectedJob.job_url ? (
+                        <ActionButton
+                          action={{
+                            label: "Open job posting",
+                            href: selectedJob.job_url,
+                            icon: (
+                              <ExternalLink
+                                aria-hidden="true"
+                                className="h-4 w-4"
+                              />
+                            )
+                          }}
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </AgentCard>
+
+              <AgentCard title="Highest-priority fixes">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <CompactList
+                    title="Required"
+                    items={latestDraft.missing_information_questions}
+                    limit={4}
+                    emptyText="No required missing information found."
+                  />
+                  <CompactList
+                    title="Warnings"
+                    items={latestDraft.warnings}
+                    limit={3}
+                    emptyText="No major warnings returned."
+                  />
+                </div>
+              </AgentCard>
+
+              <AgentCard title="Resume and application alignment">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <EmphasisBlock
-                    title="Projects and experiences to emphasize"
+                    title="Strongly recommended"
                     items={latestDraft.emphasis}
                   />
-                  <ListBlock
-                    title="Keywords to include naturally"
-                    items={latestDraft.keywords}
-                  />
-                  <ListBlock
-                    title="Missing information requiring input"
-                    items={latestDraft.missing_information_questions}
-                  />
-                  <ListBlock title="Warnings" items={latestDraft.warnings} />
+                  <AutofillSummary items={latestDraft.autofill_preview} />
                 </div>
-                <div className="mt-4 rounded-md bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold text-ink">
-                    Cover letter draft
-                  </h3>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+              </AgentCard>
+
+              <AgentCard title="Cover letter">
+                <div className="rounded-md bg-slate-50 p-4">
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
                     {latestDraft.cover_letter}
                   </p>
                 </div>
-              </AgentPanel>
+              </AgentCard>
 
-              <AgentPanel title="Step 5: Autofill preview">
-                <div className="space-y-3">
-                  {latestDraft.autofill_preview.map((item) => (
-                    <AutofillPreview key={item.field} item={item} />
-                  ))}
-                </div>
-              </AgentPanel>
-
-              <AgentPanel title="Step 6: Review and manual use">
+              <AgentCard title="Final manual review">
                 <div className="flex items-start gap-3 rounded-md border border-coral/20 bg-coral/10 p-3 text-sm text-orange-800">
-                  <AlertTriangle aria-hidden="true" className="h-5 w-5" />
+                  <AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5" />
                   <p>
                     CareerPilot has not submitted or autofilled any external
                     website. Review everything manually before using it.
                   </p>
                 </div>
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      latestDraftItem
-                        ? setReviewedDraftId(latestDraftItem.id)
-                        : null
-                    }
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                  <ActionButton
+                    action={{
+                      label: draftReviewed
+                        ? "Marked reviewed"
+                        : "Mark preview reviewed",
+                      onClick: () =>
+                        latestDraftItem
+                          ? setReviewedDraftId(latestDraftItem.id)
+                          : null,
+                      icon: draftReviewed ? (
+                        <CheckCircle2
+                          aria-hidden="true"
+                          className="h-4 w-4"
+                        />
+                      ) : (
+                        <Send aria-hidden="true" className="h-4 w-4" />
+                      )
+                    }}
+                    primary
+                  />
+                  <Link
+                    href="/profile"
+                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
                   >
-                    {draftReviewed ? (
-                      <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
-                    ) : (
-                      <Send aria-hidden="true" className="h-4 w-4" />
-                    )}
-                    {draftReviewed
-                      ? "Reviewed for manual use"
-                      : "Mark draft reviewed"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyCoverLetter}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
-                  >
-                    <Copy aria-hidden="true" className="h-4 w-4" />
-                    {copied ? "Copied" : "Copy cover letter"}
-                  </button>
-                  {selectedJob.job_url ? (
-                    <Link
-                      href={selectedJob.job_url}
-                      target="_blank"
-                      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
-                    >
-                      <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                      Open job
-                    </Link>
-                  ) : null}
+                    Edit profile evidence
+                  </Link>
                 </div>
-              </AgentPanel>
+              </AgentCard>
             </>
           ) : (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">
-              Generate backend-powered application materials to review them
-              here.
-            </div>
+            <AgentCard title="Ready when you are">
+              <p className="text-sm leading-6 text-slate-600">
+                Generate once to get the top issues, a short cover letter, and
+                fields that need manual confirmation.
+              </p>
+            </AgentCard>
           )}
         </section>
       ) : (
@@ -263,25 +304,6 @@ export function JobApplicationAgent() {
           Select a saved job to begin.
         </div>
       )}
-    </div>
-  );
-}
-
-function ProfileReview({ profile }: { profile: ProfileResponse }) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      <Info label="School" value={profile.school} />
-      <Info label="Program" value={profile.program} />
-      <Info label="Target roles" value={profile.target_roles.join(", ")} />
-      <Info label="Locations" value={profile.preferred_locations.join(", ")} />
-      <Info
-        label="Technical skills"
-        value={profile.technical_skills.join(", ")}
-      />
-      <Info label="Soft skills" value={profile.soft_skills.join(", ")} />
-      <Link href="/profile" className="text-sm font-semibold text-lagoon">
-        Edit profile
-      </Link>
     </div>
   );
 }
@@ -302,137 +324,70 @@ function EmphasisBlock({
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
       <ul className="mt-2 space-y-2">
         {items.map((item, index) => (
-          <li
-            key={`${item.item}-${index}`}
-            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
-          >
-            <span className="block font-semibold text-ink">{item.item}</span>
-            <span className="mt-1 block">Evidence: {item.evidence}</span>
-            <span className="mt-1 block">Why it matters: {item.reason}</span>
-          </li>
+          <EmphasisItem key={`${item.item}-${index}`} item={item} />
         ))}
       </ul>
     </section>
   );
 }
 
-function AutofillPreview({ item }: { item: AutofillField }) {
+function EmphasisItem({ item }: { item: ApplicationEmphasis }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-ink">{item.field}</p>
-          <p className="mt-1 text-sm text-slate-700">
-            {item.proposed_answer ?? "Requires your manual answer"}
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            Evidence: {item.evidence ?? "Not available"}
-          </p>
-        </div>
-        <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-lagoon">
-          {item.requires_confirmation ? "Confirm manually" : "Ready to review"}
-        </span>
-      </div>
-    </div>
+    <li className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">
+      <span className="block font-semibold text-ink">{item.item}</span>
+      <span className="mt-1 block">{item.reason}</span>
+      <span className="mt-1 block text-xs text-slate-500">
+        Evidence: {item.evidence}
+      </span>
+    </li>
   );
 }
 
-function EmptyState({
-  title,
-  description
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
-      <h2 className="text-xl font-semibold text-ink">{title}</h2>
-      <p className="mt-2 text-sm text-slate-600">{description}</p>
-      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <Link
-          href="/agents/job-finder"
-          className="inline-flex justify-center rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white"
-        >
-          Find jobs
-        </Link>
-        <Link
-          href="/jobs"
-          className="inline-flex justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink"
-        >
-          View all jobs
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function LoadingPanel() {
-  return (
-    <div className="flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-white">
-      <Loader2
-        aria-hidden="true"
-        className="h-5 w-5 animate-spin text-lagoon"
-      />
-    </div>
-  );
-}
-
-function AgentPanel({
-  title,
-  children
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-ink">{title}</h2>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-function ListBlock({ title, items }: { title: string; items: string[] }) {
-  if (items.length === 0) {
-    return null;
-  }
+function AutofillSummary({ items }: { items: AutofillField[] }) {
+  const required = items.filter((item) => item.requires_confirmation);
+  const ready = items.filter((item) => !item.requires_confirmation);
 
   return (
     <section>
-      <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
-        {items.map((item, index) => (
-          <li
-            key={`${item}-${index}`}
-            className="rounded-md bg-slate-50 px-3 py-2"
+      <h3 className="text-sm font-semibold text-ink">Application questions</h3>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <StatusTile label="Need confirmation" value={`${required.length}`} />
+        <StatusTile label="Ready to review" value={`${ready.length}`} />
+      </div>
+      <div className="mt-3 space-y-2">
+        {items.map((item) => (
+          <div
+            key={item.field}
+            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
           >
-            {item}
-          </li>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-semibold text-ink">{item.field}</p>
+                <p>{item.proposed_answer ?? "Requires your manual answer"}</p>
+              </div>
+              <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-lagoon">
+                {item.requires_confirmation ? "Confirm" : "Review"}
+              </span>
+            </div>
+            {item.evidence ? (
+              <p className="mt-1 text-xs text-slate-500">
+                Evidence: {item.evidence}
+              </p>
+            ) : null}
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function StatusTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md bg-slate-50 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-sm text-ink">{value || "Not saved"}</p>
-    </div>
-  );
-}
-
-function StaleNotice() {
-  return (
-    <div className="mb-4 flex items-start gap-2 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
-      <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
-      <p>
-        This draft may be stale because the job, profile, resume, or application
-        notes changed. Regenerate it before relying on it.
-      </p>
+      <p className="mt-1 text-sm font-semibold text-ink">{value}</p>
     </div>
   );
 }

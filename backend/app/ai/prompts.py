@@ -20,6 +20,18 @@ SAFETY_RULES = "\n".join(
     ]
 )
 
+CONCISE_AGENT_RULES = "\n".join(
+    [
+        "Put the most important information first.",
+        "Use compact structured fields, not long prose blocks.",
+        "Limit most lists to 3-5 high-value items unless the schema requires otherwise.",
+        "Keep each bullet to one clear, specific action or observation.",
+        "Avoid introductions, filler, generic advice, and repeated facts already supplied by the user.",
+        "Separate essential actions from optional suggestions.",
+        "Do not cut off an answer mid-thought; produce shorter complete answers.",
+    ]
+)
+
 
 def build_profile_text(profile: CareerProfile | None) -> str:
     if profile is None:
@@ -59,6 +71,7 @@ def build_resume_suggestions_prompt(job: JobPosting, profile: CareerProfile | No
     return "\n\n".join(
         [
             "You are CareerPilot's resume-tailoring assistant. Return only valid JSON matching the provided schema.",
+            CONCISE_AGENT_RULES,
             "Focus on two buckets: suggested_additions for truthful things the user should add or emphasize for this job, "
             "and less_important_items for resume content that is less relevant or unlikely to help much for this job.",
             SAFETY_RULES,
@@ -83,8 +96,11 @@ def build_application_draft_prompt(
         [
             "You are CareerPilot's job application assistant. Return only valid JSON matching the provided schema.",
             SAFETY_RULES,
+            CONCISE_AGENT_RULES,
             "Create truthful application support for manual user review. Do not automatically answer sensitive fields. "
             "Use missing_information_questions for unknown or sensitive information.",
+            "The application_summary must be 1-2 short sentences. Cover letter should be a concise usable draft, about 180-260 words. "
+            "Prioritize required missing information, strongest evidence, and warnings. Put detail in structured lists, not the summary.",
             f"Application stage: {application.stage if application else 'not tracked'}",
             f"Next action: {application.next_action if application else 'none saved'}",
             f"Application notes: {application.notes if application else 'none saved'}",
@@ -104,7 +120,9 @@ def build_role_analysis_prompt(job: JobPosting, profile: CareerProfile | None, r
         [
             "You are CareerPilot's role analysis assistant. Return only valid JSON matching the provided schema.",
             SAFETY_RULES,
-            "Analyze the selected role against the user's actual evidence. Separate required skills, preferred skills, technologies, strengths, gaps, uncertainties, and preparation priorities.",
+            CONCISE_AGENT_RULES,
+            "Analyze the selected role against the user's actual evidence. Keep role_summary to 1-2 sentences. "
+            "Prioritize only the strongest responsibilities, skills, strengths, gaps, uncertainties, and preparation priorities.",
             f"Job title: {job.title}",
             f"Company: {job.company}",
             f"Location: {job.location or 'not listed'}",
@@ -127,7 +145,9 @@ def build_preparation_plan_prompt(
         [
             "You are CareerPilot's job preparation planner. Return only valid JSON matching the provided schema.",
             SAFETY_RULES,
-            "Build a practical preparation plan from the role analysis. If no interview date is supplied, create a flexible staged plan instead of pretending there is a deadline.",
+            CONCISE_AGENT_RULES,
+            "Build a practical preparation plan from the role analysis. If no interview date is supplied, create a flexible staged plan instead of pretending there is a deadline. "
+            "Make staged_plan the shortest path to readiness. Put essential topics before optional topics. Prefer role-specific tasks over generic studying.",
             f"Application stage: {application.stage if application else 'not tracked'}",
             f"Application deadline: {application.deadline.isoformat() if application and application.deadline else 'none saved'}",
             f"Follow-up date: {application.follow_up_date.isoformat() if application and application.follow_up_date else 'none saved'}",
