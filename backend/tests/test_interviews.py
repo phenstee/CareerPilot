@@ -72,13 +72,30 @@ def _create_application(client: TestClient) -> dict[str, object]:
     return client.post("/api/v1/applications", json=_application_payload(job["id"])).json()
 
 
+def _session_from_task(client: TestClient, response):
+    assert response.status_code == 202
+    task = response.json()
+    assert task["status"] == "SUCCEEDED"
+    assert task["result_resource_type"] == "interview_session"
+    session = client.get(f"/api/v1/interviews/sessions/{task['result_resource_id']}")
+    assert session.status_code == 200
+    return session.json()
+
+
+def _failed_task(response, error_code: str):
+    assert response.status_code == 202
+    task = response.json()
+    assert task["status"] == "FAILED"
+    assert task["last_error_code"] == error_code
+    return task
+
+
 def test_user_can_generate_interview_session_and_answer_question(client: TestClient) -> None:
     _register(client)
     application = _create_application(client)
 
     create = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]})
-    assert create.status_code == 201
-    session = create.json()
+    session = _session_from_task(client, create)
     assert session["application_id"] == application["id"]
     assert session["provider"] == "mock"
     assert session["preparation_plan"]
@@ -111,7 +128,10 @@ def test_user_can_generate_interview_session_and_answer_question(client: TestCli
 def test_interview_sessions_require_owned_application(client: TestClient) -> None:
     _register(client, "interview-owner@example.com")
     application = _create_application(client)
-    session = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]}).json()
+    session = _session_from_task(
+        client,
+        client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]}),
+    )
     client.post("/api/v1/auth/logout")
 
     _register(client, "interview-other@example.com")
@@ -130,14 +150,17 @@ def test_interview_provider_failures_return_503(client: TestClient, monkeypatch)
 
     response = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]})
 
-    assert response.status_code == 503
-    assert response.json()["detail"] == "AI analysis is temporarily unavailable."
+    failed = _failed_task(response, "ai_provider_unavailable")
+    assert failed["last_error_message"] == "AI analysis is temporarily unavailable."
 
 
 def test_interview_answer_provider_failures_return_503(client: TestClient, monkeypatch) -> None:
     _register(client, "answer-failure@example.com")
     application = _create_application(client)
-    session = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]}).json()
+    session = _session_from_task(
+        client,
+        client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]}),
+    )
     question = session["questions"][0]
 
     def raise_provider_error():
@@ -162,11 +185,11 @@ def test_interview_generation_and_feedback_share_ai_limit(client: TestClient, mo
     _register(client, "interview-rate@example.com")
     application = _create_application(client)
     session = client.post("/api/v1/interviews/sessions", json={"application_id": application["id"]})
-    assert session.status_code == 201
-    question = session.json()["questions"][0]
+    session_json = _session_from_task(client, session)
+    question = session_json["questions"][0]
 
     answer = client.post(
-        f"/api/v1/interviews/sessions/{session.json()['id']}/questions/{question['id']}/answers",
+        f"/api/v1/interviews/sessions/{session_json['id']}/questions/{question['id']}/answers",
         json={"answer_text": "I built a React and FastAPI project and explained the tradeoffs clearly."},
     )
 

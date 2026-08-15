@@ -46,6 +46,17 @@ class InterviewRepository:
         )
         return self.db.scalar(statement)
 
+    def get_by_async_task_id(self, user_id: str, async_task_id: str) -> InterviewSession | None:
+        statement = (
+            select(InterviewSession)
+            .options(
+                joinedload(InterviewSession.application).joinedload(Application.job_posting),
+                selectinload(InterviewSession.questions).selectinload(InterviewQuestion.answers),
+            )
+            .where(InterviewSession.user_id == user_id, InterviewSession.async_task_id == async_task_id)
+        )
+        return self.db.scalar(statement)
+
     def save_session(self, session: InterviewSession) -> InterviewSession:
         self.db.add(session)
         self.db.commit()

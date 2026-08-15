@@ -1,8 +1,8 @@
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import type { JobPosting } from "@/lib/api";
+import type { AsyncTask, JobPosting } from "@/lib/api";
 
 type Action = {
   label: string;
@@ -192,7 +192,13 @@ export function CompactList({
   );
 }
 
-export function TagList({ items, limit = 8 }: { items: string[]; limit?: number }) {
+export function TagList({
+  items,
+  limit = 8
+}: {
+  items: string[];
+  limit?: number;
+}) {
   const visible = items.slice(0, limit);
   const extra = items.length - visible.length;
 
@@ -223,7 +229,10 @@ export function LoadingState({ message }: { message: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3 text-sm text-slate-600">
-        <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-lagoon" />
+        <Loader2
+          aria-hidden="true"
+          className="h-5 w-5 animate-spin text-lagoon"
+        />
         <span>{message}</span>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -284,4 +293,55 @@ export function ErrorCallout({
 
 export function StaleNotice({ message }: { message: string }) {
   return <ErrorCallout message={message} />;
+}
+
+export function TaskStatusNotice({ task }: { task: AsyncTask | null }) {
+  if (!task) {
+    return null;
+  }
+
+  const status = taskStatusCopy(task);
+  const isDone = task.status === "SUCCEEDED";
+  const isFailed = task.status === "FAILED";
+
+  return (
+    <div
+      className={`mt-4 flex items-start gap-2 rounded-md px-3 py-2 text-sm ${
+        isFailed
+          ? "border border-coral/20 bg-coral/10 text-orange-800"
+          : "border border-lagoon/20 bg-lagoon/5 text-slate-700"
+      }`}
+    >
+      {isDone ? (
+        <CheckCircle2
+          aria-hidden="true"
+          className="mt-0.5 h-4 w-4 text-lagoon"
+        />
+      ) : isFailed ? (
+        <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
+      ) : (
+        <Loader2
+          aria-hidden="true"
+          className="mt-0.5 h-4 w-4 animate-spin text-lagoon"
+        />
+      )}
+      <p>{status}</p>
+    </div>
+  );
+}
+
+function taskStatusCopy(task: AsyncTask): string {
+  if (task.status === "QUEUED") {
+    return "Queued...";
+  }
+  if (task.status === "RUNNING") {
+    return "Generating...";
+  }
+  if (task.status === "RETRYING") {
+    return `Temporary issue - retrying (${task.attempt_count}/${task.max_attempts})...`;
+  }
+  if (task.status === "SUCCEEDED") {
+    return "Completed.";
+  }
+  return task.last_error_message ?? "Generation failed. Try again.";
 }

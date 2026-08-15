@@ -52,7 +52,18 @@ class InterviewService:
             total=total,
         )
 
-    def create_session(self, user_id: str, payload: InterviewSessionCreate) -> InterviewSessionResponse:
+    def create_session(
+        self,
+        user_id: str,
+        payload: InterviewSessionCreate,
+        *,
+        async_task_id: str | None = None,
+    ) -> InterviewSessionResponse:
+        if async_task_id:
+            existing = self.repository.get_by_async_task_id(user_id, async_task_id)
+            if existing is not None:
+                return serialize_session(existing)
+
         application = self.application_repository.get_for_user(user_id, payload.application_id)
         if application is None:
             raise InterviewApplicationNotFoundError
@@ -71,6 +82,7 @@ class InterviewService:
             application_id=application.id,
             provider=provider.name,
             provider_model=provider.model_name,
+            async_task_id=async_task_id,
             preparation_plan=output.preparation_plan,
             strong_topics=output.strong_topics,
             weak_areas=output.weak_areas,
@@ -85,6 +97,10 @@ class InterviewService:
             ],
         )
         return serialize_session(self.repository.save_session(session))
+
+    def validate_session_request(self, user_id: str, payload: InterviewSessionCreate) -> None:
+        if self.application_repository.get_for_user(user_id, payload.application_id) is None:
+            raise InterviewApplicationNotFoundError
 
     def get_session(self, user_id: str, session_id: str) -> InterviewSessionResponse:
         return serialize_session(self._get_owned_session(user_id, session_id))

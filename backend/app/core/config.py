@@ -39,6 +39,15 @@ class Settings(BaseSettings):
     ai_rate_limit_window_seconds: int = Field(default=3600, ge=1)
     job_search_rate_limit_count: int = Field(default=60, ge=1)
     job_search_rate_limit_window_seconds: int = Field(default=3600, ge=1)
+    redis_url: str = "redis://redis:6379/0"
+    celery_broker_url: str | None = None
+    celery_result_backend: str | None = None
+    celery_task_soft_time_limit: int = Field(default=120, ge=5)
+    celery_task_time_limit: int = Field(default=150, ge=10)
+    celery_task_always_eager: bool = False
+    celery_worker_prefetch_multiplier: int = Field(default=1, ge=1)
+    redis_visibility_timeout_seconds: int = Field(default=3600, ge=60)
+    worker_heartbeat_ttl_seconds: int = Field(default=90, ge=10)
     openai_api_key: str | None = None
     ai_provider: str = "mock"
     openai_model: str = "gpt-4o-mini"
@@ -58,6 +67,14 @@ class Settings(BaseSettings):
     @property
     def greenhouse_board_tokens(self) -> list[str]:
         return [token.strip() for token in self.greenhouse_boards_raw.split(",") if token.strip()]
+
+    @property
+    def effective_celery_broker_url(self) -> str:
+        return self.celery_broker_url or self.redis_url
+
+    @property
+    def effective_celery_result_backend(self) -> str | None:
+        return self.celery_result_backend
 
     @property
     def is_production(self) -> bool:

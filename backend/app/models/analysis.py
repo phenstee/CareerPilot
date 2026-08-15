@@ -33,6 +33,12 @@ class JobAnalysis(Base):
     analysis_type: Mapped[str] = mapped_column(String(40), nullable=False)
     provider: Mapped[str] = mapped_column(String(40), nullable=False)
     provider_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    async_task_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("async_tasks.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=True,
+    )
     source_fingerprint: Mapped[str | None] = mapped_column(String(128), nullable=True)
     source_role_analysis_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     result: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)

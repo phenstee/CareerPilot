@@ -22,11 +22,13 @@ import {
   LoadingState,
   PrimaryActionCard,
   StaleNotice,
-  TagList
+  TagList,
+  TaskStatusNotice
 } from "@/components/agent-result-ui";
 import {
   ApplicationDraftOutput,
   ApplicationEmphasis,
+  AsyncTask,
   AutofillField,
   createApplicationDraft,
   getProfile,
@@ -40,6 +42,7 @@ export function JobApplicationAgent() {
   const [selectedJobId, setSelectedJobId] = useState(preselectedJobId ?? "");
   const [reviewedDraftId, setReviewedDraftId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [activeTask, setActiveTask] = useState<AsyncTask | null>(null);
   const queryClient = useQueryClient();
 
   const jobsQuery = useQuery({
@@ -69,7 +72,7 @@ export function JobApplicationAgent() {
   );
 
   const draftMutation = useMutation({
-    mutationFn: () => createApplicationDraft(selectedJobId),
+    mutationFn: () => createApplicationDraft(selectedJobId, setActiveTask),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["analyses", selectedJobId, "application_draft"]
@@ -113,6 +116,7 @@ export function JobApplicationAgent() {
           setSelectedJobId(jobId);
           setReviewedDraftId(null);
           setCopied(false);
+          setActiveTask(null);
         }}
         getMeta={(job) => job.location || "Location not set"}
       />
@@ -164,6 +168,7 @@ export function JobApplicationAgent() {
                 }}
               />
             ) : null}
+            <TaskStatusNotice task={activeTask} />
           </PrimaryActionCard>
 
           {latestDraft ? (
@@ -192,7 +197,9 @@ export function JobApplicationAgent() {
                     <div className="mt-4 flex flex-col gap-2">
                       <ActionButton
                         action={{
-                          label: copied ? "Cover letter copied" : "Copy cover letter",
+                          label: copied
+                            ? "Cover letter copied"
+                            : "Copy cover letter",
                           onClick: copyCoverLetter,
                           icon: <Copy aria-hidden="true" className="h-4 w-4" />
                         }}
@@ -254,7 +261,10 @@ export function JobApplicationAgent() {
 
               <AgentCard title="Final manual review">
                 <div className="flex items-start gap-3 rounded-md border border-coral/20 bg-coral/10 p-3 text-sm text-orange-800">
-                  <AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5" />
+                  <AlertTriangle
+                    aria-hidden="true"
+                    className="mt-0.5 h-5 w-5"
+                  />
                   <p>
                     CareerPilot has not submitted or autofilled any external
                     website. Review everything manually before using it.
@@ -271,10 +281,7 @@ export function JobApplicationAgent() {
                           ? setReviewedDraftId(latestDraftItem.id)
                           : null,
                       icon: draftReviewed ? (
-                        <CheckCircle2
-                          aria-hidden="true"
-                          className="h-4 w-4"
-                        />
+                        <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
                       ) : (
                         <Send aria-hidden="true" className="h-4 w-4" />
                       )

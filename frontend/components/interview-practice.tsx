@@ -13,6 +13,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import {
+  AsyncTask,
   answerInterviewQuestion,
   createInterviewSession,
   InterviewQuestion,
@@ -46,6 +47,7 @@ export function InterviewPractice() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answerText, setAnswerText] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [activeTask, setActiveTask] = useState<AsyncTask | null>(null);
 
   const sessionsQuery = useQuery({
     queryKey: ["interviews", params.id],
@@ -66,7 +68,7 @@ export function InterviewPractice() {
   const activeQuestion = activeSession?.questions[questionIndex] ?? null;
 
   const createMutation = useMutation({
-    mutationFn: () => createInterviewSession(params.id),
+    mutationFn: () => createInterviewSession(params.id, setActiveTask),
     onSuccess: (session) => {
       setSelectedSessionId(session.id);
       setQuestionIndex(0);
@@ -197,6 +199,8 @@ export function InterviewPractice() {
           </div>
         ) : null}
 
+        <InterviewTaskStatus task={activeTask} />
+
         {activeSession && activeQuestion ? (
           <>
             <SessionOverview session={activeSession} />
@@ -298,6 +302,29 @@ export function InterviewPractice() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function InterviewTaskStatus({ task }: { task: AsyncTask | null }) {
+  if (!task) {
+    return null;
+  }
+
+  const text =
+    task.status === "QUEUED"
+      ? "Queued..."
+      : task.status === "RUNNING"
+        ? "Generating..."
+        : task.status === "RETRYING"
+          ? `Temporary issue - retrying (${task.attempt_count}/${task.max_attempts})...`
+          : task.status === "SUCCEEDED"
+            ? "Completed."
+            : (task.last_error_message ?? "Generation failed. Try again.");
+
+  return (
+    <div className="rounded-md border border-lagoon/20 bg-lagoon/5 px-3 py-2 text-sm text-slate-700">
+      {text}
     </div>
   );
 }

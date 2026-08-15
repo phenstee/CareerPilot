@@ -60,7 +60,18 @@ class AnalysisService:
             raise AnalysisNotFoundError
         return self._serialize_with_stale_status(analysis)
 
-    def create_resume_suggestions(self, user_id: str, payload: AnalysisCreateRequest) -> JobAnalysisResponse:
+    def create_resume_suggestions(
+        self,
+        user_id: str,
+        payload: AnalysisCreateRequest,
+        *,
+        async_task_id: str | None = None,
+    ) -> JobAnalysisResponse:
+        if async_task_id:
+            existing = self.repository.get_by_async_task_id(user_id, async_task_id)
+            if existing is not None:
+                return self._serialize_with_stale_status(existing)
+
         job, profile, resume = self._get_owned_context(user_id, payload.job_posting_id)
         provider = get_ai_provider()
         output = provider.suggest_resume_tailoring(job=job, profile=profile, resume=resume)
@@ -77,9 +88,13 @@ class AnalysisService:
             provider=provider.name,
             provider_model=provider.model_name,
             source_fingerprint=fingerprint,
+            async_task_id=async_task_id,
             result=output.model_dump(),
         )
         return self._serialize_with_stale_status(self.repository.save(analysis))
+
+    def validate_resume_suggestions_request(self, user_id: str, payload: AnalysisCreateRequest) -> None:
+        self._get_owned_context(user_id, payload.job_posting_id)
 
     def _get_owned_context(self, user_id: str, job_posting_id: str):
         job = self.job_repository.get_for_user(user_id, job_posting_id)

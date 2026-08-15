@@ -1,8 +1,13 @@
 import time
+from uuid import uuid4
 from dataclasses import dataclass
 from threading import Lock
 
 from fastapi import HTTPException, Request, status
+from redis import Redis
+from redis.exceptions import RedisError
+
+from app.core.config import settings
 
 
 @dataclass(frozen=True)
@@ -42,6 +47,39 @@ class InMemoryRateLimiter:
 rate_limiter = InMemoryRateLimiter()
 
 
+class RedisRateLimiter:
+    def __init__(self, url: str) -> None:
+        self.redis = Redis.from_url(
+            url,
+            decode_responses=True,
+            socket_connect_timeout=0.1,
+            socket_timeout=0.1,
+        )
+
+    def check(self, key: str, rule: RateLimitRule) -> None:
+        if rule.limit <= 0:
+            return
+
+        now = time.time()
+        window_start = now - rule.window_seconds
+        redis_key = f"rate-limit:{key}"
+        pipe = self.redis.pipeline()
+        pipe.zremrangebyscore(redis_key, 0, window_start)
+        pipe.zcard(redis_key)
+        pipe.zadd(redis_key, {f"{now}:{uuid4()}": now})
+        pipe.expire(redis_key, rule.window_seconds)
+        _removed, count, *_rest = pipe.execute()
+        if int(count) >= rule.limit:
+            raise RateLimitExceeded
+
+    def clear(self) -> None:
+        for key in self.redis.scan_iter("rate-limit:*"):
+            self.redis.delete(key)
+
+
+redis_rate_limiter = RedisRateLimiter(settings.redis_url)
+
+
 def client_ip(request: Request) -> str:
     if request.client and request.client.host:
         return request.client.host
@@ -58,7 +96,10 @@ def enforce_user_rate_limit(user_id: str, bucket: str, rule: RateLimitRule) -> N
 
 def _enforce_rate_limit(key: str, rule: RateLimitRule) -> None:
     try:
-        rate_limiter.check(key, rule)
+        try:
+            redis_rate_limiter.check(key, rule)
+        except RedisError:
+            rate_limiter.check(key, rule)
     except RateLimitExceeded as exc:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

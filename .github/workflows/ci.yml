@@ -26,6 +26,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       ENVIRONMENT: test
       DATABASE_URL: postgresql+psycopg://careerpilot:careerpilot@localhost:5432/careerpilot_test
@@ -33,6 +42,10 @@ jobs:
       AI_PROVIDER: mock
       OPENAI_API_KEY: ""
       CORS_ORIGINS: http://localhost:3000
+      REDIS_URL: redis://localhost:6379/0
+      CELERY_BROKER_URL: redis://localhost:6379/0
+      CELERY_RESULT_BACKEND: redis://localhost:6379/1
+      CELERY_TASK_ALWAYS_EAGER: "true"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -113,6 +126,9 @@ jobs:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       BACKEND_INTERNAL_URL: http://backend:8000
       AI_PROVIDER: mock
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -124,7 +140,7 @@ jobs:
         run: docker compose -f docker-compose.prod.yml config --quiet
 
       - name: Build production Docker images
-        run: docker compose -f docker-compose.prod.yml build backend frontend
+        run: docker compose -f docker-compose.prod.yml build backend worker frontend
 
       - name: Smoke test production frontend proxy
         shell: bash

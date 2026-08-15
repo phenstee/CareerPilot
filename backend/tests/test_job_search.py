@@ -144,7 +144,7 @@ def test_ai_and_job_search_limits_are_independent(client: TestClient, monkeypatc
     second_ai = client.post("/api/v1/agents/application-draft", json={"job_posting_id": job["id"]})
 
     assert job_search.status_code == 200
-    assert role.status_code == 201
+    assert role.status_code == 202
     assert second_search.status_code == 429
     assert second_ai.status_code == 429
 

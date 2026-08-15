@@ -15,6 +15,8 @@ from app.schemas.interview import (
     InterviewSessionListResponse,
     InterviewSessionResponse,
 )
+from app.schemas.task import AsyncTaskResponse
+from app.services.async_task_service import AsyncTaskService
 from app.services.interview_service import (
     InterviewApplicationNotFoundError,
     InterviewQuestionNotFoundError,
@@ -44,13 +46,14 @@ def list_interview_sessions(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found.") from exc
 
 
-@router.post("/sessions", response_model=InterviewSessionResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/sessions", response_model=AsyncTaskResponse, status_code=status.HTTP_202_ACCEPTED)
 def create_interview_session(
     payload: InterviewSessionCreate,
     request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
-) -> InterviewSessionResponse:
+) -> AsyncTaskResponse:
+    idempotency_key = request.headers.get("Idempotency-Key")
     del request
     enforce_user_rate_limit(
         current_user.id,
@@ -58,7 +61,13 @@ def create_interview_session(
         RateLimitRule(settings.ai_rate_limit_count, settings.ai_rate_limit_window_seconds),
     )
     try:
-        return InterviewService(db).create_session(current_user.id, payload)
+        InterviewService(db).validate_session_request(current_user.id, payload)
+        return AsyncTaskService(db).enqueue_ai_task(
+            user_id=current_user.id,
+            task_type="interview_session",
+            payload={"application_id": payload.application_id},
+            idempotency_key=idempotency_key,
+        )
     except InterviewApplicationNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found.") from exc
     except AIProviderError as exc:

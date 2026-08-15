@@ -21,9 +21,11 @@ import {
   LoadingState,
   PrimaryActionCard,
   StaleNotice,
-  TagList
+  TagList,
+  TaskStatusNotice
 } from "@/components/agent-result-ui";
 import {
+  AsyncTask,
   createPreparationPlan,
   createRoleAnalysis,
   createResumeSuggestions,
@@ -46,6 +48,7 @@ export function JobPreparationAgent() {
   const searchParams = useSearchParams();
   const preselectedJobId = searchParams.get("job");
   const [selectedJobId, setSelectedJobId] = useState(preselectedJobId ?? "");
+  const [activeTask, setActiveTask] = useState<AsyncTask | null>(null);
   const [completedByPlan, setCompletedByPlan] = useState<
     Record<string, string[]>
   >({});
@@ -112,7 +115,7 @@ export function JobPreparationAgent() {
   );
 
   const suggestionMutation = useMutation({
-    mutationFn: () => createResumeSuggestions(selectedJobId),
+    mutationFn: () => createResumeSuggestions(selectedJobId, setActiveTask),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: analysisQueryKey(selectedJobId, "resume_suggestions")
@@ -120,7 +123,7 @@ export function JobPreparationAgent() {
     }
   });
   const roleAnalysisMutation = useMutation({
-    mutationFn: () => createRoleAnalysis(selectedJobId),
+    mutationFn: () => createRoleAnalysis(selectedJobId, setActiveTask),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: analysisQueryKey(selectedJobId, "role_analysis")
@@ -137,10 +140,13 @@ export function JobPreparationAgent() {
           "The role analysis is outdated. Regenerate it before creating a preparation plan."
         );
       }
-      return createPreparationPlan({
-        jobPostingId: selectedJobId,
-        roleAnalysisId: latestRoleAnalysisItem?.id
-      });
+      return createPreparationPlan(
+        {
+          jobPostingId: selectedJobId,
+          roleAnalysisId: latestRoleAnalysisItem?.id
+        },
+        setActiveTask
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -190,7 +196,10 @@ export function JobPreparationAgent() {
       <JobPicker
         jobs={jobs}
         selectedJobId={selectedJobId}
-        onSelect={(jobId) => setSelectedJobId(jobId)}
+        onSelect={(jobId) => {
+          setSelectedJobId(jobId);
+          setActiveTask(null);
+        }}
         getMeta={(job) => {
           const app = applicationsQuery.data?.items.find(
             (item) => item.job_posting_id === job.id
@@ -267,6 +276,7 @@ export function JobPreparationAgent() {
                 }}
               />
             ) : null}
+            <TaskStatusNotice task={activeTask} />
           </PrimaryActionCard>
 
           {latestRoleAnalysis ? (
@@ -587,7 +597,9 @@ function getPrimaryAction({
 }) {
   if (!hasRoleAnalysis || roleAnalysisIsStale) {
     return {
-      label: hasRoleAnalysis ? "Refresh role analysis" : "Generate role analysis",
+      label: hasRoleAnalysis
+        ? "Refresh role analysis"
+        : "Generate role analysis",
       onClick: generateRoleAnalysis,
       loading: roleAnalysisPending,
       icon: <Sparkles aria-hidden="true" className="h-4 w-4" />
@@ -727,7 +739,10 @@ function ChecklistItem({
       />
       <span>{item}</span>
       {checked ? (
-        <CheckCircle2 aria-hidden="true" className="ml-auto h-4 w-4 text-lagoon" />
+        <CheckCircle2
+          aria-hidden="true"
+          className="ml-auto h-4 w-4 text-lagoon"
+        />
       ) : null}
     </label>
   );

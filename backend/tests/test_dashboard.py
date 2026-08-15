@@ -30,7 +30,7 @@ def _application_payload(job_id: str) -> dict[str, object]:
         "job_posting_id": job_id,
         "stage": "Applied",
         "date_applied": "2026-07-20",
-        "deadline": "2026-08-10",
+        "deadline": "2026-08-15",
         "follow_up_date": "2026-07-01",
         "notes": "Submitted through portal.",
         "important_contacts": [],

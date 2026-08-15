@@ -49,3 +49,7 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    async_tasks: Mapped[list["AsyncTask"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

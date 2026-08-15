@@ -41,6 +41,14 @@ class AnalysisRepository:
         )
         return self.db.scalar(statement)
 
+    def get_by_async_task_id(self, user_id: str, async_task_id: str) -> JobAnalysis | None:
+        statement = (
+            select(JobAnalysis)
+            .options(joinedload(JobAnalysis.job_posting))
+            .where(JobAnalysis.user_id == user_id, JobAnalysis.async_task_id == async_task_id)
+        )
+        return self.db.scalar(statement)
+
     def get_latest_for_user(
         self,
         user_id: str,

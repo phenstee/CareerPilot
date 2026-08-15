@@ -8,6 +8,7 @@ from app.database.base import Base
 from app.models import (  # noqa: F401
     Application,
     ApplicationStageHistory,
+    AsyncTask,
     CareerProfile,
     Experience,
     InterviewAnswer,

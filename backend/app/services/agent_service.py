@@ -33,7 +33,18 @@ class AgentService:
         self.profile_repository = ProfileRepository(db)
         self.resume_repository = ResumeRepository(db)
 
-    def create_application_draft(self, user_id: str, payload: AnalysisCreateRequest) -> JobAnalysisResponse:
+    def create_application_draft(
+        self,
+        user_id: str,
+        payload: AnalysisCreateRequest,
+        *,
+        async_task_id: str | None = None,
+    ) -> JobAnalysisResponse:
+        if async_task_id:
+            existing = self.analysis_repository.get_by_async_task_id(user_id, async_task_id)
+            if existing is not None:
+                return serialize_analysis(existing)
+
         job, profile, resume, application = self._get_owned_context(user_id, payload.job_posting_id)
         provider = get_ai_provider()
         output = provider.generate_application_draft(
@@ -56,10 +67,22 @@ class AgentService:
             provider=provider.name,
             provider_model=provider.model_name,
             source_fingerprint=fingerprint,
+            async_task_id=async_task_id,
             result=output.model_dump(),
         )
 
-    def create_role_analysis(self, user_id: str, payload: AnalysisCreateRequest) -> JobAnalysisResponse:
+    def create_role_analysis(
+        self,
+        user_id: str,
+        payload: AnalysisCreateRequest,
+        *,
+        async_task_id: str | None = None,
+    ) -> JobAnalysisResponse:
+        if async_task_id:
+            existing = self.analysis_repository.get_by_async_task_id(user_id, async_task_id)
+            if existing is not None:
+                return serialize_analysis(existing)
+
         job, profile, resume, _application = self._get_owned_context(user_id, payload.job_posting_id)
         provider = get_ai_provider()
         output = provider.analyze_role(job=job, profile=profile, resume=resume)
@@ -76,10 +99,22 @@ class AgentService:
             provider=provider.name,
             provider_model=provider.model_name,
             source_fingerprint=fingerprint,
+            async_task_id=async_task_id,
             result=output.model_dump(),
         )
 
-    def create_preparation_plan(self, user_id: str, payload: PreparationPlanCreateRequest) -> JobAnalysisResponse:
+    def create_preparation_plan(
+        self,
+        user_id: str,
+        payload: PreparationPlanCreateRequest,
+        *,
+        async_task_id: str | None = None,
+    ) -> JobAnalysisResponse:
+        if async_task_id:
+            existing = self.analysis_repository.get_by_async_task_id(user_id, async_task_id)
+            if existing is not None:
+                return serialize_analysis(existing)
+
         job, profile, resume, application = self._get_owned_context(user_id, payload.job_posting_id)
         role_analysis = self._get_role_analysis(user_id, job.id, payload.role_analysis_id)
         if AnalysisService(self.db).is_analysis_stale(role_analysis):
@@ -110,8 +145,21 @@ class AgentService:
             provider_model=provider.model_name,
             source_fingerprint=fingerprint,
             source_role_analysis_id=role_analysis.id,
+            async_task_id=async_task_id,
             result=output.model_dump(),
         )
+
+    def validate_application_draft_request(self, user_id: str, payload: AnalysisCreateRequest) -> None:
+        self._get_owned_context(user_id, payload.job_posting_id)
+
+    def validate_role_analysis_request(self, user_id: str, payload: AnalysisCreateRequest) -> None:
+        self._get_owned_context(user_id, payload.job_posting_id)
+
+    def validate_preparation_plan_request(self, user_id: str, payload: PreparationPlanCreateRequest) -> None:
+        job, *_rest = self._get_owned_context(user_id, payload.job_posting_id)
+        role_analysis = self._get_role_analysis(user_id, job.id, payload.role_analysis_id)
+        if AnalysisService(self.db).is_analysis_stale(role_analysis):
+            raise StaleRoleAnalysisError
 
     def _get_owned_context(self, user_id: str, job_posting_id: str):
         job = self.job_repository.get_for_user(user_id, job_posting_id)
@@ -148,6 +196,7 @@ class AgentService:
         provider_model: str | None,
         source_fingerprint: str,
         source_role_analysis_id: str | None = None,
+        async_task_id: str | None = None,
         result: dict[str, object],
     ) -> JobAnalysisResponse:
         analysis = JobAnalysis(
@@ -158,6 +207,7 @@ class AgentService:
             provider_model=provider_model,
             source_fingerprint=source_fingerprint,
             source_role_analysis_id=source_role_analysis_id,
+            async_task_id=async_task_id,
             result=result,
         )
         return serialize_analysis(self.analysis_repository.save(analysis))

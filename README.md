@@ -10,7 +10,7 @@ This repository contains the complete CareerPilot MVP foundation:
 
 - FastAPI backend with `/api/v1/health`
 - Next.js App Router frontend starter
-- PostgreSQL, backend, and frontend Docker Compose services
+- PostgreSQL, Redis, backend, Celery worker, and frontend Docker Compose services
 - Environment variable template
 - Initial architecture and API documentation
 - SQLAlchemy database setup and Alembic user migration
@@ -28,6 +28,7 @@ This repository contains the complete CareerPilot MVP foundation:
 - Stored application drafts, role analyses, and preparation plans for saved jobs
 - AI-assisted job discovery with profile search, prompt search, mock source results, ranking, and save-to-jobs flow
 - Interview preparation sessions with generated questions, typed practice answers, structured feedback, and stored attempts
+- Asynchronous AI generation with durable task state, Celery workers, Redis broker/rate limiting, SSE task updates, retries, idempotency keys, and worker readiness checks
 - Development seed data for a demo account and portfolio walkthrough
 
 ## Screenshots
@@ -42,9 +43,9 @@ Screenshots can be added from these representative local pages:
 ## Technology Stack
 
 - Frontend: Next.js, TypeScript, React, Tailwind CSS, TanStack Query, React Hook Form, Zod
-- Backend: FastAPI, Pydantic, SQLAlchemy 2, Alembic, PostgreSQL
+- Backend: FastAPI, Pydantic, SQLAlchemy 2, Alembic, PostgreSQL, Celery
 - AI: OpenAI Python SDK behind provider interfaces, with `AI_PROVIDER=mock` for local development
-- Infrastructure: Docker and Docker Compose
+- Infrastructure: Docker, Docker Compose, Redis
 - Testing: Pytest and Vitest
 
 ## Folder Structure
@@ -88,6 +89,12 @@ Demo login:
 
 Browser auth calls are proxied through the frontend at `/api/v1/*` so the HttpOnly session cookie belongs to the same host as the app.
 
+The development stack starts PostgreSQL, Redis, FastAPI, one Celery worker, and Next.js. Scale workers when testing queue throughput:
+
+```bash
+docker compose up -d --scale worker=4
+```
+
 ## Backend Only
 
 ```bash
@@ -124,6 +131,13 @@ If the frontend runs outside Docker while the backend runs on the host, keep `NE
 - `OPENAI_API_KEY`: backend-only OpenAI key used only when `AI_PROVIDER=openai`.
 - `OPENAI_MODEL`: model name used by the backend OpenAI provider.
 - `OPENAI_TIMEOUT_SECONDS`, `OPENAI_MAX_RETRIES`: request timeout and retry controls for OpenAI calls.
+- `REDIS_URL`: Redis URL used for shared rate limits, worker heartbeat state, and ephemeral task infrastructure.
+- `CELERY_BROKER_URL`: Celery broker URL; defaults to Redis.
+- `CELERY_RESULT_BACKEND`: optional Celery backend URL; task truth still lives in PostgreSQL.
+- `CELERY_TASK_SOFT_TIME_LIMIT`, `CELERY_TASK_TIME_LIMIT`: worker execution limits for AI tasks.
+- `CELERY_WORKER_PREFETCH_MULTIPLIER`: defaults to `1` to avoid one worker reserving too much work.
+- `REDIS_VISIBILITY_TIMEOUT_SECONDS`: Redis broker visibility timeout for unacknowledged work.
+- `WORKER_HEARTBEAT_TTL_SECONDS`: TTL for worker heartbeat keys used by readiness checks.
 - `GREENHOUSE_BOARDS`: optional comma-separated public Greenhouse board tokens.
 - `NEXT_PUBLIC_API_URL`: browser-visible backend URL.
 - `BACKEND_INTERNAL_URL`: backend URL used by Next.js server-side calls and production build-time API rewrites.
@@ -151,7 +165,7 @@ The OpenAI key is read only by the FastAPI backend. Do not put it in any `NEXT_P
 After changing AI environment variables in Docker, recreate the backend:
 
 ```powershell
-docker compose up -d --force-recreate backend
+docker compose up -d --force-recreate backend worker
 ```
 
 Safe provider verification, after signing in:
@@ -192,6 +206,32 @@ docker compose run --rm backend python -m app.seed
 
 The seed is idempotent for the demo account: rerunning it replaces `demo@careerpilot.dev` demo data.
 
+## Asynchronous AI Workflows
+
+AI generation routes return `202 Accepted` with an async task record. The frontend shows `Queued`, `Generating`, `Retrying`, `Completed`, or failed status, then loads the resulting domain object.
+
+Asynchronous workflows:
+
+- Resume suggestions: `POST /api/v1/analyses/resume-suggestions`
+- Application draft: `POST /api/v1/agents/application-draft`
+- Role analysis: `POST /api/v1/agents/role-analysis`
+- Preparation plan: `POST /api/v1/agents/preparation-plan`
+- Interview prep session generation: `POST /api/v1/interviews/sessions`
+
+Task endpoints:
+
+- `GET /api/v1/tasks`
+- `GET /api/v1/tasks/{task_id}`
+- `GET /api/v1/tasks/{task_id}/events`
+
+`Idempotency-Key` may be sent on AI POST requests. It is scoped to the current user and task type, so a retried click can reuse the same task without blocking intentional future regenerations.
+
+CareerPilot uses at-least-once Celery delivery. Workers use late acknowledgement, worker-lost rejection, prefetch `1`, Redis visibility timeout, and idempotent result creation through `async_task_id`. Do not treat this as exactly-once processing.
+
+Redis backs shared rate limits across API instances. If Redis is unavailable, CareerPilot falls back to the in-memory limiter, preserving the same error shape but only enforcing limits per process until Redis returns.
+
+More detail lives in [docs/async_architecture.md](docs/async_architecture.md).
+
 ## Running Tests
 
 ```bash
@@ -208,13 +248,32 @@ npm run test
 npm run build
 ```
 
+## Load Testing
+
+Load tests use Locust with `AI_PROVIDER=mock` so they measure CareerPilot queue behavior, not OpenAI latency or cost.
+
+```bash
+python -m pip install -r load_tests/requirements.txt
+locust -f load_tests/locustfile.py --host http://localhost:8000 --users 100 --spawn-rate 20 --run-time 5m
+```
+
+Scale workers for comparison:
+
+```bash
+docker compose up -d --scale worker=1
+docker compose up -d --scale worker=2
+docker compose up -d --scale worker=4
+```
+
+Suggested scenarios and metrics are documented in [load_tests/README.md](load_tests/README.md).
+
 ## Continuous Integration
 
 GitHub Actions runs on pushes to `main` and on pull requests:
 
 - Backend: installs Python dependencies, runs Alembic migrations against PostgreSQL, imports `app.main`, and runs pytest in `AI_PROVIDER=mock` mode.
 - Frontend: runs `npm ci`, linting, formatting checks, Vitest tests, production build, and TypeScript type checking.
-- Docker: validates development and production Compose configuration and builds production backend/frontend images.
+- Docker: validates development and production Compose configuration and builds production backend, worker, and frontend images.
 
 CI never requires or calls OpenAI and does not contain secrets.
 
@@ -273,6 +332,14 @@ Deployment health check:
 ```text
 /api/v1/health
 ```
+
+Readiness check:
+
+```text
+/api/v1/health/ready
+```
+
+The readiness endpoint checks PostgreSQL, Redis, and recent worker heartbeats without exposing secrets.
 
 ## Manual Phase 2 Test
 

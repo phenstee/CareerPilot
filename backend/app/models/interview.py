@@ -32,6 +32,12 @@ class InterviewSession(Base):
     )
     provider: Mapped[str] = mapped_column(String(40), nullable=False)
     provider_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    async_task_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("async_tasks.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=True,
+    )
     preparation_plan: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     strong_topics: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     weak_areas: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)

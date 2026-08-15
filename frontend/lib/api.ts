@@ -254,6 +254,36 @@ export type JobAnalysisListResponse = {
   total: number;
 };
 
+export type AsyncTaskStatus =
+  | "QUEUED"
+  | "RUNNING"
+  | "RETRYING"
+  | "SUCCEEDED"
+  | "FAILED";
+
+export type AsyncTask = {
+  id: string;
+  task_type:
+    | "resume_suggestions"
+    | "application_draft"
+    | "role_analysis"
+    | "preparation_plan"
+    | "interview_session";
+  status: AsyncTaskStatus;
+  attempt_count: number;
+  max_attempts: number;
+  created_at: string;
+  queued_at: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  last_error_code: string | null;
+  last_error_message: string | null;
+  result_resource_type: "job_analysis" | "interview_session" | null;
+  result_resource_id: string | null;
+};
+
+export type TaskProgressCallback = (task: AsyncTask) => void;
+
 export type AIStatusResponse = {
   provider: string;
   model: string | null;
@@ -706,13 +736,14 @@ export async function listAnalyses(params?: {
 }
 
 export async function createResumeSuggestions(
-  jobPostingId: string
+  jobPostingId: string,
+  onTaskUpdate?: TaskProgressCallback
 ): Promise<JobAnalysis> {
   const response = await fetch(
     `${getApiBaseUrl()}/api/v1/analyses/resume-suggestions`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: asyncTaskHeaders(),
       credentials: "include",
       body: JSON.stringify({ job_posting_id: jobPostingId })
     }
@@ -722,17 +753,19 @@ export async function createResumeSuggestions(
     throw new Error(await parseApiError(response));
   }
 
-  return response.json() as Promise<JobAnalysis>;
+  const task = (await response.json()) as AsyncTask;
+  return waitForAnalysisTask(task, onTaskUpdate);
 }
 
 export async function createApplicationDraft(
-  jobPostingId: string
+  jobPostingId: string,
+  onTaskUpdate?: TaskProgressCallback
 ): Promise<JobAnalysis & { result: ApplicationDraftOutput }> {
   const response = await fetch(
     `${getApiBaseUrl()}/api/v1/agents/application-draft`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: asyncTaskHeaders(),
       credentials: "include",
       body: JSON.stringify({ job_posting_id: jobPostingId })
     }
@@ -742,19 +775,21 @@ export async function createApplicationDraft(
     throw new Error(await parseApiError(response));
   }
 
-  return response.json() as Promise<
-    JobAnalysis & { result: ApplicationDraftOutput }
-  >;
+  return waitForAnalysisTask<ApplicationDraftOutput>(
+    (await response.json()) as AsyncTask,
+    onTaskUpdate
+  );
 }
 
 export async function createRoleAnalysis(
-  jobPostingId: string
+  jobPostingId: string,
+  onTaskUpdate?: TaskProgressCallback
 ): Promise<JobAnalysis & { result: RoleAnalysisOutput }> {
   const response = await fetch(
     `${getApiBaseUrl()}/api/v1/agents/role-analysis`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: asyncTaskHeaders(),
       credentials: "include",
       body: JSON.stringify({ job_posting_id: jobPostingId })
     }
@@ -764,23 +799,27 @@ export async function createRoleAnalysis(
     throw new Error(await parseApiError(response));
   }
 
-  return response.json() as Promise<
-    JobAnalysis & { result: RoleAnalysisOutput }
-  >;
+  return waitForAnalysisTask<RoleAnalysisOutput>(
+    (await response.json()) as AsyncTask,
+    onTaskUpdate
+  );
 }
 
-export async function createPreparationPlan({
-  jobPostingId,
-  roleAnalysisId
-}: {
-  jobPostingId: string;
-  roleAnalysisId?: string;
-}): Promise<JobAnalysis & { result: PreparationPlanOutput }> {
+export async function createPreparationPlan(
+  {
+    jobPostingId,
+    roleAnalysisId
+  }: {
+    jobPostingId: string;
+    roleAnalysisId?: string;
+  },
+  onTaskUpdate?: TaskProgressCallback
+): Promise<JobAnalysis & { result: PreparationPlanOutput }> {
   const response = await fetch(
     `${getApiBaseUrl()}/api/v1/agents/preparation-plan`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: asyncTaskHeaders(),
       credentials: "include",
       body: JSON.stringify({
         job_posting_id: jobPostingId,
@@ -793,9 +832,26 @@ export async function createPreparationPlan({
     throw new Error(await parseApiError(response));
   }
 
-  return response.json() as Promise<
-    JobAnalysis & { result: PreparationPlanOutput }
-  >;
+  return waitForAnalysisTask<PreparationPlanOutput>(
+    (await response.json()) as AsyncTask,
+    onTaskUpdate
+  );
+}
+
+export async function getAnalysis(analysisId: string): Promise<JobAnalysis> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/analyses/${analysisId}`,
+    {
+      credentials: "include",
+      cache: "no-store"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<JobAnalysis>;
 }
 
 export async function listInterviewSessions(
@@ -817,15 +873,42 @@ export async function listInterviewSessions(
 }
 
 export async function createInterviewSession(
-  applicationId: string
+  applicationId: string,
+  onTaskUpdate?: TaskProgressCallback
 ): Promise<InterviewSession> {
   const response = await fetch(
     `${getApiBaseUrl()}/api/v1/interviews/sessions`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: asyncTaskHeaders(),
       credentials: "include",
       body: JSON.stringify({ application_id: applicationId })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  const task = (await response.json()) as AsyncTask;
+  const finishedTask = await waitForAsyncTask(task, onTaskUpdate);
+  if (
+    finishedTask.result_resource_type !== "interview_session" ||
+    !finishedTask.result_resource_id
+  ) {
+    throw new Error("Interview prep finished without a session.");
+  }
+  return getInterviewSession(finishedTask.result_resource_id);
+}
+
+export async function getInterviewSession(
+  sessionId: string
+): Promise<InterviewSession> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/interviews/sessions/${sessionId}`,
+    {
+      credentials: "include",
+      cache: "no-store"
     }
   );
 
@@ -968,4 +1051,79 @@ export async function logout(): Promise<void> {
   if (!response.ok) {
     throw new Error(await parseApiError(response));
   }
+}
+
+export async function getAsyncTask(taskId: string): Promise<AsyncTask> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/tasks/${taskId}`, {
+    credentials: "include",
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseApiError(response));
+  }
+
+  return response.json() as Promise<AsyncTask>;
+}
+
+async function waitForAnalysisTask<
+  TResult extends AnalysisResult = AnalysisResult
+>(
+  initialTask: AsyncTask,
+  onTaskUpdate?: TaskProgressCallback
+): Promise<JobAnalysis & { result: TResult }> {
+  const finishedTask = await waitForAsyncTask(initialTask, onTaskUpdate);
+  if (
+    finishedTask.result_resource_type !== "job_analysis" ||
+    !finishedTask.result_resource_id
+  ) {
+    throw new Error("AI analysis finished without a result.");
+  }
+  return getAnalysis(finishedTask.result_resource_id) as Promise<
+    JobAnalysis & { result: TResult }
+  >;
+}
+
+async function waitForAsyncTask(
+  initialTask: AsyncTask,
+  onTaskUpdate?: TaskProgressCallback
+): Promise<AsyncTask> {
+  let task = initialTask;
+  onTaskUpdate?.(task);
+  const startedAt = Date.now();
+  while (!["SUCCEEDED", "FAILED"].includes(task.status)) {
+    if (Date.now() - startedAt > 180_000) {
+      throw new Error(
+        "This is taking longer than expected. Please check the task again shortly."
+      );
+    }
+    await delay(task.status === "RETRYING" ? 3000 : 1500);
+    task = await getAsyncTask(task.id);
+    onTaskUpdate?.(task);
+  }
+
+  if (task.status === "FAILED") {
+    throw new Error(
+      task.last_error_message ?? "The AI task failed. Please try again."
+    );
+  }
+  return task;
+}
+
+function asyncTaskHeaders(): HeadersInit {
+  return {
+    "Content-Type": "application/json",
+    "Idempotency-Key": createIdempotencyKey()
+  };
+}
+
+function createIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
