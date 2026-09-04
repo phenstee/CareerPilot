@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AuthShell } from "@/components/auth-shell";
 import { AuthForm } from "@/components/auth-form";
 
 type AuthSearchParams = {
@@ -40,32 +41,25 @@ export default async function RegisterPage({
   const params = await searchParams;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-5 py-10">
-      <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
-          CareerPilot
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-ink">Create account</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          Start with secure account access. Profile and tracker data arrive
-          next.
-        </p>
-        <div className="mt-6">
-          <AuthForm
-            mode="register"
-            initialError={getAuthErrorMessage(params?.error)}
-          />
-        </div>
-        <p className="mt-5 text-sm text-slate-600">
+    <AuthShell
+      title="Create account"
+      description="Start with secure account access. Profile and tracker data come next."
+      footer={
+        <>
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-semibold text-lagoon hover:text-teal-800"
+            className="font-semibold text-brand-700 hover:text-brand-600"
           >
             Sign in
           </Link>
-        </p>
-      </section>
-    </main>
+        </>
+      }
+    >
+      <AuthForm
+        mode="register"
+        initialError={getAuthErrorMessage(params?.error)}
+      />
+    </AuthShell>
   );
 }

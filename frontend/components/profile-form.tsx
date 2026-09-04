@@ -357,10 +357,10 @@ export function ProfileForm() {
 
   if (profileQuery.isLoading) {
     return (
-      <div className="flex min-h-64 items-center justify-center rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-64 items-center justify-center rounded-xl border border-border bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-lagoon"
+          className="h-5 w-5 animate-spin text-brand-600"
         />
       </div>
     );
@@ -368,7 +368,7 @@ export function ProfileForm() {
 
   if (profileQuery.isError) {
     return (
-      <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
+      <div className="callout-error">
         Unable to load your profile. Please sign in again or retry in a moment.
       </div>
     );
@@ -393,7 +393,7 @@ export function ProfileForm() {
       className="space-y-6"
       onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
     >
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="surface p-5 sm:p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <TextField
             label="Full name"
@@ -496,7 +496,7 @@ export function ProfileForm() {
         {projectFields.fields.map((field, index) => (
           <article
             key={field.id}
-            className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+            className="surface p-5"
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <h2 className="text-base font-semibold text-ink">
@@ -555,7 +555,7 @@ export function ProfileForm() {
         {experienceFields.fields.map((field, index) => (
           <article
             key={field.id}
-            className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+            className="surface p-5"
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <h2 className="text-base font-semibold text-ink">
@@ -599,20 +599,20 @@ export function ProfileForm() {
       </EditableList>
 
       {mutation.isError ? (
-        <div className="rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+        <div className="callout-error">
           {mutation.error instanceof Error
             ? mutation.error.message
             : "Unable to save profile."}
         </div>
       ) : null}
       {savedMessage ? (
-        <p className="text-sm font-medium text-lagoon">{savedMessage}</p>
+      <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
       ) : null}
 
       <button
         type="submit"
         disabled={mutation.isPending}
-        className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="button button-primary"
       >
         {mutation.isPending ? (
           <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -651,18 +651,18 @@ function ProfileSummary({
   return (
     <section className="space-y-6">
       {savedMessage ? (
-        <p className="text-sm font-medium text-lagoon">{savedMessage}</p>
+      <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
       ) : null}
 
-      <article className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
+      <article className="surface p-6">
+        <p className="page-eyebrow">
           Saved profile
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-ink">
           {profile.full_name || "Unnamed profile"}
         </h2>
         {headlineParts.length > 0 ? (
-          <p className="mt-2 text-sm leading-6 text-slate-600">
+          <p className="mt-2 text-sm leading-6 text-muted">
             {headlineParts.join(" - ")}
           </p>
         ) : null}
@@ -693,12 +693,12 @@ function ProfileSummary({
             {profile.projects.map((project, index) => (
               <article
                 key={`${project.name}-${index}`}
-                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+                className="surface p-5"
               >
                 <h3 className="text-lg font-semibold text-ink">
                   {project.name}
                 </h3>
-                <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                <p className="mt-2 flex items-center gap-2 text-sm text-muted-subtle">
                   <CalendarDays aria-hidden="true" className="h-4 w-4" />
                   {formatProfileDate(project.start_date)} -{" "}
                   {formatProfileDate(project.end_date)}
@@ -711,7 +711,7 @@ function ProfileSummary({
                   </div>
                 ) : null}
                 {project.description ? (
-                  <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                  <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-muted">
                     {project.description}
                   </p>
                 ) : null}
@@ -729,7 +729,7 @@ function ProfileSummary({
             {profile.experiences.map((experience, index) => (
               <article
                 key={`${experience.organization}-${experience.position}-${index}`}
-                className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+                className="surface p-5"
               >
                 <h3 className="text-lg font-semibold text-ink">
                   {experience.position}
@@ -737,13 +737,13 @@ function ProfileSummary({
                 <p className="mt-1 text-sm font-medium text-slate-700">
                   {experience.organization}
                 </p>
-                <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                <p className="mt-2 flex items-center gap-2 text-sm text-muted-subtle">
                   <CalendarDays aria-hidden="true" className="h-4 w-4" />
                   {formatProfileDate(experience.start_date)} -{" "}
                   {formatProfileDate(experience.end_date)}
                 </p>
                 {experience.description ? (
-                  <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                  <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-muted">
                     {experience.description}
                   </p>
                 ) : null}
@@ -758,7 +758,7 @@ function ProfileSummary({
       <button
         type="button"
         onClick={onEdit}
-        className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+        className="button button-primary"
       >
         <Pencil aria-hidden="true" className="h-4 w-4" />
         Edit profile
@@ -784,7 +784,7 @@ function ProfileChipSection({
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-sm text-slate-500">Not set</p>
+        <p className="mt-2 text-sm text-muted-subtle">Not set</p>
       )}
     </section>
   );
@@ -792,7 +792,7 @@ function ProfileChipSection({
 
 function DisplayChip({ value }: { value: string }) {
   return (
-    <span className="rounded-md bg-lagoon/10 px-2.5 py-1.5 text-sm font-medium text-lagoon">
+    <span className="badge badge-brand px-2.5 py-1.5 text-sm font-medium">
       {value}
     </span>
   );
@@ -824,11 +824,11 @@ function TextField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="form-label">{label}</span>
       <input
         {...registration}
         type={type}
-        className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+        className="form-control mt-2"
       />
     </label>
   );
@@ -843,11 +843,11 @@ function TextareaField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="form-label">{label}</span>
       <textarea
         {...registration}
         rows={4}
-        className="mt-2 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+        className="form-control mt-2"
       />
     </label>
   );
@@ -903,14 +903,14 @@ function SuggestionChipField({
 
   return (
     <div className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
-      <div className="mt-2 rounded-md border border-slate-300 bg-white px-3 py-2 shadow-sm transition focus-within:border-lagoon focus-within:ring-2 focus-within:ring-lagoon/20">
+      <span className="form-label">{label}</span>
+      <div className="mt-2 rounded-lg border border-border-strong bg-surface px-3 py-2 shadow-sm transition focus-within:border-lagoon focus-within:ring-2 focus-within:ring-lagoon/20">
         {values.length > 0 ? (
           <div className="mb-2 flex flex-wrap gap-2">
             {values.map((value) => (
               <span
                 key={value}
-                className="inline-flex max-w-full items-center gap-2 rounded-md bg-lagoon/10 px-2.5 py-1.5 text-sm font-medium text-lagoon"
+                className="badge badge-brand inline-flex max-w-full items-center gap-2 px-2.5 py-1.5 text-sm font-medium"
               >
                 <span className="truncate">{value}</span>
                 <button
@@ -918,7 +918,7 @@ function SuggestionChipField({
                   onClick={() => removeValue(value)}
                   aria-label={`Remove ${value}`}
                   title={`Remove ${value}`}
-                  className="inline-flex h-5 w-5 flex-none items-center justify-center rounded text-lagoon transition hover:bg-lagoon/15 focus:outline-none focus:ring-2 focus:ring-lagoon"
+                  className="inline-flex h-5 w-5 flex-none items-center justify-center rounded text-brand-700 transition hover:bg-brand-100 focus:outline-none focus:ring-2 focus:ring-lagoon"
                 >
                   <X aria-hidden="true" className="h-3.5 w-3.5" />
                 </button>
@@ -945,7 +945,7 @@ function SuggestionChipField({
             key={suggestion}
             type="button"
             onClick={() => addValue(suggestion)}
-            className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lagoon/50 hover:text-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700"
           >
             {suggestion}
           </button>
@@ -955,7 +955,7 @@ function SuggestionChipField({
           <button
             type="button"
             onClick={() => addValue(inputValue)}
-            className="rounded-md border border-dashed border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lagoon/50 hover:text-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            className="badge badge-neutral cursor-pointer border-dashed transition hover:bg-brand-50 hover:text-brand-700"
           >
             Add {inputValue.trim()}
           </button>
@@ -983,7 +983,7 @@ function EditableList({
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+          className="button button-secondary"
         >
           <Plus aria-hidden="true" className="h-4 w-4" />
           {emptyLabel}
@@ -1007,7 +1007,7 @@ function IconButton({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:border-coral hover:text-coral focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+      className="button button-danger h-9 w-9 px-0"
     >
       <Trash2 aria-hidden="true" className="h-4 w-4" />
     </button>
@@ -1016,7 +1016,7 @@ function IconButton({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
+    <div className="rounded-xl border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
       {label}
     </div>
   );

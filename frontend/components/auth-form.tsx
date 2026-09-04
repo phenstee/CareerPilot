@@ -98,68 +98,64 @@ export function AuthForm({
       {mode === "register" ? (
         <>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">
-              Full name
-            </span>
+            <span className="form-label">Full name</span>
             <input
               {...registerField("full_name")}
               autoComplete="name"
-              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+              className="form-control mt-2"
             />
             {errors.full_name ? (
-              <span className="mt-1 block text-sm text-coral">
+              <span className="mt-1 block text-sm text-danger">
                 {errors.full_name.message}
               </span>
             ) : null}
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">
-              Beta access code
-            </span>
+            <span className="form-label">Beta access code</span>
             <input
               {...registerField("beta_access_code")}
               autoComplete="off"
-              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+              className="form-control mt-2"
             />
           </label>
         </>
       ) : null}
 
       <label className="block">
-        <span className="text-sm font-medium text-slate-700">Email</span>
+        <span className="form-label">Email</span>
         <input
           {...registerField("email")}
           type="email"
           autoComplete="email"
-          className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+          className="form-control mt-2"
         />
         {errors.email ? (
-          <span className="mt-1 block text-sm text-coral">
+          <span className="mt-1 block text-sm text-danger">
             {errors.email.message}
           </span>
         ) : null}
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-slate-700">Password</span>
+        <span className="form-label">Password</span>
         <input
           {...registerField("password")}
           type="password"
           autoComplete={
             mode === "register" ? "new-password" : "current-password"
           }
-          className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+          className="form-control mt-2"
         />
         {errors.password ? (
-          <span className="mt-1 block text-sm text-coral">
+          <span className="mt-1 block text-sm text-danger">
             {errors.password.message}
           </span>
         ) : null}
       </label>
 
       {formError ? (
-        <div className="rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+        <div className="callout-error">
           {formError}
         </div>
       ) : null}
@@ -167,7 +163,7 @@ export function AuthForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="button button-primary w-full"
       >
         {isSubmitting ? (
           <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />

@@ -25,12 +25,12 @@ export function AgentCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="surface p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-ink">{title}</h2>
           {description ? (
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
               {description}
             </p>
           ) : null}
@@ -56,14 +56,14 @@ export function PrimaryActionCard({
   children?: ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-lagoon/20 bg-white p-5 shadow-sm">
+    <section className="surface border-brand-100 p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-normal text-lagoon">
+          <p className="page-eyebrow">
             {eyebrow}
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-ink">{title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
             {description}
           </p>
         </div>
@@ -82,8 +82,8 @@ export function ActionButton({
   primary?: boolean;
 }) {
   const classes = primary
-    ? "inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
-    : "inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400";
+    ? "button button-primary"
+    : "button button-secondary";
 
   const content = (
     <>
@@ -128,7 +128,7 @@ export function JobPicker({
   getMeta?: (job: JobPosting) => string;
 }) {
   return (
-    <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <aside className="surface p-4">
       <h2 className="text-base font-semibold text-ink">Saved jobs</h2>
       <div className="mt-3 max-h-[34rem] space-y-2 overflow-y-auto pr-1">
         {jobs.map((job) => (
@@ -136,16 +136,16 @@ export function JobPicker({
             key={job.id}
             type="button"
             onClick={() => onSelect(job.id)}
-            className={`w-full rounded-md border px-3 py-3 text-left text-sm transition ${
+            className={`w-full rounded-lg border px-3 py-3 text-left text-sm transition ${
               selectedJobId === job.id
-                ? "border-lagoon bg-lagoon/5"
-                : "border-slate-200 bg-white hover:border-slate-300"
+                ? "border-brand-500 bg-brand-50"
+                : "border-border bg-surface hover:border-border-strong"
             }`}
           >
             <span className="block font-semibold text-ink">{job.title}</span>
-            <span className="mt-1 block text-slate-600">{job.company}</span>
+            <span className="mt-1 block text-muted">{job.company}</span>
             {getMeta ? (
-              <span className="mt-1 block text-xs text-slate-500">
+              <span className="mt-1 block text-xs text-muted-subtle">
                 {getMeta(job)}
               </span>
             ) : null}
@@ -170,7 +170,7 @@ export function CompactList({
     return emptyText ? (
       <section>
         <h3 className="text-sm font-semibold text-ink">{title}</h3>
-        <p className="mt-2 text-sm text-slate-500">{emptyText}</p>
+        <p className="mt-2 text-sm text-muted-subtle">{emptyText}</p>
       </section>
     ) : null;
   }
@@ -178,12 +178,9 @@ export function CompactList({
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
+      <ul className="mt-1 divide-y divide-border text-sm leading-6 text-muted">
         {items.map((item, index) => (
-          <li
-            key={`${item}-${index}`}
-            className="rounded-md bg-slate-50 px-3 py-2"
-          >
+          <li key={`${item}-${index}`} className="py-2.5 first:pt-1 last:pb-0">
             {item}
           </li>
         ))}
@@ -211,13 +208,13 @@ export function TagList({
       {visible.map((item) => (
         <span
           key={item}
-          className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700"
+          className="badge badge-neutral"
         >
           {item}
         </span>
       ))}
       {extra > 0 ? (
-        <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-500">
+        <span className="badge badge-neutral">
           +{extra} more
         </span>
       ) : null}
@@ -227,8 +224,8 @@ export function TagList({
 
 export function LoadingState({ message }: { message: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-3 text-sm text-slate-600">
+    <div className="surface p-5">
+      <div className="flex items-center gap-3 text-sm text-muted">
         <Loader2
           aria-hidden="true"
           className="h-5 w-5 animate-spin text-lagoon"
@@ -236,9 +233,9 @@ export function LoadingState({ message }: { message: string }) {
         <span>{message}</span>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <div className="h-20 rounded-md bg-slate-100" />
-        <div className="h-20 rounded-md bg-slate-100" />
-        <div className="h-20 rounded-md bg-slate-100" />
+        <div className="skeleton h-20" />
+        <div className="skeleton h-20" />
+        <div className="skeleton h-20" />
       </div>
     </div>
   );
@@ -252,19 +249,19 @@ export function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8">
+    <div className="rounded-xl border border-dashed border-border-strong bg-surface p-8">
       <h2 className="text-xl font-semibold text-ink">{title}</h2>
-      <p className="mt-2 max-w-xl text-sm text-slate-600">{description}</p>
+      <p className="mt-2 max-w-xl text-sm text-muted">{description}</p>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">
         <Link
           href="/agents/job-finder"
-          className="inline-flex justify-center rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white"
+          className="button button-primary"
         >
           Find jobs
         </Link>
         <Link
           href="/jobs"
-          className="inline-flex justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink"
+          className="button button-secondary"
         >
           View all jobs
         </Link>
@@ -281,7 +278,7 @@ export function ErrorCallout({
   action?: Action;
 }) {
   return (
-    <div className="mt-4 flex flex-col gap-3 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800 sm:flex-row sm:items-center sm:justify-between">
+    <div className="callout-error mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-2">
         <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
         <p>{message}</p>
@@ -306,10 +303,8 @@ export function TaskStatusNotice({ task }: { task: AsyncTask | null }) {
 
   return (
     <div
-      className={`mt-4 flex items-start gap-2 rounded-md px-3 py-2 text-sm ${
-        isFailed
-          ? "border border-coral/20 bg-coral/10 text-orange-800"
-          : "border border-lagoon/20 bg-lagoon/5 text-slate-700"
+      className={`mt-4 flex items-start gap-2 px-3 py-2 text-sm ${
+        isFailed ? "callout-error" : "callout-info"
       }`}
     >
       {isDone ? (

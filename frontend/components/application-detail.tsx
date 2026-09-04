@@ -107,10 +107,10 @@ export function ApplicationDetail() {
 
   if (applicationQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-lagoon"
+          className="h-5 w-5 animate-spin text-brand-600"
         />
       </div>
     );
@@ -118,9 +118,7 @@ export function ApplicationDetail() {
 
   if (applicationQuery.isError || !applicationQuery.data) {
     return (
-      <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
-        Application not found.
-      </div>
+      <div className="callout-error">Application not found.</div>
     );
   }
 
@@ -135,7 +133,7 @@ export function ApplicationDetail() {
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
       <form
-        className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+        className="surface p-5 sm:p-6"
         onSubmit={(event) => {
           event.preventDefault();
           updateMutation.mutate(values);
@@ -143,13 +141,13 @@ export function ApplicationDetail() {
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
+            <p className="page-eyebrow">
               {application.company}
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">
               {application.job_title}
             </h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-muted">
               {application.location || "Location not set"} -{" "}
               {application.employment_type || "Type not set"}
             </p>
@@ -158,14 +156,14 @@ export function ApplicationDetail() {
             type="button"
             onClick={() => deleteMutation.mutate()}
             disabled={deleteMutation.isPending}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-coral hover:text-coral focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="button button-danger"
           >
             <Trash2 aria-hidden="true" className="h-4 w-4" />
             Delete
           </button>
           <Link
             href={`/applications/${application.id}/interview`}
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            className="button button-primary"
           >
             <Mic aria-hidden="true" className="h-4 w-4" />
             Practice interview
@@ -174,7 +172,7 @@ export function ApplicationDetail() {
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Stage</span>
+            <span className="form-label">Stage</span>
             <select
               value={values.stage}
               onChange={(event) =>
@@ -183,7 +181,7 @@ export function ApplicationDetail() {
                   stage: event.target.value as ApplicationStage
                 })
               }
-              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+              className="form-control mt-2"
             >
               {APPLICATION_STAGES.map((stage) => (
                 <option key={stage} value={stage}>
@@ -212,7 +210,7 @@ export function ApplicationDetail() {
         </div>
 
         <label className="mt-4 block">
-          <span className="text-sm font-medium text-slate-700">
+          <span className="form-label">
             Next action
           </span>
           <input
@@ -220,24 +218,24 @@ export function ApplicationDetail() {
             onChange={(event) =>
               setValues({ ...values, next_action: event.target.value })
             }
-            className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            className="form-control mt-2"
           />
         </label>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Notes</span>
+            <span className="form-label">Notes</span>
             <textarea
               value={values.notes}
               onChange={(event) =>
                 setValues({ ...values, notes: event.target.value })
               }
               rows={10}
-              className="mt-2 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+              className="form-control mt-2"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">
+            <span className="form-label">
               Important contacts
             </span>
             <textarea
@@ -250,13 +248,13 @@ export function ApplicationDetail() {
               }
               rows={10}
               placeholder="One contact per line"
-              className="mt-2 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+              className="form-control mt-2"
             />
           </label>
         </div>
 
         {formError ? (
-          <div className="mt-4 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+          <div className="callout-error mt-4">
             {formError}
           </div>
         ) : null}
@@ -264,7 +262,7 @@ export function ApplicationDetail() {
         <button
           type="submit"
           disabled={updateMutation.isPending}
-          className="mt-5 inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="button button-primary mt-5"
         >
           {updateMutation.isPending ? (
             <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -275,20 +273,20 @@ export function ApplicationDetail() {
         </button>
       </form>
 
-      <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <aside className="surface p-5">
         <h3 className="text-lg font-semibold text-ink">Stage history</h3>
         <div className="mt-4 space-y-4">
           {application.stage_history.map((event) => (
-            <div key={event.id} className="border-l-2 border-lagoon/30 pl-4">
+            <div key={event.id} className="border-l-2 border-brand-100 pl-4">
               <p className="text-sm font-semibold text-ink">
                 {event.from_stage ? `${event.from_stage} to ` : ""}
                 {event.to_stage}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-muted-subtle">
                 {formatDateTime(event.changed_at)}
               </p>
               {event.note ? (
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   {event.note}
                 </p>
               ) : null}
@@ -311,12 +309,12 @@ function DateField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="form-label">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         type="date"
-        className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+        className="form-control mt-2"
       />
     </label>
   );

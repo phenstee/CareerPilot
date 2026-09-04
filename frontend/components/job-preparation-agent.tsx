@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   FileText,
   ListChecks,
-  RefreshCw,
   Sparkles
 } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +20,6 @@ import {
   LoadingState,
   PrimaryActionCard,
   StaleNotice,
-  TagList,
   TaskStatusNotice
 } from "@/components/agent-result-ui";
 import {
@@ -34,7 +32,6 @@ import {
   listAnalyses,
   listJobs,
   PreparationPlanOutput,
-  QualificationGap,
   RoleAnalysisOutput,
   ResumeSuggestionsOutput
 } from "@/lib/api";
@@ -43,6 +40,13 @@ import {
   canGeneratePreparationPlan,
   preparationPlanDisabledReason
 } from "@/lib/job-prep-state";
+import {
+  EvidenceInsight,
+  GapInsight,
+  InsightSummary,
+  RecommendationPanel,
+  UncertaintyList
+} from "@/components/insights";
 
 export function JobPreparationAgent() {
   const searchParams = useSearchParams();
@@ -280,84 +284,69 @@ export function JobPreparationAgent() {
           </PrimaryActionCard>
 
           {latestRoleAnalysis ? (
-            <AgentCard
-              title="What to focus on"
-              description="Start with the highest-impact topics before reading deeper detail."
-              action={{
-                label: "Refresh role analysis",
-                onClick: () => roleAnalysisMutation.mutate(),
-                loading: roleAnalysisMutation.isPending,
-                icon: <RefreshCw aria-hidden="true" className="h-4 w-4" />
-              }}
-            >
+            <>
               {latestRoleAnalysisItem?.is_stale ? (
                 <StaleNotice message="This role analysis may be stale because the job, profile, or resume changed. Refresh it before relying on the plan." />
               ) : null}
-              <p className="max-w-3xl text-sm leading-6 text-slate-700">
-                {latestRoleAnalysis.role_summary}
-              </p>
-              <div className="mt-4">
-                <CompactList
-                  title="Top priorities"
-                  items={latestRoleAnalysis.preparation_priorities}
-                  limit={4}
-                  emptyText="No priorities returned yet."
-                />
-              </div>
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                <CompactList
-                  title="Core responsibilities"
-                  items={latestRoleAnalysis.responsibilities}
-                />
-                <CompactList
-                  title="Required skills"
-                  items={latestRoleAnalysis.required_skills}
-                />
-                <CompactList
-                  title="Preferred skills"
-                  items={latestRoleAnalysis.preferred_skills}
-                />
-                <section>
-                  <h3 className="text-sm font-semibold text-ink">
-                    Technologies
-                  </h3>
-                  <div className="mt-2">
-                    <TagList items={latestRoleAnalysis.technologies} />
-                  </div>
-                </section>
-              </div>
-            </AgentCard>
+              <InsightSummary
+                title="How you fit this role"
+                description={latestRoleAnalysis.role_summary}
+                strengths={latestRoleAnalysis.strengths.map(
+                  (strength) => strength.claim
+                )}
+                gaps={latestRoleAnalysis.gaps.map((gap) => gap.requirement)}
+              />
+              <RecommendationPanel
+                title="What to do next"
+                items={latestRoleAnalysis.preparation_priorities}
+              />
+
+              <section className="space-y-3">
+                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted-subtle">
+                  Areas to prepare
+                </h3>
+                {latestRoleAnalysis.gaps.length > 0 ? (
+                  latestRoleAnalysis.gaps.map((gap, index) => (
+                    <GapInsight
+                      key={`${gap.requirement}-${index}`}
+                      gap={gap}
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-muted">
+                    No major gaps were identified.
+                  </p>
+                )}
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted-subtle">
+                  Evidence to use
+                </h3>
+                {latestRoleAnalysis.strengths.length > 0 ? (
+                  latestRoleAnalysis.strengths.map((strength, index) => (
+                    <EvidenceInsight
+                      key={`${strength.claim}-${index}`}
+                      evidence={strength}
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-muted">
+                    No strong evidence was returned.
+                  </p>
+                )}
+              </section>
+
+              <UncertaintyList items={latestRoleAnalysis.uncertainties} />
+            </>
           ) : (
             <AgentCard title="Start with a role analysis">
-              <p className="text-sm leading-6 text-slate-600">
+              <p className="text-sm leading-6 text-muted">
                 CareerPilot needs one role analysis before it can build a
                 focused preparation plan.
               </p>
             </AgentCard>
           )}
-
-          <AgentCard
-            title="Weak areas and evidence"
-            description="Use this section to decide what needs practice or clarification."
-          >
-            {latestRoleAnalysis ? (
-              <div className="grid gap-4 lg:grid-cols-2">
-                <GapBlock items={latestRoleAnalysis.gaps} />
-                <EvidenceBlock items={latestRoleAnalysis.strengths} />
-                <div className="lg:col-span-2">
-                  <CompactList
-                    title="Uncertainties"
-                    items={latestRoleAnalysis.uncertainties}
-                    limit={3}
-                  />
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">
-                Generate role analysis to see gaps and evidence.
-              </p>
-            )}
-          </AgentCard>
 
           <AgentCard
             title="Preparation plan"
@@ -425,7 +414,7 @@ export function JobPreparationAgent() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-subtle">
                 Generate a plan after the role analysis is ready.
               </p>
             )}
@@ -496,7 +485,7 @@ export function JobPreparationAgent() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-subtle">
                 Resume advice is optional and stays secondary to preparation.
               </p>
             )}
@@ -520,24 +509,24 @@ export function JobPreparationAgent() {
                   })
                 }
               />
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-xl bg-surface-muted p-4">
                 <h3 className="text-sm font-semibold text-ink">
                   Mock interview
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   Practice after the plan is ready and the job is tracked as an
                   application.
                 </p>
                 {application ? (
                   <Link
                     href={`/applications/${application.id}/interview`}
-                    className="mt-4 inline-flex items-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white"
+                    className="button button-primary mt-4"
                   >
                     <Sparkles aria-hidden="true" className="h-4 w-4" />
                     Start mock interview
                   </Link>
                 ) : (
-                  <p className="mt-4 text-sm text-slate-600">
+                  <p className="mt-4 text-sm text-muted">
                     Track this job as an application to unlock the stored mock
                     interview workflow.
                   </p>
@@ -547,7 +536,7 @@ export function JobPreparationAgent() {
           </AgentCard>
         </section>
       ) : (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">
+        <div className="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
           Select a saved job to begin preparation.
         </div>
       )}
@@ -615,69 +604,6 @@ function getPrimaryAction({
   };
 }
 
-function GapBlock({ items }: { items: QualificationGap[] }) {
-  if (items.length === 0) {
-    return (
-      <CompactList
-        title="Weak areas"
-        items={[]}
-        emptyText="No major gaps returned."
-      />
-    );
-  }
-
-  return (
-    <section>
-      <h3 className="text-sm font-semibold text-ink">Weak areas</h3>
-      <ul className="mt-2 space-y-2">
-        {items.map((item, index) => (
-          <li
-            key={`${item.requirement}-${index}`}
-            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
-          >
-            <span className="block font-semibold text-ink">
-              {item.requirement}
-            </span>
-            <span className="mt-1 block text-xs text-slate-500">
-              Evidence: {item.current_evidence ?? "Not found"}
-            </span>
-            <span className="mt-1 block">{item.recommendation}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function EvidenceBlock({ items }: { items: RoleAnalysisOutput["strengths"] }) {
-  if (items.length === 0) {
-    return (
-      <CompactList
-        title="Evidence to use"
-        items={[]}
-        emptyText="No strong evidence returned."
-      />
-    );
-  }
-
-  return (
-    <section>
-      <h3 className="text-sm font-semibold text-ink">Evidence to use</h3>
-      <ul className="mt-2 space-y-2">
-        {items.map((item, index) => (
-          <li
-            key={`${item.claim}-${index}`}
-            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
-          >
-            <span className="block font-semibold text-ink">{item.claim}</span>
-            <span className="mt-1 block">{item.evidence}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 function Checklist({
   latestPlanId,
   items,
@@ -691,7 +617,7 @@ function Checklist({
 }) {
   if (items.length === 0 || !latestPlanId) {
     return (
-      <div className="rounded-md bg-slate-50 p-4 text-sm text-slate-600">
+      <div className="rounded-xl bg-surface-muted p-4 text-sm text-muted">
         Generate a preparation plan to get a short checklist.
       </div>
     );
@@ -730,18 +656,18 @@ function ChecklistItem({
   const checked = completedItems.has(itemKey);
 
   return (
-    <label className="flex items-center gap-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+    <label className="flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm text-ink">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onToggle(itemKey, event.target.checked)}
-        className="h-4 w-4 rounded border-slate-300 text-lagoon focus:ring-lagoon"
+        className="h-4 w-4 rounded border-border-strong text-brand-600 focus:ring-brand-600"
       />
       <span>{item}</span>
       {checked ? (
         <CheckCircle2
           aria-hidden="true"
-          className="ml-auto h-4 w-4 text-lagoon"
+          className="ml-auto h-4 w-4 text-brand-600"
         />
       ) : null}
     </label>
@@ -750,8 +676,8 @@ function ChecklistItem({
 
 function StatusTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-slate-50 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">
+    <div className="rounded-lg bg-surface-muted px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-ink">{value}</p>

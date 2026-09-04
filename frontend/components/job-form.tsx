@@ -74,7 +74,7 @@ export function JobForm({ job }: JobFormProps) {
       className="space-y-5"
       onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
     >
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="surface p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <TextField label="Job title" registration={form.register("title")} />
           <TextField label="Company" registration={form.register("company")} />
@@ -107,7 +107,7 @@ export function JobForm({ job }: JobFormProps) {
       </section>
 
       {formError ? (
-        <div className="rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+        <div className="callout-error">
           {formError}
         </div>
       ) : null}
@@ -115,7 +115,7 @@ export function JobForm({ job }: JobFormProps) {
       <button
         type="submit"
         disabled={mutation.isPending}
-        className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="button button-primary"
       >
         {mutation.isPending ? (
           <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -139,11 +139,11 @@ function TextField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="form-label">{label}</span>
       <input
         {...registration}
         type={type}
-        className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+        className="form-control mt-2"
       />
     </label>
   );
@@ -160,11 +160,11 @@ function TextareaField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="form-label">{label}</span>
       <textarea
         {...registration}
         rows={rows}
-        className="mt-2 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+        className="form-control mt-2"
       />
     </label>
   );

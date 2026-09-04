@@ -86,10 +86,10 @@ export function JobDetail() {
 
   if (jobQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-lagoon"
+          className="h-5 w-5 animate-spin text-brand-600"
         />
       </div>
     );
@@ -97,9 +97,7 @@ export function JobDetail() {
 
   if (jobQuery.isError || !jobQuery.data) {
     return (
-      <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
-        Job posting not found.
-      </div>
+      <div className="callout-error">Job posting not found.</div>
     );
   }
 
@@ -118,7 +116,7 @@ export function JobDetail() {
         <button
           type="button"
           onClick={() => setIsEditing(false)}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+          className="button button-secondary"
         >
           Cancel editing
         </button>
@@ -129,16 +127,16 @@ export function JobDetail() {
 
   return (
     <>
-      <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <article className="surface p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
+            <p className="page-eyebrow">
               {job.company}
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">
               {job.title}
             </h2>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-muted">
               {job.location || "Location not set"} ·{" "}
               {job.employment_type || "Type not set"}
             </p>
@@ -148,7 +146,7 @@ export function JobDetail() {
               <Link
                 href={job.job_url}
                 target="_blank"
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                className="button button-secondary"
               >
                 <ExternalLink aria-hidden="true" className="h-4 w-4" />
                 Open job
@@ -156,20 +154,20 @@ export function JobDetail() {
             ) : null}
             <Link
               href={`/agents/job-application?job=${job.id}`}
-              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+              className="button button-secondary"
             >
               Prepare application
             </Link>
             <Link
               href={`/agents/job-prep?job=${job.id}`}
-              className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+              className="button button-secondary"
             >
               Prepare for job
             </Link>
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+              className="button button-secondary"
             >
               Edit
             </button>
@@ -177,7 +175,7 @@ export function JobDetail() {
               type="button"
               onClick={() => deleteMutation.mutate()}
               disabled={deleteMutation.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-coral hover:text-coral focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="button button-danger"
             >
               <Trash2 aria-hidden="true" className="h-4 w-4" />
               Delete
@@ -185,13 +183,13 @@ export function JobDetail() {
           </div>
         </div>
 
-        <section className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <section className="mt-5 rounded-xl border border-border bg-surface-muted p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-ink">
                 Application status
               </h3>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-muted">
                 {application
                   ? "This saved job is in your application tracker."
                   : "Choose a status to add this job to your tracker."}
@@ -213,7 +211,7 @@ export function JobDetail() {
                 disabled={
                   applicationsQuery.isLoading || statusMutation.isPending
                 }
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="form-control disabled:cursor-not-allowed disabled:bg-surface-muted"
               >
                 {JOB_DETAIL_STATUSES.map((status) => (
                   <option key={status} value={status}>
@@ -224,7 +222,7 @@ export function JobDetail() {
             </label>
           </div>
           {statusMutation.isError ? (
-            <p className="mt-3 text-sm text-orange-800">
+            <p className="mt-3 text-sm text-danger">
               Unable to update application status.
             </p>
           ) : null}
@@ -232,15 +230,15 @@ export function JobDetail() {
 
         <section className="mt-6">
           <h3 className="text-base font-semibold text-ink">Description</h3>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink">
             {job.description}
           </p>
         </section>
 
         {job.notes ? (
-          <section className="mt-6 rounded-lg bg-slate-50 p-4">
+          <section className="mt-6 rounded-xl bg-surface-muted p-4">
             <h3 className="text-base font-semibold text-ink">Notes</h3>
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink">
               {job.notes}
             </p>
           </section>

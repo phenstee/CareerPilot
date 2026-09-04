@@ -85,10 +85,10 @@ export function ResumeManager() {
 
   if (resumeQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-lagoon"
+          className="h-5 w-5 animate-spin text-brand-600"
         />
       </div>
     );
@@ -101,16 +101,16 @@ export function ResumeManager() {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="surface p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-ink">Uploaded resume</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
               Upload a text-readable PDF. CareerPilot stores extracted text for
               later AI analysis only when you explicitly request AI features.
             </p>
           </div>
-          <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-within:ring-2 focus-within:ring-lagoon focus-within:ring-offset-2">
+          <label className="button button-primary cursor-pointer">
             {uploadMutation.isPending ? (
               <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
             ) : (
@@ -128,27 +128,27 @@ export function ResumeManager() {
         </div>
 
         {error ? (
-          <div className="mt-4 rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+          <div className="callout-error mt-4">
             {error}
           </div>
         ) : null}
 
         {resume ? (
-          <div className="mt-6 border-t border-slate-200 pt-6">
+          <div className="mt-6 border-t border-border pt-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex gap-4">
-                  <div className="flex h-14 w-14 flex-none items-center justify-center rounded-md bg-lagoon/10 text-lagoon">
+                  <div className="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                     <FileCheck2 aria-hidden="true" className="h-7 w-7" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-normal text-lagoon">
+                    <p className="page-eyebrow">
                       PDF ready
                     </p>
                     <h3 className="mt-1 break-words text-xl font-semibold text-ink">
                       {resume.filename}
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-muted">
                       Text extraction completed. This preview is stored for
                       later matching and resume-tailoring workflows.
                     </p>
@@ -165,12 +165,12 @@ export function ResumeManager() {
                   />
                 </dl>
 
-                <div className="mt-5 rounded-md border border-slate-200 bg-slate-50">
-                  <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                <div className="mt-5 rounded-lg border border-border bg-surface-muted">
+                  <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <p className="text-sm font-semibold text-ink">
                       Extracted text preview
                     </p>
-                    <span className="text-xs font-medium text-slate-500">
+                    <span className="text-xs font-medium text-muted-subtle">
                       First readable lines
                     </span>
                   </div>
@@ -180,9 +180,9 @@ export function ResumeManager() {
                         {previewLines.map((line, index) => (
                           <li
                             key={`${line}-${index}`}
-                            className="grid grid-cols-[2rem_1fr] gap-3 text-sm leading-6 text-slate-700"
+                            className="grid grid-cols-[2rem_1fr] gap-3 text-sm leading-6 text-ink"
                           >
-                            <span className="font-mono text-xs text-slate-400">
+                            <span className="font-mono text-xs text-muted-subtle">
                               {String(index + 1).padStart(2, "0")}
                             </span>
                             <span>{line}</span>
@@ -190,7 +190,7 @@ export function ResumeManager() {
                         ))}
                       </ol>
                     ) : (
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-muted">
                         Preview unavailable, but extracted text was stored.
                       </p>
                     )}
@@ -202,7 +202,7 @@ export function ResumeManager() {
                 type="button"
                 onClick={() => deleteMutation.mutate()}
                 disabled={deleteMutation.isPending}
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-coral hover:text-coral focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 xl:flex-none"
+                className="button button-danger xl:flex-none"
               >
                 <Trash2 aria-hidden="true" className="h-4 w-4" />
                 Delete
@@ -210,7 +210,7 @@ export function ResumeManager() {
             </div>
           </div>
         ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
+          <div className="mt-5 rounded-xl border border-dashed border-border-strong bg-surface-muted p-6 text-sm text-muted">
             No resume uploaded yet.
           </div>
         )}
@@ -229,9 +229,9 @@ function ResumeMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-3">
-      <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-normal text-slate-500">
-        <span className="text-lagoon">{icon}</span>
+    <div className="rounded-lg border border-border bg-surface-muted px-3 py-3">
+      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
+        <span className="text-brand-600">{icon}</span>
         {label}
       </dt>
       <dd className="mt-2 text-sm font-semibold text-ink">{value}</dd>

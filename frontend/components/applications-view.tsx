@@ -1,7 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Columns3, Loader2, Search, Table2 } from "lucide-react";
+import {
+  CalendarDays,
+  Columns3,
+  Loader2,
+  Search,
+  Table2
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -11,6 +17,7 @@ import {
   listApplications,
   TrackedApplication
 } from "@/lib/api";
+import { Badge } from "@/components/badge";
 
 const HIDDEN_TRACKER_STAGES = new Set<ApplicationStage>([
   "Saved",
@@ -21,6 +28,17 @@ const HIDDEN_TRACKER_STAGES = new Set<ApplicationStage>([
 const VISIBLE_TRACKER_STAGES = APPLICATION_STAGES.filter(
   (stage) => !HIDDEN_TRACKER_STAGES.has(stage)
 );
+
+const stageTone: Record<ApplicationStage, "neutral" | "brand" | "success" | "warning" | "danger"> = {
+  Saved: "neutral",
+  Preparing: "brand",
+  Applied: "brand",
+  "Online Assessment": "warning",
+  Interview: "success",
+  Offer: "success",
+  Rejected: "danger",
+  Withdrawn: "neutral"
+};
 
 function formatDate(value: string | null): string {
   if (!value) return "Not set";
@@ -66,31 +84,33 @@ export function ApplicationsView() {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 lg:grid-cols-[1fr_1fr_190px_160px_160px]">
+      <div className="surface p-4">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_190px_160px_160px]">
           <label className="relative block">
             <Search
               aria-hidden="true"
-              className="absolute left-3 top-3.5 h-4 w-4 text-slate-400"
+              className="absolute left-3 top-3.5 h-4 w-4 text-muted-subtle"
             />
             <input
               value={company}
               onChange={(event) => setCompany(event.target.value)}
               placeholder="Filter company"
-              className="w-full rounded-md border border-slate-300 bg-white py-3 pl-9 pr-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+              aria-label="Filter by company"
+              className="form-control pl-9"
             />
           </label>
           <input
             value={role}
             onChange={(event) => setRole(event.target.value)}
             placeholder="Filter role"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            aria-label="Filter by role"
+            className="form-control"
           />
           <select
             value={stage}
             onChange={(event) => setStage(event.target.value)}
             aria-label="Filter by stage"
-            className="rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            className="form-control"
           >
             <option value="">All stages</option>
             {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
@@ -104,55 +124,60 @@ export function ApplicationsView() {
             onChange={(event) => setDateFrom(event.target.value)}
             aria-label="Applied from"
             type="date"
-            className="rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            className="form-control"
           />
           <input
             value={dateTo}
             onChange={(event) => setDateTo(event.target.value)}
             aria-label="Applied to"
             type="date"
-            className="rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+            className="form-control"
           />
         </div>
-        <div className="mt-4 inline-flex rounded-md border border-slate-300 bg-white p-1 shadow-sm">
-          <button
-            type="button"
-            onClick={() => setView("board")}
-            aria-pressed={view === "board"}
-            className="inline-flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-slate-600 transition aria-pressed:bg-lagoon aria-pressed:text-white"
-          >
-            <Columns3 aria-hidden="true" className="h-4 w-4" />
-            Board
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("table")}
-            aria-pressed={view === "table"}
-            className="inline-flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-slate-600 transition aria-pressed:bg-lagoon aria-pressed:text-white"
-          >
-            <Table2 aria-hidden="true" className="h-4 w-4" />
-            Table
-          </button>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="inline-flex rounded-lg bg-surface-muted p-1">
+            <button
+              type="button"
+              onClick={() => setView("board")}
+              aria-pressed={view === "board"}
+              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-sm"
+            >
+              <Columns3 aria-hidden="true" className="h-4 w-4" />
+              Board
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("table")}
+              aria-pressed={view === "table"}
+              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-sm"
+            >
+              <Table2 aria-hidden="true" className="h-4 w-4" />
+              Table
+            </button>
+          </div>
+          {applicationsQuery.data ? (
+            <p className="text-sm font-medium text-muted">
+              {applicationsQuery.data.total} tracked
+            </p>
+          ) : null}
         </div>
       </div>
 
       {applicationsQuery.isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-white">
+        <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
           <Loader2
             aria-hidden="true"
-            className="h-5 w-5 animate-spin text-lagoon"
+            className="h-5 w-5 animate-spin text-brand-600"
           />
         </div>
       ) : null}
 
       {applicationsQuery.isError ? (
-        <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
-          Unable to load applications.
-        </div>
+        <div className="callout-error">Unable to load applications.</div>
       ) : null}
 
       {applicationsQuery.data && applicationsQuery.data.total === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
+        <div className="rounded-xl border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
           No tracked applications match this view. Open a saved job to start
           tracking it.
         </div>
@@ -160,31 +185,38 @@ export function ApplicationsView() {
 
       {applicationsQuery.data && applicationsQuery.data.total > 0 ? (
         view === "board" ? (
-          <div className="grid gap-4 xl:grid-cols-4">
-            {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
-              <section
-                key={applicationStage}
-                className="min-h-40 rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
-              >
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-ink">
-                    {applicationStage}
-                  </h2>
-                  <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-                    {applicationsQuery.data.counts_by_stage[applicationStage] ??
-                      0}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {(grouped.get(applicationStage) ?? []).map((application) => (
-                    <ApplicationCard
-                      key={application.id}
-                      application={application}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
+          <div className="-mx-1 overflow-x-auto px-1 pb-4">
+            <div className="flex min-w-[76rem] gap-4">
+              {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
+                <section
+                  key={applicationStage}
+                  className="min-h-40 min-w-[15rem] flex-1 rounded-xl border border-border bg-surface-muted/60 p-3"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold text-ink">
+                        {applicationStage}
+                      </h2>
+                    </div>
+                    <Badge tone={stageTone[applicationStage]}>
+                      {applicationsQuery.data.counts_by_stage[
+                        applicationStage
+                      ] ?? 0}
+                    </Badge>
+                  </div>
+                  <div className="space-y-3">
+                    {(grouped.get(applicationStage) ?? []).map(
+                      (application) => (
+                        <ApplicationCard
+                          key={application.id}
+                          application={application}
+                        />
+                      )
+                    )}
+                  </div>
+                </section>
+              ))}
+            </div>
           </div>
         ) : (
           <ApplicationsTable applications={applicationsQuery.data.items} />
@@ -198,18 +230,21 @@ function ApplicationCard({ application }: { application: TrackedApplication }) {
   return (
     <Link
       href={`/applications/${application.id}`}
-      className="block rounded-md border border-slate-200 bg-slate-50 p-3 transition hover:border-lagoon/50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+      className="surface surface-hover block p-3"
     >
-      <h3 className="text-sm font-semibold text-ink">
-        {application.job_title}
-      </h3>
-      <p className="mt-1 text-sm text-slate-600">{application.company}</p>
-      <p className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-sm font-semibold leading-5 text-ink">
+          {application.job_title}
+        </h3>
+        <Badge tone={stageTone[application.stage]}>{application.stage}</Badge>
+      </div>
+      <p className="mt-1 text-sm text-muted">{application.company}</p>
+      <p className="mt-3 flex items-center gap-2 text-xs font-medium text-muted-subtle">
         <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
         Deadline {formatDate(application.deadline)}
       </p>
       {application.next_action ? (
-        <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600">
+        <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted">
           {application.next_action}
         </p>
       ) : null}
@@ -223,10 +258,10 @@ function ApplicationsTable({
   applications: TrackedApplication[];
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-border bg-surface">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-normal text-slate-500">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-muted text-left text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
             <tr>
               <th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Company</th>
@@ -236,32 +271,30 @@ function ApplicationsTable({
               <th className="px-4 py-3">Next action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
+          <tbody className="divide-y divide-border">
             {applications.map((application) => (
-              <tr key={application.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium text-ink">
+              <tr key={application.id} className="hover:bg-surface-muted/60">
+                <td className="px-4 py-3 font-semibold text-ink">
                   <Link
                     href={`/applications/${application.id}`}
-                    className="hover:text-lagoon"
+                    className="hover:text-brand-700"
                   >
                     {application.job_title}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-slate-600">
-                  {application.company}
-                </td>
+                <td className="px-4 py-3 text-muted">{application.company}</td>
                 <td className="px-4 py-3">
-                  <span className="rounded-md bg-lagoon/10 px-2 py-1 text-xs font-semibold text-lagoon">
+                  <Badge tone={stageTone[application.stage]}>
                     {application.stage}
-                  </span>
+                  </Badge>
                 </td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-muted">
                   {formatDate(application.date_applied)}
                 </td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-muted">
                   {formatDate(application.deadline)}
                 </td>
-                <td className="max-w-xs px-4 py-3 text-slate-600">
+                <td className="max-w-xs px-4 py-3 text-muted">
                   <span className="line-clamp-2">
                     {application.next_action || "Not set"}
                   </span>

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   CheckCircle2,
+  ChevronDown,
   Copy,
   ExternalLink,
   Send
@@ -179,18 +180,18 @@ export function JobApplicationAgent() {
                 ) : null}
                 <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
                   <div>
-                    <p className="max-w-3xl text-sm leading-6 text-slate-700">
+                    <p className="max-w-3xl text-sm leading-6 text-ink">
                       {latestDraft.application_summary}
                     </p>
                     <div className="mt-4">
                       <TagList items={latestDraft.keywords} limit={10} />
                     </div>
                   </div>
-                  <div className="rounded-md bg-slate-50 p-4">
+                  <div className="rounded-xl bg-surface-muted p-4">
                     <h3 className="text-sm font-semibold text-ink">
                       Recommended next action
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-muted">
                       Resolve required missing information, then copy the cover
                       letter for manual review.
                     </p>
@@ -252,15 +253,15 @@ export function JobApplicationAgent() {
               </AgentCard>
 
               <AgentCard title="Cover letter">
-                <div className="rounded-md bg-slate-50 p-4">
-                  <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                <div className="rounded-xl bg-surface-muted p-4">
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-ink">
                     {latestDraft.cover_letter}
                   </p>
                 </div>
               </AgentCard>
 
               <AgentCard title="Final manual review">
-                <div className="flex items-start gap-3 rounded-md border border-coral/20 bg-coral/10 p-3 text-sm text-orange-800">
+                <div className="callout-error flex items-start gap-3">
                   <AlertTriangle
                     aria-hidden="true"
                     className="mt-0.5 h-5 w-5"
@@ -290,7 +291,7 @@ export function JobApplicationAgent() {
                   />
                   <Link
                     href="/profile"
-                    className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                    className="button button-secondary"
                   >
                     Edit profile evidence
                   </Link>
@@ -299,7 +300,7 @@ export function JobApplicationAgent() {
             </>
           ) : (
             <AgentCard title="Ready when you are">
-              <p className="text-sm leading-6 text-slate-600">
+              <p className="text-sm leading-6 text-muted">
                 Generate once to get the top issues, a short cover letter, and
                 fields that need manual confirmation.
               </p>
@@ -340,12 +341,29 @@ function EmphasisBlock({
 
 function EmphasisItem({ item }: { item: ApplicationEmphasis }) {
   return (
-    <li className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">
-      <span className="block font-semibold text-ink">{item.item}</span>
-      <span className="mt-1 block">{item.reason}</span>
-      <span className="mt-1 block text-xs text-slate-500">
-        Evidence: {item.evidence}
-      </span>
+    <li>
+      <details className="group rounded-xl border border-border bg-surface p-4 transition hover:border-brand-100">
+        <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
+          <span>
+            <span className="block text-sm font-semibold text-ink">
+              {item.item}
+            </span>
+            <span className="mt-1 block text-sm leading-6 text-muted">
+              {item.reason}
+            </span>
+          </span>
+          <ChevronDown
+            aria-hidden="true"
+            className="mt-0.5 h-4 w-4 flex-none text-muted-subtle transition group-open:rotate-180"
+          />
+        </summary>
+        <div className="mt-3 border-t border-border pt-3">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+            Evidence
+          </p>
+          <p className="mt-1 text-sm leading-6 text-ink">{item.evidence}</p>
+        </div>
+      </details>
     </li>
   );
 }
@@ -363,25 +381,32 @@ function AutofillSummary({ items }: { items: AutofillField[] }) {
       </div>
       <div className="mt-3 space-y-2">
         {items.map((item) => (
-          <div
+          <details
             key={item.field}
-            className="rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600"
+            className="group rounded-xl border border-border bg-surface p-3 transition hover:border-brand-100"
           >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
               <div>
-                <p className="font-semibold text-ink">{item.field}</p>
-                <p>{item.proposed_answer ?? "Requires your manual answer"}</p>
+                <p className="text-sm font-semibold text-ink">{item.field}</p>
+                <p className="mt-1 text-sm leading-6 text-muted">
+                  {item.proposed_answer ?? "Requires your manual answer"}
+                </p>
               </div>
-              <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-lagoon">
+              <span className="badge badge-brand">
                 {item.requires_confirmation ? "Confirm" : "Review"}
               </span>
-            </div>
+            </summary>
             {item.evidence ? (
-              <p className="mt-1 text-xs text-slate-500">
-                Evidence: {item.evidence}
-              </p>
+              <div className="mt-3 border-t border-border pt-3">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+                  Evidence
+                </p>
+                <p className="mt-1 text-sm leading-6 text-ink">
+                  {item.evidence}
+                </p>
+              </div>
             ) : null}
-          </div>
+          </details>
         ))}
       </div>
     </section>
@@ -390,8 +415,8 @@ function AutofillSummary({ items }: { items: AutofillField[] }) {
 
 function StatusTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-slate-50 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">
+    <div className="rounded-lg bg-surface-muted px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-ink">{value}</p>

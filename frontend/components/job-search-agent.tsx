@@ -126,7 +126,7 @@ export function JobSearchAgent() {
         />
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="surface p-5 sm:p-6">
         {mode === "profile" ? (
           <div className="space-y-5">
             <div className="grid gap-4 lg:grid-cols-2">
@@ -174,7 +174,7 @@ export function JobSearchAgent() {
               type="button"
               onClick={startProfileSearch}
               disabled={profileSearch.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="button button-primary"
             >
               {profileSearch.isPending ? (
                 <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -187,7 +187,7 @@ export function JobSearchAgent() {
         ) : (
           <div className="space-y-4">
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">
+              <span className="form-label">
                 Search instructions
               </span>
               <textarea
@@ -195,7 +195,7 @@ export function JobSearchAgent() {
                 onChange={(event) => setPrompt(event.target.value)}
                 rows={7}
                 placeholder="Find entry-level AI engineering or full-stack AI agent internships in Canada or the United States that use Python, FastAPI, React, or LLM APIs."
-                className="mt-2 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+                className="form-control mt-2"
               />
             </label>
             <div className="flex flex-wrap gap-2">
@@ -204,7 +204,7 @@ export function JobSearchAgent() {
                   key={example}
                   type="button"
                   onClick={() => setPrompt(example)}
-                  className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-lagoon/50 hover:text-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                  className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700"
                 >
                   {example}
                 </button>
@@ -214,7 +214,7 @@ export function JobSearchAgent() {
               type="button"
               onClick={startPromptSearch}
               disabled={promptSearch.isPending || prompt.trim().length < 5}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="button button-primary"
             >
               {promptSearch.isPending ? (
                 <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -228,13 +228,13 @@ export function JobSearchAgent() {
       </section>
 
       {activeSearch.isPending ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
+        <div className="surface p-5 text-sm text-muted">
           {progressMessages[progressIndex]}
         </div>
       ) : null}
 
       {activeSearch.isError ? (
-        <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
+        <div className="callout-error">
           {activeSearch.error instanceof Error
             ? activeSearch.error.message
             : "Unable to search jobs."}
@@ -244,7 +244,7 @@ export function JobSearchAgent() {
       {response ? (
         <section className="space-y-4">
           {response.profile_incomplete ? (
-            <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
+            <div className="callout-error">
               <div className="flex items-start gap-3">
                 <AlertTriangle aria-hidden="true" className="h-5 w-5" />
                 <div>
@@ -264,9 +264,9 @@ export function JobSearchAgent() {
             </div>
           ) : null}
 
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="surface p-5">
             <p className="text-sm font-semibold text-ink">Search strategy</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 text-sm leading-6 text-muted">
               {response.strategy}
             </p>
             {response.provider_failures.length > 0 ? (
@@ -278,7 +278,7 @@ export function JobSearchAgent() {
           </div>
 
           {visibleResults.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
+            <div className="rounded-xl border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
               No results found. Try widening the location, role, or job type.
             </div>
           ) : (
@@ -324,10 +324,10 @@ function ModeButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="rounded-lg border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-lagoon/50 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 aria-pressed:border-lagoon aria-pressed:bg-lagoon/5"
+      className="surface surface-hover p-5 text-left aria-pressed:border-brand-500 aria-pressed:bg-brand-50"
     >
       <p className="font-semibold text-ink">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+      <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
     </button>
   );
 }
@@ -345,12 +345,12 @@ function TextInput({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="form-label">{label}</span>
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+        className="form-control mt-2"
       />
     </label>
   );
@@ -369,7 +369,7 @@ function FilterGroup({
 }) {
   return (
     <div>
-      <p className="text-sm font-medium text-slate-700">{label}</p>
+      <p className="form-label">{label}</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {values.map((value) => (
           <button
@@ -377,7 +377,7 @@ function FilterGroup({
             type="button"
             aria-pressed={selected.includes(value)}
             onClick={() => onToggle(value as never)}
-            className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-lagoon/50 hover:text-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 aria-pressed:border-lagoon aria-pressed:bg-lagoon/10 aria-pressed:text-lagoon"
+            className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700 aria-pressed:bg-brand-50 aria-pressed:text-brand-700"
           >
             {value}
           </button>
@@ -410,18 +410,18 @@ function JobResultCard({
   const gaps = result.qualification_gaps ?? [];
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="surface p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-lagoon/10 px-2 py-1 text-xs font-semibold text-lagoon">
+            <span className="badge badge-brand">
               {fitLabel}
             </span>
-            <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+            <span className="badge badge-neutral">
               {result.workplace_type}
             </span>
             {result.is_mock ? (
-              <span className="rounded-md bg-coral/10 px-2 py-1 text-xs font-semibold text-orange-800">
+              <span className="badge badge-warning">
                 Mock result
               </span>
             ) : null}
@@ -429,14 +429,14 @@ function JobResultCard({
           <h2 className="mt-3 text-xl font-semibold text-ink">
             {result.title}
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted">
             {result.company} - {result.location}
           </p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-muted-subtle">
             {result.employment_type || "Type not listed"} -{" "}
             {result.experience_level || "Level not listed"} - {salary}
           </p>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
+          <p className="mt-3 text-sm leading-6 text-ink">
             {result.short_description}
           </p>
         </div>
@@ -444,7 +444,7 @@ function JobResultCard({
           <Link
             href={result.source_url}
             target="_blank"
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            className="button button-secondary"
           >
             <ExternalLink aria-hidden="true" className="h-4 w-4" />
             View job
@@ -453,20 +453,20 @@ function JobResultCard({
             <>
               <Link
                 href={`/jobs/${savedJobId}`}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                className="button button-primary"
               >
                 <Check aria-hidden="true" className="h-4 w-4" />
                 Saved
               </Link>
               <Link
                 href={`/agents/job-application?job=${savedJobId}`}
-                className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                className="button button-secondary"
               >
                 Prepare application
               </Link>
               <Link
                 href={`/agents/job-prep?job=${savedJobId}`}
-                className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+                className="button button-secondary"
               >
                 Prepare for this job
               </Link>
@@ -476,7 +476,7 @@ function JobResultCard({
               type="button"
               onClick={onSave}
               disabled={savePending}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="button button-primary"
             >
               {savePending ? (
                 <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -489,7 +489,7 @@ function JobResultCard({
           <button
             type="button"
             onClick={onDismiss}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-coral hover:text-coral focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2"
+            className="button button-danger"
           >
             <ThumbsDown aria-hidden="true" className="h-4 w-4" />
             Not interested
@@ -502,7 +502,7 @@ function JobResultCard({
         <ResultList title="Relevant profile evidence" items={profileEvidence} />
         <ResultList title="Possible gaps" items={gaps} />
       </div>
-      <p className="mt-4 text-xs text-slate-500">
+      <p className="mt-4 text-xs text-muted-subtle">
         Source: {result.source}
         {result.posted_at
           ? ` - Posted ${new Intl.DateTimeFormat("en", {
@@ -525,14 +525,14 @@ function ResultList({ title, items }: { title: string; items: string[] }) {
           {items.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600"
+              className="badge badge-neutral"
             >
               {item}
             </span>
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-sm text-slate-500">None listed.</p>
+        <p className="mt-2 text-sm text-muted-subtle">None listed.</p>
       )}
     </section>
   );

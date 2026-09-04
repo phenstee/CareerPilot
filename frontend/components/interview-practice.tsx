@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronDown,
   Loader2,
   Mic,
   Send,
@@ -20,6 +21,10 @@ import {
   InterviewSession,
   listInterviewSessions
 } from "@/lib/api";
+import {
+  InsightSummary,
+  RecommendationPanel
+} from "@/components/insights";
 
 const categoryLabels: Record<InterviewQuestion["category"], string> = {
   behavioral: "Behavioral",
@@ -110,10 +115,10 @@ export function InterviewPractice() {
 
   if (sessionsQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-lagoon"
+          className="h-5 w-5 animate-spin text-brand-600"
         />
       </div>
     );
@@ -121,7 +126,7 @@ export function InterviewPractice() {
 
   if (sessionsQuery.isError) {
     return (
-      <div className="rounded-lg border border-coral/20 bg-coral/10 p-5 text-sm text-orange-800">
+      <div className="callout-error">
         Unable to load interview prep.
       </div>
     );
@@ -129,16 +134,16 @@ export function InterviewPractice() {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
-      <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <aside className="surface p-5">
         <div className="flex items-start gap-3">
-          <div className="rounded-md bg-lagoon/10 p-2 text-lagoon">
+          <div className="rounded-lg bg-brand-50 p-2 text-brand-600">
             <Mic aria-hidden="true" className="h-5 w-5" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-ink">
               Interview sessions
             </h2>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
+            <p className="mt-1 text-sm leading-6 text-muted">
               Generate questions from this application, then practice one answer
               at a time.
             </p>
@@ -149,7 +154,7 @@ export function InterviewPractice() {
           type="button"
           onClick={() => createMutation.mutate()}
           disabled={createMutation.isPending}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-lagoon px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="button button-primary mt-5 w-full"
         >
           {createMutation.isPending ? (
             <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
@@ -170,23 +175,23 @@ export function InterviewPractice() {
                   setQuestionIndex(0);
                   setAnswerText("");
                 }}
-                className={`w-full rounded-md border px-3 py-3 text-left text-sm transition ${
+                className={`w-full rounded-lg border px-3 py-3 text-left text-sm transition ${
                   activeSession?.id === session.id
-                    ? "border-lagoon bg-lagoon/5 text-ink"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                    ? "border-brand-500 bg-brand-50 text-ink"
+                    : "border-border bg-surface text-muted hover:border-border-strong"
                 }`}
               >
                 <span className="block font-semibold">
                   {session.questions.length} questions
                 </span>
-                <span className="mt-1 block text-xs text-slate-500">
+                <span className="mt-1 block text-xs text-muted-subtle">
                   {formatDate(session.created_at)} - {session.provider}
                 </span>
               </button>
             ))}
           </div>
         ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+          <div className="mt-5 rounded-xl border border-dashed border-border-strong bg-surface-muted p-4 text-sm leading-6 text-muted">
             No interview prep sessions yet.
           </div>
         )}
@@ -194,7 +199,7 @@ export function InterviewPractice() {
 
       <section className="space-y-5">
         {formError ? (
-          <div className="rounded-md border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-orange-800">
+          <div className="callout-error">
             {formError}
           </div>
         ) : null}
@@ -205,10 +210,10 @@ export function InterviewPractice() {
           <>
             <SessionOverview session={activeSession} />
 
-            <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <article className="surface p-5 sm:p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
+                  <p className="page-eyebrow">
                     Question {questionIndex + 1} of{" "}
                     {activeSession.questions.length}
                   </p>
@@ -223,7 +228,7 @@ export function InterviewPractice() {
                       setQuestionIndex((value) => Math.max(0, value - 1))
                     }
                     disabled={questionIndex === 0}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 bg-white text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="button button-secondary h-10 w-10 px-0"
                     aria-label="Previous question"
                   >
                     <ArrowLeft aria-hidden="true" className="h-4 w-4" />
@@ -238,7 +243,7 @@ export function InterviewPractice() {
                     disabled={
                       questionIndex === activeSession.questions.length - 1
                     }
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 bg-white text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="button button-secondary h-10 w-10 px-0"
                     aria-label="Next question"
                   >
                     <ArrowRight aria-hidden="true" className="h-4 w-4" />
@@ -250,7 +255,7 @@ export function InterviewPractice() {
                 {activeQuestion.question_text}
               </p>
               {activeQuestion.rationale ? (
-                <p className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">
+                <p className="mt-3 rounded-lg bg-surface-muted px-3 py-2 text-sm leading-6 text-muted">
                   {activeQuestion.rationale}
                 </p>
               ) : null}
@@ -263,7 +268,7 @@ export function InterviewPractice() {
                 }}
               >
                 <label className="block">
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="form-label">
                     Practice answer
                   </span>
                   <textarea
@@ -271,7 +276,7 @@ export function InterviewPractice() {
                     onChange={(event) => setAnswerText(event.target.value)}
                     rows={9}
                     placeholder="Type your answer here..."
-                    className="mt-2 w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm leading-6 text-ink shadow-sm outline-none transition focus:border-lagoon focus:ring-2 focus:ring-lagoon/20"
+                    className="form-control mt-2"
                   />
                 </label>
                 <button
@@ -279,7 +284,7 @@ export function InterviewPractice() {
                   disabled={
                     answerMutation.isPending || answerText.trim().length === 0
                   }
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-lagoon px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="button button-primary mt-4"
                 >
                   {answerMutation.isPending ? (
                     <Loader2
@@ -297,7 +302,7 @@ export function InterviewPractice() {
             <FeedbackPanel question={activeQuestion} />
           </>
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm leading-6 text-slate-600">
+          <div className="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-sm leading-6 text-muted">
             Generate an interview prep session to start practicing.
           </div>
         )}
@@ -323,7 +328,7 @@ function InterviewTaskStatus({ task }: { task: AsyncTask | null }) {
             : (task.last_error_message ?? "Generation failed. Try again.");
 
   return (
-    <div className="rounded-md border border-lagoon/20 bg-lagoon/5 px-3 py-2 text-sm text-slate-700">
+    <div className="callout-info">
       {text}
     </div>
   );
@@ -331,19 +336,18 @@ function InterviewTaskStatus({ task }: { task: AsyncTask | null }) {
 
 function SessionOverview({ session }: { session: InterviewSession }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium uppercase tracking-normal text-lagoon">
-        {session.company}
-      </p>
-      <h2 className="mt-2 text-2xl font-semibold text-ink">
-        {session.job_title}
-      </h2>
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <ListBlock title="Preparation plan" items={session.preparation_plan} />
-        <ListBlock title="Strong topics" items={session.strong_topics} />
-        <ListBlock title="Weak areas to review" items={session.weak_areas} />
-      </div>
-    </article>
+    <>
+      <InsightSummary
+        title={session.job_title}
+        description={`Interview prep for ${session.company}.`}
+        strengths={session.strong_topics}
+        gaps={session.weak_areas}
+      />
+      <RecommendationPanel
+        title="Preparation plan"
+        items={session.preparation_plan}
+      />
+    </>
   );
 }
 
@@ -351,41 +355,49 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
   const latestAnswer = question.answers.at(-1);
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="text-lg font-semibold text-ink">Feedback</h3>
+    <article className="surface p-5 sm:p-6">
+      <div className="flex items-center gap-2">
+        <Sparkles aria-hidden="true" className="h-4 w-4 text-ai-deep" />
+        <h3 className="text-lg font-semibold text-ink">Answer feedback</h3>
+      </div>
       {latestAnswer ? (
         <>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-muted-subtle">
             {formatDate(latestAnswer.created_at)} - {latestAnswer.provider}
           </p>
-          <p className="mt-4 rounded-md bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">
+          <p className="mt-4 rounded-xl border border-ai-soft bg-ai-soft/70 px-4 py-3 text-sm leading-6 text-ink">
             {latestAnswer.feedback.overall_feedback}
           </p>
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            <ListBlock
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            <FeedbackGroup
               title="Strong"
               items={latestAnswer.feedback.strong_points}
+              tone="success"
             />
-            <ListBlock
+            <FeedbackGroup
               title="Unclear"
               items={latestAnswer.feedback.unclear_points}
+              tone="warning"
             />
-            <ListBlock
+            <FeedbackGroup
               title="Missing"
               items={latestAnswer.feedback.missing_points}
+              tone="danger"
             />
-            <ListBlock
+            <FeedbackGroup
               title="Stronger structure"
               items={latestAnswer.feedback.stronger_answer_structure}
+              tone="brand"
             />
-            <ListBlock
+            <FeedbackGroup
               title="Improved outline"
               items={latestAnswer.feedback.improved_outline}
+              tone="ai"
             />
           </div>
         </>
       ) : (
-        <p className="mt-2 text-sm leading-6 text-slate-600">
+        <p className="mt-2 text-sm leading-6 text-muted">
           Submit an answer for this question to see structured feedback.
         </p>
       )}
@@ -393,24 +405,52 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
   );
 }
 
-function ListBlock({ title, items }: { title: string; items: string[] }) {
+function FeedbackGroup({
+  title,
+  items,
+  tone
+}: {
+  title: string;
+  items: string[];
+  tone: "success" | "warning" | "danger" | "brand" | "ai";
+}) {
+  const toneStyles = {
+    success: "text-success",
+    warning: "text-warning",
+    danger: "text-danger",
+    brand: "text-brand-600",
+    ai: "text-ai-deep"
+  } as const;
+
+  if (items.length === 0) return null;
+
   return (
-    <section>
-      <h4 className="text-sm font-semibold text-ink">{title}</h4>
-      {items.length > 0 ? (
-        <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
-          {items.map((item, index) => (
-            <li
-              key={`${item}-${index}`}
-              className="rounded-md bg-slate-50 px-3 py-2"
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm text-slate-500">None yet.</p>
-      )}
-    </section>
+    <details className="group rounded-xl border border-border bg-surface p-4 transition hover:border-brand-100">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <span className="flex items-center gap-2">
+          <span className={`text-xs font-bold uppercase tracking-[0.1em] ${toneStyles[tone]}`}>
+            {title}
+          </span>
+          <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-muted">
+            {items.length}
+          </span>
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className="h-4 w-4 text-muted-subtle transition group-open:rotate-180"
+        />
+      </summary>
+      <ul className="mt-3 space-y-2 border-t border-border pt-3">
+        {items.map((item, index) => (
+          <li
+            key={`${item}-${index}`}
+            className="flex gap-2 text-sm leading-6 text-muted"
+          >
+            <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-current opacity-50" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
