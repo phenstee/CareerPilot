@@ -12,9 +12,9 @@ export default function GlobalError({
 }) {
   return (
     <main className="min-h-screen bg-paper px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-3xl rounded-xl border border-coral/20 bg-surface p-6 shadow-card">
+      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-surface p-6 shadow-card">
         <div className="flex items-start gap-4">
-          <span className="inline-flex rounded-lg bg-coral/10 p-3 text-coral">
+          <span className="inline-flex rounded-lg bg-danger-soft p-3 text-danger">
             <AlertTriangle aria-hidden="true" className="h-6 w-6" />
           </span>
           <div>

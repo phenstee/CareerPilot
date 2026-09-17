@@ -139,13 +139,13 @@ export function AppShell({
   const userInitial = user?.full_name?.trim().charAt(0).toUpperCase() || "C";
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-[17rem] lg:flex-col lg:border-r lg:border-sidebar-line lg:bg-sidebar lg:px-4 lg:py-5">
+    <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-[16rem] lg:flex-col lg:border-r lg:border-sidebar-line lg:bg-sidebar lg:px-3 lg:py-5">
         <Brand />
         <nav className="mt-7 flex-1 space-y-6 overflow-y-auto">
           {navigation.map((group) => (
             <div key={group.label}>
-              <p className="px-3 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-sidebar-muted/60">
+              <p className="px-3 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-sidebar-muted/70">
                 {group.label}
               </p>
               <div className="mt-2 space-y-1">
@@ -201,13 +201,13 @@ export function AppShell({
               className="absolute inset-0 bg-ink/35 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
-            <aside className="absolute inset-y-0 left-0 flex w-[19rem] max-w-[88vw] flex-col bg-sidebar px-4 py-5 shadow-2xl">
+            <aside className="absolute inset-y-0 left-0 flex w-[19rem] max-w-[88vw] flex-col border-r border-sidebar-line bg-sidebar px-4 py-5 shadow-lift">
               <div className="flex items-center justify-between">
                 <Brand />
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/70 transition hover:bg-white/10 hover:text-white"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-surface-muted hover:text-ink"
                   aria-label="Close navigation"
                 >
                   <X aria-hidden="true" className="h-5 w-5" />
@@ -216,7 +216,7 @@ export function AppShell({
               <nav className="mt-7 flex-1 space-y-6 overflow-y-auto">
                 {navigation.map((group) => (
                   <div key={group.label}>
-                    <p className="px-3 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-sidebar-muted/60">
+                    <p className="px-3 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-sidebar-muted/70">
                       {group.label}
                     </p>
                     <div className="mt-2 space-y-1">
@@ -250,13 +250,12 @@ export function AppShell({
 
 function Brand() {
   return (
-    <Link href="/dashboard" className="flex items-center gap-3 px-2">
-      <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-ai-deep text-white shadow-lg shadow-brand-600/20">
-        <Compass aria-hidden="true" className="h-5 w-5" />
-        <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-sidebar bg-coral" />
+    <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
+        <Compass aria-hidden="true" className="h-4 w-4" />
       </span>
       <span>
-        <span className="block text-sm font-bold tracking-tight text-white">
+        <span className="block text-sm font-bold tracking-tight text-ink">
           CareerPilot
         </span>
         <span className="block text-[0.68rem] font-medium text-sidebar-muted">
@@ -282,18 +281,15 @@ function NavLink({
       href={item.href}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
-      className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+      className={`group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold transition ${
         active
-          ? "bg-white/10 text-white"
-          : "text-sidebar-muted hover:bg-white/5 hover:text-white"
+          ? "bg-brand-50 text-brand-700"
+          : "text-sidebar-muted hover:bg-surface-muted hover:text-ink"
       }`}
     >
-      {active ? (
-        <span className="absolute -left-4 h-5 w-1 rounded-r-full bg-brand-500" />
-      ) : null}
       <Icon
         aria-hidden="true"
-        className={`h-4 w-4 ${active ? "text-brand-100" : "text-sidebar-muted group-hover:text-white"}`}
+        className={`h-4 w-4 ${active ? "text-brand-600" : "text-sidebar-muted group-hover:text-ink"}`}
       />
       <span className="truncate">{item.label}</span>
     </Link>
@@ -314,11 +310,11 @@ function AccountFooter({
   return (
     <div className="mt-6 border-t border-sidebar-line pt-4">
       <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">
+        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-surface-muted text-sm font-bold text-ink">
           {userInitial}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-white">
+          <p className="truncate text-sm font-semibold text-ink">
             {user?.full_name || "CareerPilot user"}
           </p>
           <p className="truncate text-xs text-sidebar-muted">
@@ -330,7 +326,7 @@ function AccountFooter({
         type="button"
         onClick={onLogout}
         disabled={isLoggingOut}
-        className="mt-1 flex w-full items-center justify-start gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-sidebar-muted transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-1 flex w-full items-center justify-start gap-2 rounded-md px-3 py-2 text-sm font-semibold text-sidebar-muted transition hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
       >
         <LogOut aria-hidden="true" className="h-4 w-4" />
         {isLoggingOut ? "Signing out..." : "Sign out"}

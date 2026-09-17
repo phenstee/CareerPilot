@@ -68,10 +68,9 @@ export function InsightSummary({
   gaps: string[];
 }) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-surface via-surface to-ai-soft p-5 shadow-card sm:p-6">
-      <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-brand-100/60 blur-3xl" />
-      <div className="relative">
-        <div className="flex items-center gap-2 text-ai-deep">
+    <section className="rounded-lg border border-brand-100 bg-brand-50/40 p-5 sm:p-6">
+      <div>
+        <div className="flex items-center gap-2 text-brand-700">
           <Sparkles aria-hidden="true" className="h-4 w-4" />
           <span className="text-xs font-bold uppercase tracking-[0.12em]">
             AI snapshot
@@ -119,7 +118,7 @@ function SignalColumn({
   const iconClass =
     tone === "strength" ? "text-success" : "text-warning";
   return (
-    <div className="rounded-xl bg-surface/90 p-4">
+    <div className="rounded-lg border border-border/70 bg-surface p-4">
       <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-subtle">
         {title}
       </h3>
@@ -161,7 +160,7 @@ export function GapInsight({
   ];
 
   return (
-    <details className="group rounded-xl border border-border bg-surface p-4 transition hover:border-brand-100 hover:shadow-card">
+    <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
       <summary className="flex cursor-pointer list-none items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-warning/10 text-warning">
           <AlertTriangle aria-hidden="true" className="h-4 w-4" />
@@ -210,7 +209,7 @@ export function EvidenceInsight({
   evidence: EvidenceItem;
 }) {
   return (
-    <details className="group rounded-xl border border-border bg-surface p-4 transition hover:border-brand-100 hover:shadow-card">
+    <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
       <summary className="flex cursor-pointer list-none items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-success/10 text-success">
           <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
@@ -248,8 +247,8 @@ export function RecommendationPanel({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-xl border border-ai-soft bg-ai-soft/70 p-4">
-      <div className="flex items-center gap-2 text-ai-deep">
+    <section className="rounded-lg border border-brand-100 bg-brand-50/60 p-4">
+      <div className="flex items-center gap-2 text-brand-700">
         <Sparkles aria-hidden="true" className="h-4 w-4" />
         <h3 className="text-sm font-bold uppercase tracking-[0.08em]">
           {title}
@@ -258,7 +257,7 @@ export function RecommendationPanel({
       <ol className="mt-3 space-y-2">
         {items.slice(0, 3).map((item, index) => (
           <li key={`${item}-${index}`} className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-ai text-xs font-bold text-white">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
               {index + 1}
             </span>
             <p className="text-sm leading-6 text-ink">{item}</p>
@@ -289,7 +288,7 @@ export function InsightSectionLabel({
 export function UncertaintyList({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
+    <div className="rounded-lg border border-border bg-surface p-4">
       <div className="flex items-center gap-2 text-muted">
         <CircleHelp aria-hidden="true" className="h-4 w-4" />
         <h3 className="text-sm font-bold uppercase tracking-[0.1em]">

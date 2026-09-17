@@ -249,7 +249,7 @@ export function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-border-strong bg-surface p-8">
+    <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8">
       <h2 className="text-xl font-semibold text-ink">{title}</h2>
       <p className="mt-2 max-w-xl text-sm text-muted">{description}</p>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">

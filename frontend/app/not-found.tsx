@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="min-h-screen bg-paper px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-3xl rounded-xl border border-border bg-surface p-6 shadow-card">
+      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-surface p-6 shadow-card">
         <div className="flex items-start gap-4">
           <span className="inline-flex rounded-lg bg-brand-50 p-3 text-brand-600">
             <Compass aria-hidden="true" className="h-6 w-6" />

@@ -49,8 +49,8 @@ export default function HomePage() {
     <main className="min-h-screen">
       <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">
-            <BriefcaseBusiness aria-hidden="true" className="h-5 w-5" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
+            <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
           </span>
           <span className="text-base font-bold tracking-tight text-ink">
             CareerPilot
@@ -72,7 +72,7 @@ export default function HomePage() {
             <Sparkles aria-hidden="true" className="h-4 w-4" />
             AI-enabled, human-controlled
           </div>
-          <h1 className="max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.04em] text-ink sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl text-4xl font-bold leading-[1.08] tracking-[-0.035em] text-ink sm:text-5xl lg:text-[3.4rem]">
             Your career search, organized.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
@@ -95,56 +95,53 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="relative">
-          <div className="absolute -left-6 top-8 hidden h-32 w-32 rounded-full bg-brand-100 blur-3xl lg:block" />
-          <div className="relative rounded-2xl border border-border bg-surface p-3 shadow-lift">
-            <div className="rounded-xl border border-border bg-surface-muted/70 p-4">
-              <div className="flex items-center justify-between border-b border-border pb-3">
-                <div>
-                  <p className="text-xs font-semibold text-muted-subtle">
-                    Career command center
+        <div className="rounded-xl2 border border-border bg-surface p-3 shadow-card">
+          <div className="rounded-lg border border-border bg-surface-muted/70 p-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <p className="text-xs font-semibold text-muted-subtle">
+                  Career command center
+                </p>
+                <p className="mt-1 text-sm font-bold text-ink">This week</p>
+              </div>
+              <span className="badge badge-success">On track</span>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {[
+                ["Applications", "7"],
+                ["Interviews", "2"],
+                ["Saved jobs", "14"]
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-lg border border-border bg-surface p-3"
+                >
+                  <p className="text-xs font-medium text-muted-subtle">
+                    {label}
                   </p>
-                  <p className="mt-1 text-sm font-bold text-ink">This week</p>
+                  <p className="mt-2 text-2xl font-bold text-ink">{value}</p>
                 </div>
-                <span className="badge badge-success">On track</span>
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                {[
-                  ["Applications", "7"],
-                  ["Interviews", "2"],
-                  ["Saved jobs", "14"]
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="rounded-xl border border-border bg-surface p-3"
-                  >
-                    <p className="text-xs font-medium text-muted-subtle">
-                      {label}
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-ink">{value}</p>
+              ))}
+            </div>
+            <div className="mt-4 space-y-2">
+              {[
+                ["Applied", "Frontend Engineer", "Oct 12"],
+                ["Interview", "AI Platform Intern", "Oct 18"],
+                ["Preparing", "Backend Developer", "Oct 24"]
+              ].map(([stage, role, date]) => (
+                <div
+                  key={`${role}-${stage}`}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2.5"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="badge badge-brand">{stage}</span>
+                    <span className="text-sm font-semibold text-ink">
+                      {role}
+                    </span>
                   </div>
-                ))}
-              </div>
-              <div className="mt-4 space-y-2">
-                {[
-                  ["Applied", "Frontend Engineer", "Oct 12"],
-                  ["Interview", "AI Platform Intern", "Oct 18"],
-                  ["Preparing", "Backend Developer", "Oct 24"]
-                ].map(([stage, role, date]) => (
-                  <div
-                    key={`${role}-${stage}`}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2.5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="badge badge-brand">{stage}</span>
-                      <span className="text-sm font-semibold text-ink">
-                        {role}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-subtle">{date}</span>
-                  </div>
-                ))}
-              </div>
+                  <span className="text-xs text-muted-subtle">{date}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -166,7 +163,7 @@ export default function HomePage() {
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className="rounded-xl border border-border bg-surface p-5"
+                className="rounded-lg border border-border bg-surface p-5"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
                   <feature.icon aria-hidden="true" className="h-5 w-5" />
@@ -200,7 +197,7 @@ export default function HomePage() {
             {aiCapabilities.map((capability) => (
               <div
                 key={capability}
-                className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4"
+                className="flex items-start gap-3 rounded-lg border border-border bg-surface p-4"
               >
                 <CheckCircle2
                   aria-hidden="true"
@@ -216,7 +213,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
-        <div className="overflow-hidden rounded-2xl border border-brand-100 bg-brand-50/70 px-6 py-10 sm:px-10 sm:py-12">
+        <div className="overflow-hidden rounded-xl2 border border-brand-100 bg-brand-50/60 px-6 py-10 sm:px-10 sm:py-12">
           <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div>
               <div className="mb-3 flex items-center gap-2 text-brand-700">

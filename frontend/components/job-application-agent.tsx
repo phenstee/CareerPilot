@@ -187,7 +187,7 @@ export function JobApplicationAgent() {
                       <TagList items={latestDraft.keywords} limit={10} />
                     </div>
                   </div>
-                  <div className="rounded-xl bg-surface-muted p-4">
+                  <div className="rounded-lg bg-surface-muted p-4">
                     <h3 className="text-sm font-semibold text-ink">
                       Recommended next action
                     </h3>
@@ -253,7 +253,7 @@ export function JobApplicationAgent() {
               </AgentCard>
 
               <AgentCard title="Cover letter">
-                <div className="rounded-xl bg-surface-muted p-4">
+                <div className="rounded-lg bg-surface-muted p-4">
                   <p className="whitespace-pre-wrap text-sm leading-6 text-ink">
                     {latestDraft.cover_letter}
                   </p>
@@ -308,7 +308,7 @@ export function JobApplicationAgent() {
           )}
         </section>
       ) : (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-600">
+        <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
           Select a saved job to begin.
         </div>
       )}
@@ -342,7 +342,7 @@ function EmphasisBlock({
 function EmphasisItem({ item }: { item: ApplicationEmphasis }) {
   return (
     <li>
-      <details className="group rounded-xl border border-border bg-surface p-4 transition hover:border-brand-100">
+      <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-brand-100">
         <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
           <span>
             <span className="block text-sm font-semibold text-ink">
@@ -383,7 +383,7 @@ function AutofillSummary({ items }: { items: AutofillField[] }) {
         {items.map((item) => (
           <details
             key={item.field}
-            className="group rounded-xl border border-border bg-surface p-3 transition hover:border-brand-100"
+            className="group rounded-lg border border-border bg-surface p-3 transition hover:border-brand-100"
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
               <div>

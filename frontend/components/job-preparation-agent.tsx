@@ -509,7 +509,7 @@ export function JobPreparationAgent() {
                   })
                 }
               />
-              <div className="rounded-xl bg-surface-muted p-4">
+              <div className="rounded-lg bg-surface-muted p-4">
                 <h3 className="text-sm font-semibold text-ink">
                   Mock interview
                 </h3>
@@ -536,7 +536,7 @@ export function JobPreparationAgent() {
           </AgentCard>
         </section>
       ) : (
-        <div className="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
           Select a saved job to begin preparation.
         </div>
       )}
@@ -617,7 +617,7 @@ function Checklist({
 }) {
   if (items.length === 0 || !latestPlanId) {
     return (
-      <div className="rounded-xl bg-surface-muted p-4 text-sm text-muted">
+      <div className="rounded-lg bg-surface-muted p-4 text-sm text-muted">
         Generate a preparation plan to get a short checklist.
       </div>
     );

@@ -20,11 +20,10 @@ export function AuthShell({
 }) {
   return (
     <main className="grid min-h-screen bg-paper lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="relative hidden overflow-hidden border-r border-border bg-ink px-12 py-10 text-white lg:flex lg:flex-col">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-600/20 blur-3xl" />
-        <div className="relative flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
-            <BriefcaseBusiness aria-hidden="true" className="h-5 w-5" />
+      <section className="hidden border-r border-border bg-ink px-12 py-10 text-white lg:flex lg:flex-col">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white">
+            <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
           </span>
           <div>
             <p className="text-base font-bold tracking-tight">CareerPilot</p>
@@ -68,8 +67,8 @@ export function AuthShell({
       <section className="flex items-center justify-center px-5 py-10 sm:px-10">
         <div className="w-full max-w-md">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
-              <BriefcaseBusiness aria-hidden="true" className="h-5 w-5" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+              <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
             </span>
             <span className="font-bold tracking-tight text-ink">
               CareerPilot

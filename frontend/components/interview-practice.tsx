@@ -115,7 +115,7 @@ export function InterviewPractice() {
 
   if (sessionsQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
         <Loader2
           aria-hidden="true"
           className="h-5 w-5 animate-spin text-brand-600"
@@ -191,7 +191,7 @@ export function InterviewPractice() {
             ))}
           </div>
         ) : (
-          <div className="mt-5 rounded-xl border border-dashed border-border-strong bg-surface-muted p-4 text-sm leading-6 text-muted">
+          <div className="mt-5 rounded-lg border border-dashed border-border-strong bg-surface-muted p-4 text-sm leading-6 text-muted">
             No interview prep sessions yet.
           </div>
         )}
@@ -302,7 +302,7 @@ export function InterviewPractice() {
             <FeedbackPanel question={activeQuestion} />
           </>
         ) : (
-          <div className="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-sm leading-6 text-muted">
+          <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm leading-6 text-muted">
             Generate an interview prep session to start practicing.
           </div>
         )}
@@ -357,7 +357,7 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
   return (
     <article className="surface p-5 sm:p-6">
       <div className="flex items-center gap-2">
-        <Sparkles aria-hidden="true" className="h-4 w-4 text-ai-deep" />
+        <Sparkles aria-hidden="true" className="h-4 w-4 text-brand-600" />
         <h3 className="text-lg font-semibold text-ink">Answer feedback</h3>
       </div>
       {latestAnswer ? (
@@ -365,7 +365,7 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
           <p className="mt-2 text-xs text-muted-subtle">
             {formatDate(latestAnswer.created_at)} - {latestAnswer.provider}
           </p>
-          <p className="mt-4 rounded-xl border border-ai-soft bg-ai-soft/70 px-4 py-3 text-sm leading-6 text-ink">
+          <p className="mt-4 rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm leading-6 text-ink">
             {latestAnswer.feedback.overall_feedback}
           </p>
           <div className="mt-5 grid gap-3 lg:grid-cols-2">
@@ -419,13 +419,13 @@ function FeedbackGroup({
     warning: "text-warning",
     danger: "text-danger",
     brand: "text-brand-600",
-    ai: "text-ai-deep"
+    ai: "text-ink"
   } as const;
 
   if (items.length === 0) return null;
 
   return (
-    <details className="group rounded-xl border border-border bg-surface p-4 transition hover:border-brand-100">
+    <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <span className="flex items-center gap-2">
           <span className={`text-xs font-bold uppercase tracking-[0.1em] ${toneStyles[tone]}`}>

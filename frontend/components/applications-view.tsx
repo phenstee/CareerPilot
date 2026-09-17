@@ -164,7 +164,7 @@ export function ApplicationsView() {
       </div>
 
       {applicationsQuery.isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
+        <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
           <Loader2
             aria-hidden="true"
             className="h-5 w-5 animate-spin text-brand-600"
@@ -177,7 +177,7 @@ export function ApplicationsView() {
       ) : null}
 
       {applicationsQuery.data && applicationsQuery.data.total === 0 ? (
-        <div className="rounded-xl border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
           No tracked applications match this view. Open a saved job to start
           tracking it.
         </div>
@@ -190,7 +190,7 @@ export function ApplicationsView() {
               {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
                 <section
                   key={applicationStage}
-                  className="min-h-40 min-w-[15rem] flex-1 rounded-xl border border-border bg-surface-muted/60 p-3"
+                  className="min-h-40 min-w-[15rem] flex-1 rounded-lg border border-border bg-surface-muted/60 p-3"
                 >
                   <div className="mb-3 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ function ApplicationsTable({
   applications: TrackedApplication[];
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-muted text-left text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">

@@ -27,7 +27,7 @@ export function LogoutButton() {
       onClick={handleLogout}
       disabled={isSubmitting}
       aria-label="Log out"
-      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-lagoon focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+      className="button button-secondary"
     >
       <LogOut aria-hidden="true" className="h-4 w-4" />
       Log out

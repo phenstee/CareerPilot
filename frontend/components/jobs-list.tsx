@@ -52,7 +52,7 @@ export function JobsList() {
       </div>
 
       {jobsQuery.isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
+        <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
           <Loader2
             aria-hidden="true"
             className="h-5 w-5 animate-spin text-brand-600"
@@ -65,7 +65,7 @@ export function JobsList() {
       ) : null}
 
       {jobsQuery.data && jobsQuery.data.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
           No saved jobs match this view. Try clearing a filter.
         </div>
       ) : null}
@@ -78,7 +78,7 @@ export function JobsList() {
             className="surface surface-hover group block p-5"
           >
             <div className="flex gap-4">
-              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-brand-50 text-sm font-bold text-brand-700">
+              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
                 {job.company?.trim().charAt(0).toUpperCase() || "C"}
               </div>
               <div className="min-w-0 flex-1">

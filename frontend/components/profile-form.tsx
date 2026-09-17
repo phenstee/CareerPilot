@@ -357,7 +357,7 @@ export function ProfileForm() {
 
   if (profileQuery.isLoading) {
     return (
-      <div className="flex min-h-64 items-center justify-center rounded-xl border border-border bg-surface">
+      <div className="flex min-h-64 items-center justify-center rounded-lg border border-border bg-surface">
         <Loader2
           aria-hidden="true"
           className="h-5 w-5 animate-spin text-brand-600"
@@ -734,7 +734,7 @@ function ProfileSummary({
                 <h3 className="text-lg font-semibold text-ink">
                   {experience.position}
                 </h3>
-                <p className="mt-1 text-sm font-medium text-slate-700">
+                <p className="mt-1 text-sm font-medium text-muted">
                   {experience.organization}
                 </p>
                 <p className="mt-2 flex items-center gap-2 text-sm text-muted-subtle">
@@ -904,7 +904,7 @@ function SuggestionChipField({
   return (
     <div className="block">
       <span className="form-label">{label}</span>
-      <div className="mt-2 rounded-lg border border-border-strong bg-surface px-3 py-2 shadow-sm transition focus-within:border-lagoon focus-within:ring-2 focus-within:ring-lagoon/20">
+      <div className="mt-2 rounded-lg border border-border-strong bg-surface px-3 py-2 transition focus-within:border-lagoon focus-within:ring-2 focus-within:ring-lagoon/20">
         {values.length > 0 ? (
           <div className="mb-2 flex flex-wrap gap-2">
             {values.map((value) => (
@@ -936,7 +936,7 @@ function SuggestionChipField({
             }
           }}
           placeholder={placeholder}
-          className="w-full border-0 bg-transparent px-0 py-1 text-sm text-ink outline-none placeholder:text-slate-400"
+          className="w-full border-0 bg-transparent px-0 py-1 text-sm text-ink outline-none placeholder:text-muted-subtle"
         />
       </div>
       <div className="mt-2 flex min-h-8 flex-wrap gap-2">
@@ -1016,7 +1016,7 @@ function IconButton({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
+    <div className="rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
       {label}
     </div>
   );

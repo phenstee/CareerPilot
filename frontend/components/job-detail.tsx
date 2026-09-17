@@ -86,7 +86,7 @@ export function JobDetail() {
 
   if (jobQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
         <Loader2
           aria-hidden="true"
           className="h-5 w-5 animate-spin text-brand-600"
@@ -183,7 +183,7 @@ export function JobDetail() {
           </div>
         </div>
 
-        <section className="mt-5 rounded-xl border border-border bg-surface-muted p-4">
+        <section className="mt-5 rounded-lg border border-border bg-surface-muted p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-ink">
@@ -236,7 +236,7 @@ export function JobDetail() {
         </section>
 
         {job.notes ? (
-          <section className="mt-6 rounded-xl bg-surface-muted p-4">
+          <section className="mt-6 rounded-lg bg-surface-muted p-4">
             <h3 className="text-base font-semibold text-ink">Notes</h3>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink">
               {job.notes}

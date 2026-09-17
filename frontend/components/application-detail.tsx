@@ -107,7 +107,7 @@ export function ApplicationDetail() {
 
   if (applicationQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
         <Loader2
           aria-hidden="true"
           className="h-5 w-5 animate-spin text-brand-600"

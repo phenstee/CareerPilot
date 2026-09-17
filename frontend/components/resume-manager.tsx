@@ -85,7 +85,7 @@ export function ResumeManager() {
 
   if (resumeQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-xl border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
         <Loader2
           aria-hidden="true"
           className="h-5 w-5 animate-spin text-brand-600"
@@ -138,7 +138,7 @@ export function ResumeManager() {
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex gap-4">
-                  <div className="flex h-14 w-14 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-brand-50 text-brand-600">
                     <FileCheck2 aria-hidden="true" className="h-7 w-7" />
                   </div>
                   <div className="min-w-0">
@@ -210,7 +210,7 @@ export function ResumeManager() {
             </div>
           </div>
         ) : (
-          <div className="mt-5 rounded-xl border border-dashed border-border-strong bg-surface-muted p-6 text-sm text-muted">
+          <div className="mt-5 rounded-lg border border-dashed border-border-strong bg-surface-muted p-6 text-sm text-muted">
             No resume uploaded yet.
           </div>
         )}

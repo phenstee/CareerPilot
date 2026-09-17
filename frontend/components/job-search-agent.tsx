@@ -270,7 +270,7 @@ export function JobSearchAgent() {
               {response.strategy}
             </p>
             {response.provider_failures.length > 0 ? (
-              <p className="mt-3 text-sm text-orange-800">
+              <p className="mt-3 text-sm text-warning">
                 Some sources were unavailable:{" "}
                 {response.provider_failures.join("; ")}
               </p>
@@ -278,7 +278,7 @@ export function JobSearchAgent() {
           </div>
 
           {visibleResults.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
+            <div className="rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
               No results found. Try widening the location, role, or job type.
             </div>
           ) : (
