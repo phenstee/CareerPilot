@@ -289,10 +289,7 @@ export function JobApplicationAgent() {
                     }}
                     primary
                   />
-                  <Link
-                    href="/profile"
-                    className="button button-secondary"
-                  >
+                  <Link href="/profile" className="button button-secondary">
                     Edit profile evidence
                   </Link>
                 </div>

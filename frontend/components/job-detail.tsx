@@ -96,9 +96,7 @@ export function JobDetail() {
   }
 
   if (jobQuery.isError || !jobQuery.data) {
-    return (
-      <div className="callout-error">Job posting not found.</div>
-    );
+    return <div className="callout-error">Job posting not found.</div>;
   }
 
   const job = jobQuery.data;
@@ -130,9 +128,7 @@ export function JobDetail() {
       <article className="surface p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="page-eyebrow">
-              {job.company}
-            </p>
+            <p className="page-eyebrow">{job.company}</p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">
               {job.title}
             </h2>

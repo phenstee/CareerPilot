@@ -11,10 +11,7 @@ import {
   Sparkles
 } from "lucide-react";
 
-import type {
-  EvidenceItem,
-  QualificationGap
-} from "@/lib/api";
+import type { EvidenceItem, QualificationGap } from "@/lib/api";
 
 type Priority = "high" | "medium" | "low";
 
@@ -115,8 +112,7 @@ function SignalColumn({
   tone: "strength" | "gap";
 }) {
   const Icon = tone === "strength" ? CheckCircle2 : AlertTriangle;
-  const iconClass =
-    tone === "strength" ? "text-success" : "text-warning";
+  const iconClass = tone === "strength" ? "text-success" : "text-warning";
   return (
     <div className="rounded-lg border border-border/70 bg-surface p-4">
       <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-subtle">
@@ -141,11 +137,7 @@ function SignalColumn({
   );
 }
 
-export function GapInsight({
-  gap
-}: {
-  gap: QualificationGap;
-}) {
+export function GapInsight({ gap }: { gap: QualificationGap }) {
   const details = [
     {
       label: "Current evidence",
@@ -185,7 +177,10 @@ export function GapInsight({
       </summary>
       <div className="mt-4 space-y-3 border-t border-border pt-4">
         {details.map((detail) => (
-          <div key={detail.label} className="grid grid-cols-[1.25rem_1fr] gap-2">
+          <div
+            key={detail.label}
+            className="grid grid-cols-[1.25rem_1fr] gap-2"
+          >
             <detail.icon
               aria-hidden="true"
               className="mt-0.5 h-4 w-4 text-brand-600"
@@ -203,11 +198,7 @@ export function GapInsight({
   );
 }
 
-export function EvidenceInsight({
-  evidence
-}: {
-  evidence: EvidenceItem;
-}) {
+export function EvidenceInsight({ evidence }: { evidence: EvidenceItem }) {
   return (
     <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
       <summary className="flex cursor-pointer list-none items-start gap-3">

@@ -40,7 +40,8 @@ function formatDate(value: string | null): string {
 const aiTools = [
   {
     title: "Smart Job Finder",
-    description: "Discover relevant opportunities from your profile or a prompt.",
+    description:
+      "Discover relevant opportunities from your profile or a prompt.",
     href: "/agents/job-finder",
     icon: Search
   },
@@ -105,7 +106,10 @@ export function DashboardSummary() {
     (total, stage) => total + (dashboard.counts_by_stage[stage] ?? 0),
     0
   );
-  const maxPipelineCount = Math.max(...pipelineStages.map((stage) => dashboard.counts_by_stage[stage] ?? 0), 1);
+  const maxPipelineCount = Math.max(
+    ...pipelineStages.map((stage) => dashboard.counts_by_stage[stage] ?? 0),
+    1
+  );
 
   return (
     <div className="space-y-8">
@@ -166,7 +170,8 @@ export function DashboardSummary() {
             })}
           </div>
           <p className="mt-5 text-xs text-muted-subtle">
-            {activePipelineTotal} total role{activePipelineTotal === 1 ? "" : "s"} in your active pipeline.
+            {activePipelineTotal} total role
+            {activePipelineTotal === 1 ? "" : "s"} in your active pipeline.
           </p>
         </div>
 
@@ -192,7 +197,9 @@ export function DashboardSummary() {
                     </p>
                   </div>
                   <div className="flex flex-none items-center gap-2">
-                    <Badge tone="warning">{formatDate(application.deadline)}</Badge>
+                    <Badge tone="warning">
+                      {formatDate(application.deadline)}
+                    </Badge>
                     <ArrowUpRight
                       aria-hidden="true"
                       className="h-4 w-4 text-muted-subtle"

@@ -494,10 +494,7 @@ export function ProfileForm() {
           <EmptyState label="No projects yet." />
         ) : null}
         {projectFields.fields.map((field, index) => (
-          <article
-            key={field.id}
-            className="surface p-5"
-          >
+          <article key={field.id} className="surface p-5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <h2 className="text-base font-semibold text-ink">
                 Project {index + 1}
@@ -553,10 +550,7 @@ export function ProfileForm() {
           <EmptyState label="No experiences yet." />
         ) : null}
         {experienceFields.fields.map((field, index) => (
-          <article
-            key={field.id}
-            className="surface p-5"
-          >
+          <article key={field.id} className="surface p-5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <h2 className="text-base font-semibold text-ink">
                 Experience {index + 1}
@@ -606,7 +600,7 @@ export function ProfileForm() {
         </div>
       ) : null}
       {savedMessage ? (
-      <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
+        <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
       ) : null}
 
       <button
@@ -651,13 +645,11 @@ function ProfileSummary({
   return (
     <section className="space-y-6">
       {savedMessage ? (
-      <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
+        <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
       ) : null}
 
       <article className="surface p-6">
-        <p className="page-eyebrow">
-          Saved profile
-        </p>
+        <p className="page-eyebrow">Saved profile</p>
         <h2 className="mt-2 text-2xl font-semibold text-ink">
           {profile.full_name || "Unnamed profile"}
         </h2>
@@ -691,10 +683,7 @@ function ProfileSummary({
         {profile.projects.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {profile.projects.map((project, index) => (
-              <article
-                key={`${project.name}-${index}`}
-                className="surface p-5"
-              >
+              <article key={`${project.name}-${index}`} className="surface p-5">
                 <h3 className="text-lg font-semibold text-ink">
                   {project.name}
                 </h3>
@@ -755,11 +744,7 @@ function ProfileSummary({
         )}
       </SummarySection>
 
-      <button
-        type="button"
-        onClick={onEdit}
-        className="button button-primary"
-      >
+      <button type="button" onClick={onEdit} className="button button-primary">
         <Pencil aria-hidden="true" className="h-4 w-4" />
         Edit profile
       </button>
@@ -825,11 +810,7 @@ function TextField({
   return (
     <label className="block">
       <span className="form-label">{label}</span>
-      <input
-        {...registration}
-        type={type}
-        className="form-control mt-2"
-      />
+      <input {...registration} type={type} className="form-control mt-2" />
     </label>
   );
 }
@@ -844,11 +825,7 @@ function TextareaField({
   return (
     <label className="block">
       <span className="form-label">{label}</span>
-      <textarea
-        {...registration}
-        rows={4}
-        className="form-control mt-2"
-      />
+      <textarea {...registration} rows={4} className="form-control mt-2" />
     </label>
   );
 }

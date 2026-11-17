@@ -188,9 +188,9 @@ export default function HomePage() {
               Smart help with a clear human review step.
             </h2>
             <p className="mt-4 text-base leading-7 text-muted">
-              CareerPilot uses AI to help you work faster, but it never
-              silently changes your career data. Approvals and review remain
-              part of every agent workflow.
+              CareerPilot uses AI to help you work faster, but it never silently
+              changes your career data. Approvals and review remain part of
+              every agent workflow.
             </p>
           </div>
           <div className="grid gap-3">

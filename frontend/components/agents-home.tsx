@@ -75,9 +75,8 @@ export function AgentsHome() {
       <div className="flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50/60 p-4 text-sm leading-6 text-brand-700">
         <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 flex-none" />
         <p>
-          Every agent produces recommendations for your review. CareerPilot
-          does not submit applications or change your data without your
-          approval.
+          Every agent produces recommendations for your review. CareerPilot does
+          not submit applications or change your data without your approval.
         </p>
       </div>
     </section>

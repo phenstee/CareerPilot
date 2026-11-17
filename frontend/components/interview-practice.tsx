@@ -21,10 +21,7 @@ import {
   InterviewSession,
   listInterviewSessions
 } from "@/lib/api";
-import {
-  InsightSummary,
-  RecommendationPanel
-} from "@/components/insights";
+import { InsightSummary, RecommendationPanel } from "@/components/insights";
 
 const categoryLabels: Record<InterviewQuestion["category"], string> = {
   behavioral: "Behavioral",
@@ -125,11 +122,7 @@ export function InterviewPractice() {
   }
 
   if (sessionsQuery.isError) {
-    return (
-      <div className="callout-error">
-        Unable to load interview prep.
-      </div>
-    );
+    return <div className="callout-error">Unable to load interview prep.</div>;
   }
 
   return (
@@ -198,11 +191,7 @@ export function InterviewPractice() {
       </aside>
 
       <section className="space-y-5">
-        {formError ? (
-          <div className="callout-error">
-            {formError}
-          </div>
-        ) : null}
+        {formError ? <div className="callout-error">{formError}</div> : null}
 
         <InterviewTaskStatus task={activeTask} />
 
@@ -268,9 +257,7 @@ export function InterviewPractice() {
                 }}
               >
                 <label className="block">
-                  <span className="form-label">
-                    Practice answer
-                  </span>
+                  <span className="form-label">Practice answer</span>
                   <textarea
                     value={answerText}
                     onChange={(event) => setAnswerText(event.target.value)}
@@ -327,11 +314,7 @@ function InterviewTaskStatus({ task }: { task: AsyncTask | null }) {
             ? "Completed."
             : (task.last_error_message ?? "Generation failed. Try again.");
 
-  return (
-    <div className="callout-info">
-      {text}
-    </div>
-  );
+  return <div className="callout-info">{text}</div>;
 }
 
 function SessionOverview({ session }: { session: InterviewSession }) {
@@ -428,7 +411,9 @@ function FeedbackGroup({
     <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <span className="flex items-center gap-2">
-          <span className={`text-xs font-bold uppercase tracking-[0.1em] ${toneStyles[tone]}`}>
+          <span
+            className={`text-xs font-bold uppercase tracking-[0.1em] ${toneStyles[tone]}`}
+          >
             {title}
           </span>
           <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-muted">

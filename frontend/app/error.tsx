@@ -18,9 +18,7 @@ export default function GlobalError({
             <AlertTriangle aria-hidden="true" className="h-6 w-6" />
           </span>
           <div>
-            <p className="page-eyebrow">
-              Error
-            </p>
+            <p className="page-eyebrow">Error</p>
             <h1 className="mt-2 text-2xl font-semibold text-ink">
               Something went wrong
             </h1>
@@ -37,10 +35,7 @@ export default function GlobalError({
                 <RefreshCw aria-hidden="true" className="h-4 w-4" />
                 Try again
               </button>
-              <Link
-                href="/dashboard"
-                className="button button-secondary"
-              >
+              <Link href="/dashboard" className="button button-secondary">
                 Dashboard
               </Link>
             </div>

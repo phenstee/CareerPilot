@@ -1,12 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  FileText,
-  ListChecks,
-  Sparkles
-} from "lucide-react";
+import { CheckCircle2, FileText, ListChecks, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -307,10 +302,7 @@ export function JobPreparationAgent() {
                 </h3>
                 {latestRoleAnalysis.gaps.length > 0 ? (
                   latestRoleAnalysis.gaps.map((gap, index) => (
-                    <GapInsight
-                      key={`${gap.requirement}-${index}`}
-                      gap={gap}
-                    />
+                    <GapInsight key={`${gap.requirement}-${index}`} gap={gap} />
                   ))
                 ) : (
                   <p className="text-sm text-muted">

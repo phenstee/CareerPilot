@@ -106,11 +106,7 @@ export function JobForm({ job }: JobFormProps) {
         </div>
       </section>
 
-      {formError ? (
-        <div className="callout-error">
-          {formError}
-        </div>
-      ) : null}
+      {formError ? <div className="callout-error">{formError}</div> : null}
 
       <button
         type="submit"
@@ -140,11 +136,7 @@ function TextField({
   return (
     <label className="block">
       <span className="form-label">{label}</span>
-      <input
-        {...registration}
-        type={type}
-        className="form-control mt-2"
-      />
+      <input {...registration} type={type} className="form-control mt-2" />
     </label>
   );
 }
@@ -161,11 +153,7 @@ function TextareaField({
   return (
     <label className="block">
       <span className="form-label">{label}</span>
-      <textarea
-        {...registration}
-        rows={rows}
-        className="form-control mt-2"
-      />
+      <textarea {...registration} rows={rows} className="form-control mt-2" />
     </label>
   );
 }

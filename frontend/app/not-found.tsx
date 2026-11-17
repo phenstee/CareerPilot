@@ -10,9 +10,7 @@ export default function NotFound() {
             <Compass aria-hidden="true" className="h-6 w-6" />
           </span>
           <div>
-            <p className="page-eyebrow">
-              Not found
-            </p>
+            <p className="page-eyebrow">Not found</p>
             <h1 className="mt-2 text-2xl font-semibold text-ink">
               This page is not available
             </h1>
@@ -21,16 +19,10 @@ export default function NotFound() {
               main CareerPilot workflows.
             </p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Link
-                href="/dashboard"
-                className="button button-primary"
-              >
+              <Link href="/dashboard" className="button button-primary">
                 Dashboard
               </Link>
-              <Link
-                href="/agents"
-                className="button button-secondary"
-              >
+              <Link href="/agents" className="button button-secondary">
                 AI agents
               </Link>
             </div>

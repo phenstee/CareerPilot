@@ -55,8 +55,8 @@ export default async function SettingsPage() {
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted">
               CareerPilot keeps you in control. Agents prepare recommendations,
-              but any action that changes your career data is presented for
-              your review first.
+              but any action that changes your career data is presented for your
+              review first.
             </p>
             <div className="mt-5">
               <Link href="/agents" className="button button-primary">
@@ -68,10 +68,10 @@ export default async function SettingsPage() {
           <section className="surface p-5 lg:col-span-2">
             <h2 className="text-lg font-semibold text-ink">Data controls</h2>
             <p className="mt-3 text-sm leading-6 text-muted">
-              Profile details, saved jobs, application records, extracted
-              resume text, generated analyses, and interview practice are
-              stored in your CareerPilot workspace. Uploaded PDFs are not
-              stored as original files.
+              Profile details, saved jobs, application records, extracted resume
+              text, generated analyses, and interview practice are stored in
+              your CareerPilot workspace. Uploaded PDFs are not stored as
+              original files.
             </p>
             <div className="mt-5 grid gap-2 sm:grid-cols-3">
               <Link

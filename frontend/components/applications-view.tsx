@@ -1,13 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  CalendarDays,
-  Columns3,
-  Loader2,
-  Search,
-  Table2
-} from "lucide-react";
+import { CalendarDays, Columns3, Loader2, Search, Table2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -29,7 +23,10 @@ const VISIBLE_TRACKER_STAGES = APPLICATION_STAGES.filter(
   (stage) => !HIDDEN_TRACKER_STAGES.has(stage)
 );
 
-const stageTone: Record<ApplicationStage, "neutral" | "brand" | "success" | "warning" | "danger"> = {
+const stageTone: Record<
+  ApplicationStage,
+  "neutral" | "brand" | "success" | "warning" | "danger"
+> = {
   Saved: "neutral",
   Preparing: "brand",
   Applied: "brand",

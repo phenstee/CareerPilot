@@ -187,9 +187,7 @@ export function JobSearchAgent() {
         ) : (
           <div className="space-y-4">
             <label className="block">
-              <span className="form-label">
-                Search instructions
-              </span>
+              <span className="form-label">Search instructions</span>
               <textarea
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
@@ -414,16 +412,10 @@ function JobResultCard({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="badge badge-brand">
-              {fitLabel}
-            </span>
-            <span className="badge badge-neutral">
-              {result.workplace_type}
-            </span>
+            <span className="badge badge-brand">{fitLabel}</span>
+            <span className="badge badge-neutral">{result.workplace_type}</span>
             {result.is_mock ? (
-              <span className="badge badge-warning">
-                Mock result
-              </span>
+              <span className="badge badge-warning">Mock result</span>
             ) : null}
           </div>
           <h2 className="mt-3 text-xl font-semibold text-ink">
@@ -523,10 +515,7 @@ function ResultList({ title, items }: { title: string; items: string[] }) {
       {items.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-2">
           {items.map((item, index) => (
-            <span
-              key={`${item}-${index}`}
-              className="badge badge-neutral"
-            >
+            <span key={`${item}-${index}`} className="badge badge-neutral">
               {item}
             </span>
           ))}

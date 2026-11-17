@@ -59,9 +59,7 @@ export function PrimaryActionCard({
     <section className="surface border-brand-100 p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="page-eyebrow">
-            {eyebrow}
-          </p>
+          <p className="page-eyebrow">{eyebrow}</p>
           <h2 className="mt-2 text-2xl font-semibold text-ink">{title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
             {description}
@@ -81,9 +79,7 @@ export function ActionButton({
   action: Action;
   primary?: boolean;
 }) {
-  const classes = primary
-    ? "button button-primary"
-    : "button button-secondary";
+  const classes = primary ? "button button-primary" : "button button-secondary";
 
   const content = (
     <>
@@ -206,17 +202,12 @@ export function TagList({
   return (
     <div className="flex flex-wrap gap-2">
       {visible.map((item) => (
-        <span
-          key={item}
-          className="badge badge-neutral"
-        >
+        <span key={item} className="badge badge-neutral">
           {item}
         </span>
       ))}
       {extra > 0 ? (
-        <span className="badge badge-neutral">
-          +{extra} more
-        </span>
+        <span className="badge badge-neutral">+{extra} more</span>
       ) : null}
     </div>
   );
@@ -253,16 +244,10 @@ export function EmptyState({
       <h2 className="text-xl font-semibold text-ink">{title}</h2>
       <p className="mt-2 max-w-xl text-sm text-muted">{description}</p>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <Link
-          href="/agents/job-finder"
-          className="button button-primary"
-        >
+        <Link href="/agents/job-finder" className="button button-primary">
           Find jobs
         </Link>
-        <Link
-          href="/jobs"
-          className="button button-secondary"
-        >
+        <Link href="/jobs" className="button button-secondary">
           View all jobs
         </Link>
       </div>

@@ -154,11 +154,7 @@ export function AuthForm({
         ) : null}
       </label>
 
-      {formError ? (
-        <div className="callout-error">
-          {formError}
-        </div>
-      ) : null}
+      {formError ? <div className="callout-error">{formError}</div> : null}
 
       <button
         type="submit"

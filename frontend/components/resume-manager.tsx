@@ -127,11 +127,7 @@ export function ResumeManager() {
           </label>
         </div>
 
-        {error ? (
-          <div className="callout-error mt-4">
-            {error}
-          </div>
-        ) : null}
+        {error ? <div className="callout-error mt-4">{error}</div> : null}
 
         {resume ? (
           <div className="mt-6 border-t border-border pt-6">
@@ -142,9 +138,7 @@ export function ResumeManager() {
                     <FileCheck2 aria-hidden="true" className="h-7 w-7" />
                   </div>
                   <div className="min-w-0">
-                    <p className="page-eyebrow">
-                      PDF ready
-                    </p>
+                    <p className="page-eyebrow">PDF ready</p>
                     <h3 className="mt-1 break-words text-xl font-semibold text-ink">
                       {resume.filename}
                     </h3>

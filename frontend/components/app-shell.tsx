@@ -127,7 +127,14 @@ export function AppShell({
   }
 
   function isActive(item: NavItem) {
-    if (item.href === "/dashboard" || item.href === "/jobs" || item.href === "/applications" || item.href === "/resume" || item.href === "/profile" || item.href === "/settings") {
+    if (
+      item.href === "/dashboard" ||
+      item.href === "/jobs" ||
+      item.href === "/applications" ||
+      item.href === "/resume" ||
+      item.href === "/profile" ||
+      item.href === "/settings"
+    ) {
       return pathname === item.href || pathname.startsWith(`${item.href}/`);
     }
     if (item.exact) {

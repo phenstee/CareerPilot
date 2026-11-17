@@ -117,9 +117,7 @@ export function ApplicationDetail() {
   }
 
   if (applicationQuery.isError || !applicationQuery.data) {
-    return (
-      <div className="callout-error">Application not found.</div>
-    );
+    return <div className="callout-error">Application not found.</div>;
   }
 
   const application = applicationQuery.data;
@@ -141,9 +139,7 @@ export function ApplicationDetail() {
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="page-eyebrow">
-              {application.company}
-            </p>
+            <p className="page-eyebrow">{application.company}</p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">
               {application.job_title}
             </h2>
@@ -210,9 +206,7 @@ export function ApplicationDetail() {
         </div>
 
         <label className="mt-4 block">
-          <span className="form-label">
-            Next action
-          </span>
+          <span className="form-label">Next action</span>
           <input
             value={values.next_action}
             onChange={(event) =>
@@ -235,9 +229,7 @@ export function ApplicationDetail() {
             />
           </label>
           <label className="block">
-            <span className="form-label">
-              Important contacts
-            </span>
+            <span className="form-label">Important contacts</span>
             <textarea
               value={values.important_contacts}
               onChange={(event) =>
@@ -254,9 +246,7 @@ export function ApplicationDetail() {
         </div>
 
         {formError ? (
-          <div className="callout-error mt-4">
-            {formError}
-          </div>
+          <div className="callout-error mt-4">{formError}</div>
         ) : null}
 
         <button

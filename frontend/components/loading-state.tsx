@@ -7,9 +7,7 @@ export function LoadingState({ message }: { message?: string }) {
         aria-hidden="true"
         className="h-5 w-5 animate-spin text-brand-600"
       />
-      {message ? (
-        <p className="mt-3 text-sm text-muted">{message}</p>
-      ) : null}
+      {message ? <p className="mt-3 text-sm text-muted">{message}</p> : null}
     </div>
   );
 }
