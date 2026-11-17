@@ -230,7 +230,7 @@ def test_role_analysis_is_stale_after_resume_replacement(client: TestClient, mon
     assert listing.json()["items"][0]["is_stale"] is True
 
 
-def test_regenerated_role_analysis_allows_plan_after_stale_rejection(client: TestClient) -> None:
+def test_regenerated_role_analysis_allows_plan_after_stale_rejection(client: TestClient, db_session: Session) -> None:
     _register(client, "regenerate-role@example.com")
     assert client.put("/api/v1/profile", json=_profile_payload()).status_code == 200
     job = client.post("/api/v1/jobs", json=_job_payload()).json()
@@ -246,6 +246,12 @@ def test_regenerated_role_analysis_allows_plan_after_stale_rejection(client: Tes
 
     fresh_role = client.post("/api/v1/agents/role-analysis", json={"job_posting_id": job["id"]})
     fresh_role_json = _analysis_from_task(client, fresh_role)
+    # SQLite's CURRENT_TIMESTAMP has one-second resolution, so both role
+    # analyses can share a created_at and "latest" becomes arbitrary.
+    fresh_analysis = db_session.get(JobAnalysis, fresh_role_json["id"])
+    assert fresh_analysis is not None
+    fresh_analysis.created_at = datetime.now(timezone.utc) + timedelta(seconds=5)
+    db_session.commit()
     plan = client.post(
         "/api/v1/agents/preparation-plan",
         json={"job_posting_id": job["id"], "role_analysis_id": fresh_role_json["id"]},
