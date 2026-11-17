@@ -112,10 +112,10 @@ export function InterviewPractice() {
 
   if (sessionsQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-brand-600"
+          className="h-5 w-5 animate-spin text-accent"
         />
       </div>
     );
@@ -129,7 +129,7 @@ export function InterviewPractice() {
     <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
       <aside className="surface p-5">
         <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-brand-50 p-2 text-brand-600">
+          <div className="rounded-lg bg-accent-subtle p-2 text-accent">
             <Mic aria-hidden="true" className="h-5 w-5" />
           </div>
           <div>
@@ -170,21 +170,21 @@ export function InterviewPractice() {
                 }}
                 className={`w-full rounded-lg border px-3 py-3 text-left text-sm transition ${
                   activeSession?.id === session.id
-                    ? "border-brand-500 bg-brand-50 text-ink"
-                    : "border-border bg-surface text-muted hover:border-border-strong"
+                    ? "border-accent bg-accent-subtle text-ink"
+                    : "border-line bg-surface text-muted hover:border-line-ui"
                 }`}
               >
                 <span className="block font-semibold">
                   {session.questions.length} questions
                 </span>
-                <span className="mt-1 block text-xs text-muted-subtle">
+                <span className="mt-1 block text-xs text-muted">
                   {formatDate(session.created_at)} - {session.provider}
                 </span>
               </button>
             ))}
           </div>
         ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-border-strong bg-surface-muted p-4 text-sm leading-6 text-muted">
+          <div className="mt-5 rounded-lg border border-dashed border-line-ui bg-sunken p-4 text-sm leading-6 text-muted">
             No interview prep sessions yet.
           </div>
         )}
@@ -244,7 +244,7 @@ export function InterviewPractice() {
                 {activeQuestion.question_text}
               </p>
               {activeQuestion.rationale ? (
-                <p className="mt-3 rounded-lg bg-surface-muted px-3 py-2 text-sm leading-6 text-muted">
+                <p className="mt-3 rounded-lg bg-sunken px-3 py-2 text-sm leading-6 text-muted">
                   {activeQuestion.rationale}
                 </p>
               ) : null}
@@ -289,7 +289,7 @@ export function InterviewPractice() {
             <FeedbackPanel question={activeQuestion} />
           </>
         ) : (
-          <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm leading-6 text-muted">
+          <div className="rounded-lg border border-dashed border-line-ui bg-surface p-8 text-sm leading-6 text-muted">
             Generate an interview prep session to start practicing.
           </div>
         )}
@@ -340,15 +340,15 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
   return (
     <article className="surface p-5 sm:p-6">
       <div className="flex items-center gap-2">
-        <Sparkles aria-hidden="true" className="h-4 w-4 text-brand-600" />
+        <Sparkles aria-hidden="true" className="h-4 w-4 text-accent" />
         <h3 className="text-lg font-semibold text-ink">Answer feedback</h3>
       </div>
       {latestAnswer ? (
         <>
-          <p className="mt-2 text-xs text-muted-subtle">
+          <p className="mt-2 text-xs text-muted">
             {formatDate(latestAnswer.created_at)} - {latestAnswer.provider}
           </p>
-          <p className="mt-4 rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm leading-6 text-ink">
+          <p className="mt-4 rounded-lg border border-accent/20 bg-accent-subtle/60 px-4 py-3 text-sm leading-6 text-ink">
             {latestAnswer.feedback.overall_feedback}
           </p>
           <div className="mt-5 grid gap-3 lg:grid-cols-2">
@@ -401,14 +401,14 @@ function FeedbackGroup({
     success: "text-success",
     warning: "text-warning",
     danger: "text-danger",
-    brand: "text-brand-600",
+    brand: "text-accent",
     ai: "text-ink"
   } as const;
 
   if (items.length === 0) return null;
 
   return (
-    <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
+    <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-line-ui">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
         <span className="flex items-center gap-2">
           <span
@@ -416,16 +416,16 @@ function FeedbackGroup({
           >
             {title}
           </span>
-          <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold text-muted">
+          <span className="rounded-full bg-sunken px-2 py-0.5 text-xs font-bold text-muted">
             {items.length}
           </span>
         </span>
         <ChevronDown
           aria-hidden="true"
-          className="h-4 w-4 text-muted-subtle transition group-open:rotate-180"
+          className="h-4 w-4 text-muted transition group-open:rotate-180"
         />
       </summary>
-      <ul className="mt-3 space-y-2 border-t border-border pt-3">
+      <ul className="mt-3 space-y-2 border-t border-line pt-3">
         {items.map((item, index) => (
           <li
             key={`${item}-${index}`}

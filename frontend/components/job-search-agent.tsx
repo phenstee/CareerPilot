@@ -202,7 +202,7 @@ export function JobSearchAgent() {
                   key={example}
                   type="button"
                   onClick={() => setPrompt(example)}
-                  className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700"
+                  className="badge badge-neutral cursor-pointer transition hover:bg-accent-subtle hover:text-accent"
                 >
                   {example}
                 </button>
@@ -253,7 +253,7 @@ export function JobSearchAgent() {
                   </p>
                   <Link
                     href="/profile"
-                    className="mt-3 inline-flex font-semibold text-lagoon"
+                    className="mt-3 inline-flex font-semibold text-accent"
                   >
                     Update profile
                   </Link>
@@ -276,7 +276,7 @@ export function JobSearchAgent() {
           </div>
 
           {visibleResults.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
+            <div className="rounded-lg border border-dashed border-line-ui bg-surface p-6 text-sm text-muted">
               No results found. Try widening the location, role, or job type.
             </div>
           ) : (
@@ -322,7 +322,7 @@ function ModeButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="surface surface-hover p-5 text-left aria-pressed:border-brand-500 aria-pressed:bg-brand-50"
+      className="surface surface-hover p-5 text-left aria-pressed:border-accent aria-pressed:bg-accent-subtle"
     >
       <p className="font-semibold text-ink">{title}</p>
       <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
@@ -375,7 +375,7 @@ function FilterGroup({
             type="button"
             aria-pressed={selected.includes(value)}
             onClick={() => onToggle(value as never)}
-            className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700 aria-pressed:bg-brand-50 aria-pressed:text-brand-700"
+            className="badge badge-neutral cursor-pointer transition hover:bg-accent-subtle hover:text-accent aria-pressed:bg-accent-subtle aria-pressed:text-accent"
           >
             {value}
           </button>
@@ -424,7 +424,7 @@ function JobResultCard({
           <p className="mt-1 text-sm text-muted">
             {result.company} - {result.location}
           </p>
-          <p className="mt-2 text-sm text-muted-subtle">
+          <p className="mt-2 text-sm text-muted">
             {result.employment_type || "Type not listed"} -{" "}
             {result.experience_level || "Level not listed"} - {salary}
           </p>
@@ -494,7 +494,7 @@ function JobResultCard({
         <ResultList title="Relevant profile evidence" items={profileEvidence} />
         <ResultList title="Possible gaps" items={gaps} />
       </div>
-      <p className="mt-4 text-xs text-muted-subtle">
+      <p className="mt-4 text-xs text-muted">
         Source: {result.source}
         {result.posted_at
           ? ` - Posted ${new Intl.DateTimeFormat("en", {
@@ -521,7 +521,7 @@ function ResultList({ title, items }: { title: string; items: string[] }) {
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-sm text-muted-subtle">None listed.</p>
+        <p className="mt-2 text-sm text-muted">None listed.</p>
       )}
     </section>
   );

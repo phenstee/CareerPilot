@@ -85,10 +85,10 @@ export function ResumeManager() {
 
   if (resumeQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-brand-600"
+          className="h-5 w-5 animate-spin text-accent"
         />
       </div>
     );
@@ -130,11 +130,11 @@ export function ResumeManager() {
         {error ? <div className="callout-error mt-4">{error}</div> : null}
 
         {resume ? (
-          <div className="mt-6 border-t border-border pt-6">
+          <div className="mt-6 border-t border-line pt-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex gap-4">
-                  <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                  <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-accent-subtle text-accent">
                     <FileCheck2 aria-hidden="true" className="h-7 w-7" />
                   </div>
                   <div className="min-w-0">
@@ -159,12 +159,12 @@ export function ResumeManager() {
                   />
                 </dl>
 
-                <div className="mt-5 rounded-lg border border-border bg-surface-muted">
-                  <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="mt-5 rounded-lg border border-line bg-sunken">
+                  <div className="flex items-center justify-between border-b border-line px-4 py-3">
                     <p className="text-sm font-semibold text-ink">
                       Extracted text preview
                     </p>
-                    <span className="text-xs font-medium text-muted-subtle">
+                    <span className="text-xs font-medium text-muted">
                       First readable lines
                     </span>
                   </div>
@@ -176,7 +176,7 @@ export function ResumeManager() {
                             key={`${line}-${index}`}
                             className="grid grid-cols-[2rem_1fr] gap-3 text-sm leading-6 text-ink"
                           >
-                            <span className="font-mono text-xs text-muted-subtle">
+                            <span className="font-mono text-xs text-muted">
                               {String(index + 1).padStart(2, "0")}
                             </span>
                             <span>{line}</span>
@@ -204,7 +204,7 @@ export function ResumeManager() {
             </div>
           </div>
         ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-border-strong bg-surface-muted p-6 text-sm text-muted">
+          <div className="mt-5 rounded-lg border border-dashed border-line-ui bg-sunken p-6 text-sm text-muted">
             No resume uploaded yet.
           </div>
         )}
@@ -223,9 +223,9 @@ function ResumeMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-surface-muted px-3 py-3">
-      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
-        <span className="text-brand-600">{icon}</span>
+    <div className="rounded-lg border border-line bg-sunken px-3 py-3">
+      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted">
+        <span className="text-accent">{icon}</span>
         {label}
       </dt>
       <dd className="mt-2 text-sm font-semibold text-ink">{value}</dd>

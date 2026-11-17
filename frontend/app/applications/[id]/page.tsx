@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { ApplicationDetail } from "@/components/application-detail";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
 export default async function ApplicationDetailPage() {
@@ -12,7 +12,6 @@ export default async function ApplicationDetailPage() {
     <AppShell user={user}>
       <div className="page-container-narrow">
         <PageHeader
-          eyebrow="Applications"
           title="Application details"
           actions={
             <Link href="/applications" className="button button-secondary">

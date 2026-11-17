@@ -18,7 +18,7 @@ type Priority = "high" | "medium" | "low";
 const priorityStyles: Record<Priority, string> = {
   high: "bg-danger/10 text-danger",
   medium: "bg-warning/10 text-warning",
-  low: "bg-surface-muted text-muted"
+  low: "bg-sunken text-muted"
 };
 
 const priorityLabels: Record<Priority, string> = {
@@ -65,9 +65,9 @@ export function InsightSummary({
   gaps: string[];
 }) {
   return (
-    <section className="rounded-lg border border-brand-100 bg-brand-50/40 p-5 sm:p-6">
+    <section className="rounded-lg border border-accent/20 bg-accent-subtle/40 p-5 sm:p-6">
       <div>
-        <div className="flex items-center gap-2 text-brand-700">
+        <div className="flex items-center gap-2 text-accent">
           <Sparkles aria-hidden="true" className="h-4 w-4" />
           <span className="text-xs font-bold uppercase tracking-[0.12em]">
             AI snapshot
@@ -114,8 +114,8 @@ function SignalColumn({
   const Icon = tone === "strength" ? CheckCircle2 : AlertTriangle;
   const iconClass = tone === "strength" ? "text-success" : "text-warning";
   return (
-    <div className="rounded-lg border border-border/70 bg-surface p-4">
-      <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-subtle">
+    <div className="rounded-lg border border-line/70 bg-surface p-4">
+      <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
         {title}
       </h3>
       <div className="mt-3 space-y-2">
@@ -152,7 +152,7 @@ export function GapInsight({ gap }: { gap: QualificationGap }) {
   ];
 
   return (
-    <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
+    <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-line-ui">
       <summary className="flex cursor-pointer list-none items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-warning/10 text-warning">
           <AlertTriangle aria-hidden="true" className="h-4 w-4" />
@@ -172,10 +172,10 @@ export function GapInsight({ gap }: { gap: QualificationGap }) {
         </span>
         <ChevronDown
           aria-hidden="true"
-          className="mt-1 h-4 w-4 flex-none text-muted-subtle transition group-open:rotate-180"
+          className="mt-1 h-4 w-4 flex-none text-muted transition group-open:rotate-180"
         />
       </summary>
-      <div className="mt-4 space-y-3 border-t border-border pt-4">
+      <div className="mt-4 space-y-3 border-t border-line pt-4">
         {details.map((detail) => (
           <div
             key={detail.label}
@@ -183,10 +183,10 @@ export function GapInsight({ gap }: { gap: QualificationGap }) {
           >
             <detail.icon
               aria-hidden="true"
-              className="mt-0.5 h-4 w-4 text-brand-600"
+              className="mt-0.5 h-4 w-4 text-accent"
             />
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+              <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
                 {detail.label}
               </p>
               <p className="mt-1 text-sm leading-6 text-ink">{detail.value}</p>
@@ -200,7 +200,7 @@ export function GapInsight({ gap }: { gap: QualificationGap }) {
 
 export function EvidenceInsight({ evidence }: { evidence: EvidenceItem }) {
   return (
-    <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-border-strong">
+    <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-line-ui">
       <summary className="flex cursor-pointer list-none items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-success/10 text-success">
           <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
@@ -215,11 +215,11 @@ export function EvidenceInsight({ evidence }: { evidence: EvidenceItem }) {
         </span>
         <ChevronDown
           aria-hidden="true"
-          className="mt-1 h-4 w-4 flex-none text-muted-subtle transition group-open:rotate-180"
+          className="mt-1 h-4 w-4 flex-none text-muted transition group-open:rotate-180"
         />
       </summary>
-      <div className="mt-4 border-t border-border pt-4">
-        <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+      <div className="mt-4 border-t border-line pt-4">
+        <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
           Supporting evidence
         </p>
         <p className="mt-2 text-sm leading-6 text-ink">{evidence.evidence}</p>
@@ -238,8 +238,8 @@ export function RecommendationPanel({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-lg border border-brand-100 bg-brand-50/60 p-4">
-      <div className="flex items-center gap-2 text-brand-700">
+    <section className="rounded-lg border border-accent/20 bg-accent-subtle/60 p-4">
+      <div className="flex items-center gap-2 text-accent">
         <Sparkles aria-hidden="true" className="h-4 w-4" />
         <h3 className="text-sm font-bold uppercase tracking-[0.08em]">
           {title}
@@ -248,7 +248,7 @@ export function RecommendationPanel({
       <ol className="mt-3 space-y-2">
         {items.slice(0, 3).map((item, index) => (
           <li key={`${item}-${index}`} className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
               {index + 1}
             </span>
             <p className="text-sm leading-6 text-ink">{item}</p>
@@ -279,7 +279,7 @@ export function InsightSectionLabel({
 export function UncertaintyList({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="rounded-lg border border-line bg-surface p-4">
       <div className="flex items-center gap-2 text-muted">
         <CircleHelp aria-hidden="true" className="h-4 w-4" />
         <h3 className="text-sm font-bold uppercase tracking-[0.1em]">
@@ -289,7 +289,7 @@ export function UncertaintyList({ items }: { items: string[] }) {
       <ul className="mt-3 space-y-2">
         {items.slice(0, 3).map((item) => (
           <li key={item} className="flex gap-2 text-sm leading-6 text-muted">
-            <span className="text-muted-subtle">?</span>
+            <span className="text-muted">?</span>
             <span>{item}</span>
           </li>
         ))}

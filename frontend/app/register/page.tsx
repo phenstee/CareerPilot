@@ -49,7 +49,7 @@ export default async function RegisterPage({
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-semibold text-brand-700 hover:text-brand-600"
+            className="font-semibold text-accent hover:text-accent"
           >
             Sign in
           </Link>

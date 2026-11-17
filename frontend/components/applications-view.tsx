@@ -11,7 +11,7 @@ import {
   listApplications,
   TrackedApplication
 } from "@/lib/api";
-import { Badge } from "@/components/badge";
+import { Badge } from "@/components/ui/badge";
 
 const HIDDEN_TRACKER_STAGES = new Set<ApplicationStage>([
   "Saved",
@@ -86,7 +86,7 @@ export function ApplicationsView() {
           <label className="relative block">
             <Search
               aria-hidden="true"
-              className="absolute left-3 top-3.5 h-4 w-4 text-muted-subtle"
+              className="absolute left-3 top-3.5 h-4 w-4 text-muted"
             />
             <input
               value={company}
@@ -132,7 +132,7 @@ export function ApplicationsView() {
           />
         </div>
         <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="inline-flex rounded-lg bg-surface-muted p-1">
+          <div className="inline-flex rounded-lg bg-sunken p-1">
             <button
               type="button"
               onClick={() => setView("board")}
@@ -161,10 +161,10 @@ export function ApplicationsView() {
       </div>
 
       {applicationsQuery.isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
+        <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
           <Loader2
             aria-hidden="true"
-            className="h-5 w-5 animate-spin text-brand-600"
+            className="h-5 w-5 animate-spin text-accent"
           />
         </div>
       ) : null}
@@ -174,7 +174,7 @@ export function ApplicationsView() {
       ) : null}
 
       {applicationsQuery.data && applicationsQuery.data.total === 0 ? (
-        <div className="rounded-lg border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-line-ui bg-surface px-6 py-10 text-center text-sm text-muted">
           No tracked applications match this view. Open a saved job to start
           tracking it.
         </div>
@@ -187,7 +187,7 @@ export function ApplicationsView() {
               {VISIBLE_TRACKER_STAGES.map((applicationStage) => (
                 <section
                   key={applicationStage}
-                  className="min-h-40 min-w-[15rem] flex-1 rounded-lg border border-border bg-surface-muted/60 p-3"
+                  className="min-h-40 min-w-[15rem] flex-1 rounded-lg border border-line bg-sunken/60 p-3"
                 >
                   <div className="mb-3 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ function ApplicationCard({ application }: { application: TrackedApplication }) {
         <Badge tone={stageTone[application.stage]}>{application.stage}</Badge>
       </div>
       <p className="mt-1 text-sm text-muted">{application.company}</p>
-      <p className="mt-3 flex items-center gap-2 text-xs font-medium text-muted-subtle">
+      <p className="mt-3 flex items-center gap-2 text-xs font-medium text-muted">
         <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
         Deadline {formatDate(application.deadline)}
       </p>
@@ -255,10 +255,10 @@ function ApplicationsTable({
   applications: TrackedApplication[];
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-surface">
+    <div className="overflow-hidden rounded-lg border border-line bg-surface">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-muted text-left text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+        <table className="min-w-full divide-y divide-line text-sm">
+          <thead className="bg-sunken text-left text-xs font-bold uppercase tracking-[0.08em] text-muted">
             <tr>
               <th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Company</th>
@@ -268,13 +268,13 @@ function ApplicationsTable({
               <th className="px-4 py-3">Next action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-line">
             {applications.map((application) => (
-              <tr key={application.id} className="hover:bg-surface-muted/60">
+              <tr key={application.id} className="hover:bg-sunken/60">
                 <td className="px-4 py-3 font-semibold text-ink">
                   <Link
                     href={`/applications/${application.id}`}
-                    className="hover:text-brand-700"
+                    className="hover:text-accent"
                   >
                     {application.job_title}
                   </Link>

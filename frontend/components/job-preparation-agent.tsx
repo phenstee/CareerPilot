@@ -297,7 +297,7 @@ export function JobPreparationAgent() {
               />
 
               <section className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted-subtle">
+                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted">
                   Areas to prepare
                 </h3>
                 {latestRoleAnalysis.gaps.length > 0 ? (
@@ -312,7 +312,7 @@ export function JobPreparationAgent() {
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted-subtle">
+                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted">
                   Evidence to use
                 </h3>
                 {latestRoleAnalysis.strengths.length > 0 ? (
@@ -406,7 +406,7 @@ export function JobPreparationAgent() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-subtle">
+              <p className="text-sm text-muted">
                 Generate a plan after the role analysis is ready.
               </p>
             )}
@@ -477,7 +477,7 @@ export function JobPreparationAgent() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-subtle">
+              <p className="text-sm text-muted">
                 Resume advice is optional and stays secondary to preparation.
               </p>
             )}
@@ -501,7 +501,7 @@ export function JobPreparationAgent() {
                   })
                 }
               />
-              <div className="rounded-lg bg-surface-muted p-4">
+              <div className="rounded-lg bg-sunken p-4">
                 <h3 className="text-sm font-semibold text-ink">
                   Mock interview
                 </h3>
@@ -528,7 +528,7 @@ export function JobPreparationAgent() {
           </AgentCard>
         </section>
       ) : (
-        <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-line-ui bg-surface p-8 text-sm text-muted">
           Select a saved job to begin preparation.
         </div>
       )}
@@ -609,7 +609,7 @@ function Checklist({
 }) {
   if (items.length === 0 || !latestPlanId) {
     return (
-      <div className="rounded-lg bg-surface-muted p-4 text-sm text-muted">
+      <div className="rounded-lg bg-sunken p-4 text-sm text-muted">
         Generate a preparation plan to get a short checklist.
       </div>
     );
@@ -648,18 +648,18 @@ function ChecklistItem({
   const checked = completedItems.has(itemKey);
 
   return (
-    <label className="flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm text-ink">
+    <label className="flex items-center gap-3 rounded-lg bg-sunken px-3 py-2 text-sm text-ink">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onToggle(itemKey, event.target.checked)}
-        className="h-4 w-4 rounded border-border-strong text-brand-600 focus:ring-brand-600"
+        className="h-4 w-4 rounded border-line-ui text-accent focus:ring-brand-600"
       />
       <span>{item}</span>
       {checked ? (
         <CheckCircle2
           aria-hidden="true"
-          className="ml-auto h-4 w-4 text-brand-600"
+          className="ml-auto h-4 w-4 text-accent"
         />
       ) : null}
     </label>
@@ -668,8 +668,8 @@ function ChecklistItem({
 
 function StatusTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface-muted px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
+    <div className="rounded-lg bg-sunken px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-ink">{value}</p>

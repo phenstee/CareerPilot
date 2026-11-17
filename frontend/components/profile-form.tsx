@@ -357,10 +357,10 @@ export function ProfileForm() {
 
   if (profileQuery.isLoading) {
     return (
-      <div className="flex min-h-64 items-center justify-center rounded-lg border border-border bg-surface">
+      <div className="flex min-h-64 items-center justify-center rounded-lg border border-line bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-brand-600"
+          className="h-5 w-5 animate-spin text-accent"
         />
       </div>
     );
@@ -600,7 +600,7 @@ export function ProfileForm() {
         </div>
       ) : null}
       {savedMessage ? (
-        <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
+        <p className="text-sm font-medium text-accent">{savedMessage}</p>
       ) : null}
 
       <button
@@ -645,7 +645,7 @@ function ProfileSummary({
   return (
     <section className="space-y-6">
       {savedMessage ? (
-        <p className="text-sm font-medium text-brand-700">{savedMessage}</p>
+        <p className="text-sm font-medium text-accent">{savedMessage}</p>
       ) : null}
 
       <article className="surface p-6">
@@ -687,7 +687,7 @@ function ProfileSummary({
                 <h3 className="text-lg font-semibold text-ink">
                   {project.name}
                 </h3>
-                <p className="mt-2 flex items-center gap-2 text-sm text-muted-subtle">
+                <p className="mt-2 flex items-center gap-2 text-sm text-muted">
                   <CalendarDays aria-hidden="true" className="h-4 w-4" />
                   {formatProfileDate(project.start_date)} -{" "}
                   {formatProfileDate(project.end_date)}
@@ -726,7 +726,7 @@ function ProfileSummary({
                 <p className="mt-1 text-sm font-medium text-muted">
                   {experience.organization}
                 </p>
-                <p className="mt-2 flex items-center gap-2 text-sm text-muted-subtle">
+                <p className="mt-2 flex items-center gap-2 text-sm text-muted">
                   <CalendarDays aria-hidden="true" className="h-4 w-4" />
                   {formatProfileDate(experience.start_date)} -{" "}
                   {formatProfileDate(experience.end_date)}
@@ -769,7 +769,7 @@ function ProfileChipSection({
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-sm text-muted-subtle">Not set</p>
+        <p className="mt-2 text-sm text-muted">Not set</p>
       )}
     </section>
   );
@@ -881,7 +881,7 @@ function SuggestionChipField({
   return (
     <div className="block">
       <span className="form-label">{label}</span>
-      <div className="mt-2 rounded-lg border border-border-strong bg-surface px-3 py-2 transition focus-within:border-lagoon focus-within:ring-2 focus-within:ring-lagoon/20">
+      <div className="mt-2 rounded-lg border border-line-ui bg-surface px-3 py-2 transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
         {values.length > 0 ? (
           <div className="mb-2 flex flex-wrap gap-2">
             {values.map((value) => (
@@ -895,7 +895,7 @@ function SuggestionChipField({
                   onClick={() => removeValue(value)}
                   aria-label={`Remove ${value}`}
                   title={`Remove ${value}`}
-                  className="inline-flex h-5 w-5 flex-none items-center justify-center rounded text-brand-700 transition hover:bg-brand-100 focus:outline-none focus:ring-2 focus:ring-lagoon"
+                  className="inline-flex h-5 w-5 flex-none items-center justify-center rounded text-accent transition hover:bg-accent-subtle focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <X aria-hidden="true" className="h-3.5 w-3.5" />
                 </button>
@@ -913,7 +913,7 @@ function SuggestionChipField({
             }
           }}
           placeholder={placeholder}
-          className="w-full border-0 bg-transparent px-0 py-1 text-sm text-ink outline-none placeholder:text-muted-subtle"
+          className="w-full border-0 bg-transparent px-0 py-1 text-sm text-ink outline-none placeholder:text-muted"
         />
       </div>
       <div className="mt-2 flex min-h-8 flex-wrap gap-2">
@@ -922,7 +922,7 @@ function SuggestionChipField({
             key={suggestion}
             type="button"
             onClick={() => addValue(suggestion)}
-            className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700"
+            className="badge badge-neutral cursor-pointer transition hover:bg-accent-subtle hover:text-accent"
           >
             {suggestion}
           </button>
@@ -932,7 +932,7 @@ function SuggestionChipField({
           <button
             type="button"
             onClick={() => addValue(inputValue)}
-            className="badge badge-neutral cursor-pointer border-dashed transition hover:bg-brand-50 hover:text-brand-700"
+            className="badge badge-neutral cursor-pointer border-dashed transition hover:bg-accent-subtle hover:text-accent"
           >
             Add {inputValue.trim()}
           </button>
@@ -993,7 +993,7 @@ function IconButton({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
+    <div className="rounded-lg border border-dashed border-line-ui bg-surface p-6 text-sm text-muted">
       {label}
     </div>
   );

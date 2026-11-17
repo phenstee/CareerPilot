@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { ApplicationsView } from "@/components/applications-view";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
 export default async function ApplicationsPage() {
@@ -13,7 +13,6 @@ export default async function ApplicationsPage() {
     <AppShell user={user}>
       <div className="page-container">
         <PageHeader
-          eyebrow="Applications"
           title="Application tracker"
           description="Move opportunities through every stage and keep the next step visible."
           actions={

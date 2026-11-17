@@ -107,10 +107,10 @@ export function ApplicationDetail() {
 
   if (applicationQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-brand-600"
+          className="h-5 w-5 animate-spin text-accent"
         />
       </div>
     );
@@ -267,12 +267,12 @@ export function ApplicationDetail() {
         <h3 className="text-lg font-semibold text-ink">Stage history</h3>
         <div className="mt-4 space-y-4">
           {application.stage_history.map((event) => (
-            <div key={event.id} className="border-l-2 border-brand-100 pl-4">
+            <div key={event.id} className="border-l-2 border-accent/20 pl-4">
               <p className="text-sm font-semibold text-ink">
                 {event.from_stage ? `${event.from_stage} to ` : ""}
                 {event.to_stage}
               </p>
-              <p className="mt-1 text-xs text-muted-subtle">
+              <p className="mt-1 text-xs text-muted">
                 {formatDateTime(event.changed_at)}
               </p>
               {event.note ? (

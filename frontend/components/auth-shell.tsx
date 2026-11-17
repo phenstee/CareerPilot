@@ -19,8 +19,8 @@ export function AuthShell({
   footer?: ReactNode;
 }) {
   return (
-    <main className="grid min-h-screen bg-paper lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="hidden border-r border-border bg-ink px-12 py-10 text-white lg:flex lg:flex-col">
+    <main className="grid min-h-screen bg-canvas lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="hidden border-r border-line bg-ink px-12 py-10 text-white lg:flex lg:flex-col">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white">
             <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
@@ -32,7 +32,7 @@ export function AuthShell({
         </div>
 
         <div className="relative mt-16 max-w-md">
-          <p className="text-sm font-bold uppercase tracking-[0.12em] text-brand-100">
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-cream-muted">
             Career search, organized
           </p>
           <h1 className="mt-5 text-4xl font-bold leading-tight tracking-tight">
@@ -52,7 +52,7 @@ export function AuthShell({
             >
               <CheckCircle2
                 aria-hidden="true"
-                className="mt-0.5 h-4 w-4 flex-none text-brand-100"
+                className="mt-0.5 h-4 w-4 flex-none text-cream-muted"
               />
               <span>{point}</span>
             </li>
@@ -67,7 +67,7 @@ export function AuthShell({
       <section className="flex items-center justify-center px-5 py-10 sm:px-10">
         <div className="w-full max-w-md">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-white">
               <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
             </span>
             <span className="font-bold tracking-tight text-ink">

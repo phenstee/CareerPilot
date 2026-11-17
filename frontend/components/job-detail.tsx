@@ -86,10 +86,10 @@ export function JobDetail() {
 
   if (jobQuery.isLoading) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
+      <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-brand-600"
+          className="h-5 w-5 animate-spin text-accent"
         />
       </div>
     );
@@ -179,7 +179,7 @@ export function JobDetail() {
           </div>
         </div>
 
-        <section className="mt-5 rounded-lg border border-border bg-surface-muted p-4">
+        <section className="mt-5 rounded-lg border border-line bg-sunken p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-ink">
@@ -196,7 +196,7 @@ export function JobDetail() {
               {statusMutation.isPending ? (
                 <Loader2
                   aria-hidden="true"
-                  className="h-4 w-4 animate-spin text-lagoon"
+                  className="h-4 w-4 animate-spin text-accent"
                 />
               ) : null}
               <select
@@ -207,7 +207,7 @@ export function JobDetail() {
                 disabled={
                   applicationsQuery.isLoading || statusMutation.isPending
                 }
-                className="form-control disabled:cursor-not-allowed disabled:bg-surface-muted"
+                className="form-control disabled:cursor-not-allowed disabled:bg-sunken"
               >
                 {JOB_DETAIL_STATUSES.map((status) => (
                   <option key={status} value={status}>
@@ -232,7 +232,7 @@ export function JobDetail() {
         </section>
 
         {job.notes ? (
-          <section className="mt-6 rounded-lg bg-surface-muted p-4">
+          <section className="mt-6 rounded-lg bg-sunken p-4">
             <h3 className="text-base font-semibold text-ink">Notes</h3>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink">
               {job.notes}

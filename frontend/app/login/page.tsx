@@ -44,7 +44,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           New here?{" "}
           <Link
             href="/register"
-            className="font-semibold text-brand-700 hover:text-brand-600"
+            className="font-semibold text-accent hover:text-accent"
           >
             Create an account
           </Link>

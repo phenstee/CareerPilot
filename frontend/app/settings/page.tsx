@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
 function formatDate(value: string) {
@@ -19,7 +19,6 @@ export default async function SettingsPage() {
     <AppShell user={user}>
       <div className="page-container-narrow">
         <PageHeader
-          eyebrow="Settings"
           title="Account and data"
           description="Review your signed-in account and access the places where your career data is managed."
         />
@@ -28,19 +27,19 @@ export default async function SettingsPage() {
           <section className="surface p-5">
             <h2 className="text-lg font-semibold text-ink">Account</h2>
             <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between gap-4 rounded-lg bg-surface-muted px-3 py-3">
+              <div className="flex justify-between gap-4 rounded-lg bg-sunken px-3 py-3">
                 <dt className="font-semibold text-muted">Name</dt>
                 <dd className="text-right text-ink">
                   {user?.full_name ?? "Not signed in"}
                 </dd>
               </div>
-              <div className="flex justify-between gap-4 rounded-lg bg-surface-muted px-3 py-3">
+              <div className="flex justify-between gap-4 rounded-lg bg-sunken px-3 py-3">
                 <dt className="font-semibold text-muted">Email</dt>
                 <dd className="text-right text-ink">
                   {user?.email ?? "Not available"}
                 </dd>
               </div>
-              <div className="flex justify-between gap-4 rounded-lg bg-surface-muted px-3 py-3">
+              <div className="flex justify-between gap-4 rounded-lg bg-sunken px-3 py-3">
                 <dt className="font-semibold text-muted">Member since</dt>
                 <dd className="text-right text-ink">
                   {user?.created_at ? formatDate(user.created_at) : "Not set"}
@@ -76,19 +75,19 @@ export default async function SettingsPage() {
             <div className="mt-5 grid gap-2 sm:grid-cols-3">
               <Link
                 href="/profile"
-                className="rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-ink transition hover:border-lagoon/50"
+                className="rounded-lg border border-line bg-sunken px-3 py-3 text-sm font-semibold text-ink transition hover:border-accent/50"
               >
                 Edit profile
               </Link>
               <Link
                 href="/resume"
-                className="rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-ink transition hover:border-lagoon/50"
+                className="rounded-lg border border-line bg-sunken px-3 py-3 text-sm font-semibold text-ink transition hover:border-accent/50"
               >
                 Manage resume
               </Link>
               <Link
                 href="/jobs"
-                className="rounded-lg border border-border bg-surface-muted px-3 py-3 text-sm font-semibold text-ink transition hover:border-lagoon/50"
+                className="rounded-lg border border-line bg-sunken px-3 py-3 text-sm font-semibold text-ink transition hover:border-accent/50"
               >
                 Saved jobs
               </Link>

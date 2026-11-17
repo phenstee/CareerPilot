@@ -187,7 +187,7 @@ export function JobApplicationAgent() {
                       <TagList items={latestDraft.keywords} limit={10} />
                     </div>
                   </div>
-                  <div className="rounded-lg bg-surface-muted p-4">
+                  <div className="rounded-lg bg-sunken p-4">
                     <h3 className="text-sm font-semibold text-ink">
                       Recommended next action
                     </h3>
@@ -253,7 +253,7 @@ export function JobApplicationAgent() {
               </AgentCard>
 
               <AgentCard title="Cover letter">
-                <div className="rounded-lg bg-surface-muted p-4">
+                <div className="rounded-lg bg-sunken p-4">
                   <p className="whitespace-pre-wrap text-sm leading-6 text-ink">
                     {latestDraft.cover_letter}
                   </p>
@@ -305,7 +305,7 @@ export function JobApplicationAgent() {
           )}
         </section>
       ) : (
-        <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-line-ui bg-surface p-8 text-sm text-muted">
           Select a saved job to begin.
         </div>
       )}
@@ -339,7 +339,7 @@ function EmphasisBlock({
 function EmphasisItem({ item }: { item: ApplicationEmphasis }) {
   return (
     <li>
-      <details className="group rounded-lg border border-border bg-surface p-4 transition hover:border-brand-100">
+      <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-accent/20">
         <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
           <span>
             <span className="block text-sm font-semibold text-ink">
@@ -351,11 +351,11 @@ function EmphasisItem({ item }: { item: ApplicationEmphasis }) {
           </span>
           <ChevronDown
             aria-hidden="true"
-            className="mt-0.5 h-4 w-4 flex-none text-muted-subtle transition group-open:rotate-180"
+            className="mt-0.5 h-4 w-4 flex-none text-muted transition group-open:rotate-180"
           />
         </summary>
-        <div className="mt-3 border-t border-border pt-3">
-          <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+        <div className="mt-3 border-t border-line pt-3">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
             Evidence
           </p>
           <p className="mt-1 text-sm leading-6 text-ink">{item.evidence}</p>
@@ -380,7 +380,7 @@ function AutofillSummary({ items }: { items: AutofillField[] }) {
         {items.map((item) => (
           <details
             key={item.field}
-            className="group rounded-lg border border-border bg-surface p-3 transition hover:border-brand-100"
+            className="group rounded-lg border border-line bg-surface p-3 transition hover:border-accent/20"
           >
             <summary className="flex cursor-pointer list-none items-start justify-between gap-3">
               <div>
@@ -394,8 +394,8 @@ function AutofillSummary({ items }: { items: AutofillField[] }) {
               </span>
             </summary>
             {item.evidence ? (
-              <div className="mt-3 border-t border-border pt-3">
-                <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-subtle">
+              <div className="mt-3 border-t border-line pt-3">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
                   Evidence
                 </p>
                 <p className="mt-1 text-sm leading-6 text-ink">
@@ -412,8 +412,8 @@ function AutofillSummary({ items }: { items: AutofillField[] }) {
 
 function StatusTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface-muted px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
+    <div className="rounded-lg bg-sunken px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-ink">{value}</p>

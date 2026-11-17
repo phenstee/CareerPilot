@@ -3,10 +3,10 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen bg-paper px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-surface p-6 shadow-card">
+    <main className="min-h-screen bg-canvas px-5 py-10 sm:px-8">
+      <div className="mx-auto max-w-3xl rounded-lg border border-line bg-surface p-6">
         <div className="flex items-start gap-4">
-          <span className="inline-flex rounded-lg bg-brand-50 p-3 text-brand-600">
+          <span className="inline-flex rounded-lg bg-accent-subtle p-3 text-accent">
             <Compass aria-hidden="true" className="h-6 w-6" />
           </span>
           <div>

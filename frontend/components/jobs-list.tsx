@@ -26,7 +26,7 @@ export function JobsList() {
           <label className="relative block">
             <Search
               aria-hidden="true"
-              className="absolute left-3 top-3.5 h-4 w-4 text-muted-subtle"
+              className="absolute left-3 top-3.5 h-4 w-4 text-muted"
             />
             <input
               value={search}
@@ -52,10 +52,10 @@ export function JobsList() {
       </div>
 
       {jobsQuery.isLoading ? (
-        <div className="flex min-h-48 items-center justify-center rounded-lg border border-border bg-surface">
+        <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
           <Loader2
             aria-hidden="true"
-            className="h-5 w-5 animate-spin text-brand-600"
+            className="h-5 w-5 animate-spin text-accent"
           />
         </div>
       ) : null}
@@ -65,7 +65,7 @@ export function JobsList() {
       ) : null}
 
       {jobsQuery.data && jobsQuery.data.items.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border-strong bg-surface px-6 py-10 text-center text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-line-ui bg-surface px-6 py-10 text-center text-sm text-muted">
           No saved jobs match this view. Try clearing a filter.
         </div>
       ) : null}
@@ -78,13 +78,13 @@ export function JobsList() {
             className="surface surface-hover group block p-5"
           >
             <div className="flex gap-4">
-              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
+              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-accent-subtle text-sm font-bold text-accent">
                 {job.company?.trim().charAt(0).toUpperCase() || "C"}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <h2 className="text-base font-semibold tracking-tight text-ink transition group-hover:text-brand-700">
+                    <h2 className="text-base font-semibold tracking-tight text-ink transition group-hover:text-accent">
                       {job.title}
                     </h2>
                     <p className="mt-1 text-sm font-medium text-muted">
@@ -95,7 +95,7 @@ export function JobsList() {
                     {job.employment_type || "Unspecified"}
                   </span>
                 </div>
-                <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-subtle">
+                <div className="mt-2 flex items-center gap-1.5 text-sm text-muted">
                   <MapPin aria-hidden="true" className="h-4 w-4" />
                   {job.location || "Location not set"}
                 </div>
@@ -104,12 +104,12 @@ export function JobsList() {
                 </p>
               </div>
             </div>
-            <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-subtle">
+            <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted">
                 <BriefcaseBusiness aria-hidden="true" className="h-3.5 w-3.5" />
                 Saved job
               </span>
-              <span className="text-sm font-semibold text-brand-700">
+              <span className="text-sm font-semibold text-accent">
                 View details
               </span>
             </div>

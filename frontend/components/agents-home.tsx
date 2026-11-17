@@ -48,15 +48,15 @@ export function AgentsHome() {
             className="surface surface-hover group flex h-full flex-col p-6"
           >
             <div className="flex items-start justify-between">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent-subtle text-accent">
                 <agent.icon aria-hidden="true" className="h-5 w-5" />
               </div>
               <ArrowUpRight
                 aria-hidden="true"
-                className="h-5 w-5 text-muted-subtle transition group-hover:text-brand-600"
+                className="h-5 w-5 text-muted transition group-hover:text-accent"
               />
             </div>
-            <p className="mt-6 text-xs font-bold uppercase tracking-[0.1em] text-muted-subtle">
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.1em] text-muted">
               {agent.kicker}
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink">
@@ -65,14 +65,14 @@ export function AgentsHome() {
             <p className="mt-3 flex-1 text-sm leading-6 text-muted">
               {agent.description}
             </p>
-            <span className="mt-5 inline-flex text-sm font-semibold text-brand-700">
+            <span className="mt-5 inline-flex text-sm font-semibold text-accent">
               {agent.action}
             </span>
           </Link>
         ))}
       </div>
 
-      <div className="flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50/60 p-4 text-sm leading-6 text-brand-700">
+      <div className="flex items-start gap-3 rounded-lg border border-accent/20 bg-accent-subtle/60 p-4 text-sm leading-6 text-accent">
         <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 flex-none" />
         <p>
           Every agent produces recommendations for your review. CareerPilot does

@@ -56,7 +56,7 @@ export function PrimaryActionCard({
   children?: ReactNode;
 }) {
   return (
-    <section className="surface border-brand-100 p-5 sm:p-6">
+    <section className="surface border-accent/20 p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="page-eyebrow">{eyebrow}</p>
@@ -134,14 +134,14 @@ export function JobPicker({
             onClick={() => onSelect(job.id)}
             className={`w-full rounded-lg border px-3 py-3 text-left text-sm transition ${
               selectedJobId === job.id
-                ? "border-brand-500 bg-brand-50"
-                : "border-border bg-surface hover:border-border-strong"
+                ? "border-accent bg-accent-subtle"
+                : "border-line bg-surface hover:border-line-ui"
             }`}
           >
             <span className="block font-semibold text-ink">{job.title}</span>
             <span className="mt-1 block text-muted">{job.company}</span>
             {getMeta ? (
-              <span className="mt-1 block text-xs text-muted-subtle">
+              <span className="mt-1 block text-xs text-muted">
                 {getMeta(job)}
               </span>
             ) : null}
@@ -166,7 +166,7 @@ export function CompactList({
     return emptyText ? (
       <section>
         <h3 className="text-sm font-semibold text-ink">{title}</h3>
-        <p className="mt-2 text-sm text-muted-subtle">{emptyText}</p>
+        <p className="mt-2 text-sm text-muted">{emptyText}</p>
       </section>
     ) : null;
   }
@@ -174,7 +174,7 @@ export function CompactList({
   return (
     <section>
       <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      <ul className="mt-1 divide-y divide-border text-sm leading-6 text-muted">
+      <ul className="mt-1 divide-y divide-line text-sm leading-6 text-muted">
         {items.map((item, index) => (
           <li key={`${item}-${index}`} className="py-2.5 first:pt-1 last:pb-0">
             {item}
@@ -219,7 +219,7 @@ export function LoadingState({ message }: { message: string }) {
       <div className="flex items-center gap-3 text-sm text-muted">
         <Loader2
           aria-hidden="true"
-          className="h-5 w-5 animate-spin text-lagoon"
+          className="h-5 w-5 animate-spin text-accent"
         />
         <span>{message}</span>
       </div>
@@ -240,7 +240,7 @@ export function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8">
+    <div className="rounded-lg border border-dashed border-line-ui bg-surface p-8">
       <h2 className="text-xl font-semibold text-ink">{title}</h2>
       <p className="mt-2 max-w-xl text-sm text-muted">{description}</p>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -295,14 +295,14 @@ export function TaskStatusNotice({ task }: { task: AsyncTask | null }) {
       {isDone ? (
         <CheckCircle2
           aria-hidden="true"
-          className="mt-0.5 h-4 w-4 text-lagoon"
+          className="mt-0.5 h-4 w-4 text-accent"
         />
       ) : isFailed ? (
         <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
       ) : (
         <Loader2
           aria-hidden="true"
-          className="mt-0.5 h-4 w-4 animate-spin text-lagoon"
+          className="mt-0.5 h-4 w-4 animate-spin text-accent"
         />
       )}
       <p>{status}</p>

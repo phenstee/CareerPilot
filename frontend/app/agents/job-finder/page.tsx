@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { JobSearchAgent } from "@/components/job-search-agent";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
 export default async function JobFinderAgentPage() {
@@ -12,7 +12,6 @@ export default async function JobFinderAgentPage() {
     <AppShell user={user}>
       <div className="page-container-narrow">
         <PageHeader
-          eyebrow="Smart Job Finder"
           title="Find jobs that fit your direction"
           description="Search from your profile or describe what you want. Results emphasize fit evidence, not arbitrary scores."
           actions={

@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 
 import { getDashboard } from "@/lib/api";
-import { Badge } from "@/components/badge";
-import { LoadingState } from "@/components/loading-state";
+import { Badge } from "@/components/ui/badge";
+import { LoadingState } from "@/components/ui/loading-state";
 import { StatCard } from "@/components/stat-card";
 
 const pipelineStages = [
@@ -87,7 +87,7 @@ export function DashboardSummary() {
   });
 
   if (dashboardQuery.isLoading) {
-    return <LoadingState message="Loading your career workspace..." />;
+    return <LoadingState label="Loading your career workspace..." />;
   }
 
   if (dashboardQuery.isError || !dashboardQuery.data) {
@@ -159,9 +159,9 @@ export function DashboardSummary() {
                     <span className="font-semibold text-ink">{stage}</span>
                     <span className="font-bold text-muted">{count}</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
+                  <div className="h-2 overflow-hidden rounded-full bg-sunken">
                     <div
-                      className="h-full rounded-full bg-brand-500"
+                      className="h-full rounded-full bg-accent"
                       style={{ width: `${width}%` }}
                     />
                   </div>
@@ -169,7 +169,7 @@ export function DashboardSummary() {
               );
             })}
           </div>
-          <p className="mt-5 text-xs text-muted-subtle">
+          <p className="mt-5 text-xs text-muted">
             {activePipelineTotal} total role
             {activePipelineTotal === 1 ? "" : "s"} in your active pipeline.
           </p>
@@ -202,13 +202,13 @@ export function DashboardSummary() {
                     </Badge>
                     <ArrowUpRight
                       aria-hidden="true"
-                      className="h-4 w-4 text-muted-subtle"
+                      className="h-4 w-4 text-muted"
                     />
                   </div>
                 </Link>
               ))
             ) : (
-              <p className="rounded-lg bg-surface-muted px-4 py-5 text-sm text-muted">
+              <p className="rounded-lg bg-sunken px-4 py-5 text-sm text-muted">
                 No upcoming deadlines right now.
               </p>
             )}
@@ -229,12 +229,12 @@ export function DashboardSummary() {
               className="surface surface-hover group p-5"
             >
               <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-subtle text-accent">
                   <tool.icon aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <Sparkles
                   aria-hidden="true"
-                  className="h-4 w-4 text-brand-600/60"
+                  className="h-4 w-4 text-accent/60"
                 />
               </div>
               <h3 className="mt-5 text-base font-semibold text-ink">
@@ -243,7 +243,7 @@ export function DashboardSummary() {
               <p className="mt-2 text-sm leading-6 text-muted">
                 {tool.description}
               </p>
-              <span className="mt-4 inline-flex text-sm font-semibold text-brand-700">
+              <span className="mt-4 inline-flex text-sm font-semibold text-accent">
                 Open tool
               </span>
             </Link>
@@ -263,12 +263,12 @@ export function DashboardSummary() {
               href={action.href}
               className="surface surface-hover flex items-center gap-3 p-4"
             >
-              <div className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-surface-muted text-muted">
+              <div className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-sunken text-muted">
                 <action.icon aria-hidden="true" className="h-4 w-4" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-ink">{action.label}</p>
-                <p className="mt-0.5 text-xs text-muted-subtle">
+                <p className="mt-0.5 text-xs text-muted">
                   {action.description}
                 </p>
               </div>

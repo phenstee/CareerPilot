@@ -49,7 +49,7 @@ export default function HomePage() {
     <main className="min-h-screen">
       <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white">
             <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
           </span>
           <span className="text-base font-bold tracking-tight text-ink">
@@ -68,7 +68,7 @@ export default function HomePage() {
 
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
         <div>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-100 bg-surface px-3 py-1.5 text-sm font-semibold text-brand-700">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-surface px-3 py-1.5 text-sm font-semibold text-accent">
             <Sparkles aria-hidden="true" className="h-4 w-4" />
             AI-enabled, human-controlled
           </div>
@@ -89,17 +89,17 @@ export default function HomePage() {
               Sign in
             </Link>
           </div>
-          <p className="mt-6 text-sm text-muted-subtle">
+          <p className="mt-6 text-sm text-muted">
             No surprise submissions. Agents prepare work, and you stay in
             control.
           </p>
         </div>
 
-        <div className="rounded-xl2 border border-border bg-surface p-3 shadow-card">
-          <div className="rounded-lg border border-border bg-surface-muted/70 p-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
+        <div className="rounded-xl border border-line bg-surface p-3">
+          <div className="rounded-lg border border-line bg-sunken/70 p-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <p className="text-xs font-semibold text-muted-subtle">
+                <p className="text-xs font-semibold text-muted">
                   Career command center
                 </p>
                 <p className="mt-1 text-sm font-bold text-ink">This week</p>
@@ -114,11 +114,9 @@ export default function HomePage() {
               ].map(([label, value]) => (
                 <div
                   key={label}
-                  className="rounded-lg border border-border bg-surface p-3"
+                  className="rounded-lg border border-line bg-surface p-3"
                 >
-                  <p className="text-xs font-medium text-muted-subtle">
-                    {label}
-                  </p>
+                  <p className="text-xs font-medium text-muted">{label}</p>
                   <p className="mt-2 text-2xl font-bold text-ink">{value}</p>
                 </div>
               ))}
@@ -131,7 +129,7 @@ export default function HomePage() {
               ].map(([stage, role, date]) => (
                 <div
                   key={`${role}-${stage}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2.5"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-3 py-2.5"
                 >
                   <div className="flex items-center gap-3">
                     <span className="badge badge-brand">{stage}</span>
@@ -139,7 +137,7 @@ export default function HomePage() {
                       {role}
                     </span>
                   </div>
-                  <span className="text-xs text-muted-subtle">{date}</span>
+                  <span className="text-xs text-muted">{date}</span>
                 </div>
               ))}
             </div>
@@ -147,7 +145,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-surface py-16">
+      <section className="border-y border-line bg-surface py-16">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="max-w-2xl">
             <p className="page-eyebrow">Built for focused momentum</p>
@@ -163,9 +161,9 @@ export default function HomePage() {
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className="rounded-lg border border-border bg-surface p-5"
+                className="rounded-lg border border-line bg-surface p-5"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-subtle text-accent">
                   <feature.icon aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <h3 className="mt-5 text-base font-semibold text-ink">
@@ -197,11 +195,11 @@ export default function HomePage() {
             {aiCapabilities.map((capability) => (
               <div
                 key={capability}
-                className="flex items-start gap-3 rounded-lg border border-border bg-surface p-4"
+                className="flex items-start gap-3 rounded-lg border border-line bg-surface p-4"
               >
                 <CheckCircle2
                   aria-hidden="true"
-                  className="mt-0.5 h-5 w-5 flex-none text-brand-600"
+                  className="mt-0.5 h-5 w-5 flex-none text-accent"
                 />
                 <p className="text-sm font-medium leading-6 text-ink">
                   {capability}
@@ -213,10 +211,10 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
-        <div className="overflow-hidden rounded-xl2 border border-brand-100 bg-brand-50/60 px-6 py-10 sm:px-10 sm:py-12">
+        <div className="overflow-hidden rounded-xl border border-accent/20 bg-accent-subtle/60 px-6 py-10 sm:px-10 sm:py-12">
           <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div>
-              <div className="mb-3 flex items-center gap-2 text-brand-700">
+              <div className="mb-3 flex items-center gap-2 text-accent">
                 <ShieldCheck aria-hidden="true" className="h-5 w-5" />
                 <span className="text-sm font-bold uppercase tracking-[0.1em]">
                   Trust and control
@@ -239,10 +237,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-border bg-surface">
+      <footer className="border-t border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div className="flex items-center gap-2 font-semibold text-ink">
-            <Bot aria-hidden="true" className="h-4 w-4 text-brand-600" />
+            <Bot aria-hidden="true" className="h-4 w-4 text-accent" />
             CareerPilot
           </div>
           <p>Organized job search for early-career candidates.</p>
