@@ -113,6 +113,22 @@ const config: Config = {
         narrow: "60rem",
         marketing: "70rem"
       },
+      maxHeight: {
+        /** Scrolling pick lists (job picker). */
+        list: "34rem"
+      },
+      gridTemplateColumns: {
+        /** Fixed side column plus flexible main column. */
+        sidebar: "18rem minmax(0, 1fr)",
+        /** Main content slightly wider than its companion panel. */
+        split: "minmax(0, 1.3fr) minmax(0, 1fr)",
+        /** Leading element (tile, number) plus content. */
+        lead: "auto minmax(0, 1fr)",
+        /** Leading element, content, trailing action. */
+        "lead-trail": "auto minmax(0, 1fr) auto",
+        /** Line-number gutter plus text. */
+        gutter: "1.75rem minmax(0, 1fr)"
+      },
       ringWidth: {
         3: "3px"
       },

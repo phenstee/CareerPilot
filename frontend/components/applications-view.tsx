@@ -328,7 +328,7 @@ function Board({
                 key={stage}
                 id={stageId(stage)}
                 aria-labelledby={`${stageId(stage)}-heading`}
-                className="flex min-h-96 w-[85%] max-w-xs flex-none snap-start flex-col rounded-xl bg-sunken p-1.5 sm:w-72 lg:w-auto lg:max-w-none"
+                className="flex min-h-96 w-5/6 max-w-xs flex-none snap-start flex-col rounded-xl bg-sunken p-1.5 sm:w-72 lg:w-auto lg:max-w-none"
               >
                 <div
                   className={`mb-1.5 flex items-center gap-2 rounded-lg px-2.5 py-2.5 ${stageStyle[stage].tint}`}

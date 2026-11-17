@@ -182,7 +182,7 @@ export function DashboardSummary({ user }: { user: ApiUser | null }) {
                       <li key={application.id}>
                         <Link
                           href={`/applications/${application.id}`}
-                          className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 px-4 py-3.5 transition-colors duration-150 hover:bg-canvas sm:grid-cols-[auto_1fr_auto] sm:px-5"
+                          className="grid grid-cols-lead items-center gap-x-4 gap-y-2 px-4 py-3.5 transition-colors duration-150 hover:bg-canvas sm:grid-cols-lead-trail sm:px-5"
                         >
                           <DateTile
                             date={application.deadline as string}

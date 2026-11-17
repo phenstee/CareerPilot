@@ -122,7 +122,7 @@ export function JobApplicationAgent() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-sidebar">
       <JobPicker
         jobs={jobs}
         selectedJobId={selectedJobId}
@@ -176,7 +176,7 @@ export function JobApplicationAgent() {
                 {latestDraftItem?.is_stale ? (
                   <StaleNotice message="This preview may be stale because the job, profile, resume, or notes changed. Regenerate it before relying on it." />
                 ) : null}
-                <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+                <div className="grid gap-4 lg:grid-cols-split">
                   <div>
                     <p className="max-w-3xl text-sm leading-6 text-ink">
                       {latestDraft.application_summary}

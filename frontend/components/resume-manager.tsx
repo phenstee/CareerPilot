@@ -174,7 +174,7 @@ export function ResumeManager() {
                     {previewLines.map((line, index) => (
                       <li
                         key={`${line}-${index}`}
-                        className="grid grid-cols-[1.75rem_1fr] gap-3 text-sm leading-6 text-ink"
+                        className="grid grid-cols-gutter gap-3 text-sm leading-6 text-ink"
                       >
                         <span
                           aria-hidden="true"

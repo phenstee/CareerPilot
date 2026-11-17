@@ -211,7 +211,7 @@ export function JobPreparationAgent() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-sidebar">
       <JobPicker
         jobs={jobs}
         selectedJobId={selectedJobId}
@@ -538,7 +538,7 @@ export function JobPreparationAgent() {
 
           {tab === "prep" ? (
             <AgentCard title="Checklist and practice">
-              <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+              <div className="grid gap-4 lg:grid-cols-2">
                 <Checklist
                   latestPlanId={latestPlanId}
                   items={latestPlan?.completion_checklist ?? []}

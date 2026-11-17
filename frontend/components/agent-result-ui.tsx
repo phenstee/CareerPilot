@@ -124,7 +124,7 @@ export function JobPicker({
       >
         Saved jobs
       </h2>
-      <div className="surface max-h-[34rem] divide-y divide-line overflow-y-auto">
+      <div className="surface max-h-list divide-y divide-line overflow-y-auto">
         {jobs.map((job) => (
           <button
             key={job.id}

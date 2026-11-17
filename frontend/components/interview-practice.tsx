@@ -137,7 +137,7 @@ export function InterviewPractice() {
   return (
     <>
       {header}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-sidebar">
         <aside className="min-w-0 space-y-4">
           <button
             type="button"
