@@ -1,16 +1,34 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/ui/page-header";
+import { formatDate } from "@/lib/format";
 import { getCurrentUser } from "@/lib/server-auth";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(new Date(value));
-}
+const dataPlaces = [
+  {
+    label: "Profile",
+    stored: "Education, target roles, skills, coursework, projects, experience",
+    href: "/profile"
+  },
+  {
+    label: "Resume",
+    stored: "Text read from your PDF. The PDF file itself isn't kept.",
+    href: "/resume"
+  },
+  {
+    label: "Saved jobs",
+    stored: "Postings you saved, plus role analyses and prep plans for them",
+    href: "/jobs"
+  },
+  {
+    label: "Applications",
+    stored: "Stages, dates, notes, contacts and interview practice",
+    href: "/applications"
+  }
+];
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -19,82 +37,106 @@ export default async function SettingsPage() {
     <AppShell user={user}>
       <div className="page-container-narrow">
         <PageHeader
-          title="Account and data"
-          description="Review your signed-in account and access the places where your career data is managed."
+          title="Settings"
+          description="Your account, and where each kind of data you've given CareerPilot lives."
         />
 
-        <div className="grid gap-5 lg:grid-cols-2">
-          <section className="surface p-5">
-            <h2 className="text-lg font-semibold text-ink">Account</h2>
-            <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between gap-4 rounded-lg bg-sunken px-3 py-3">
-                <dt className="font-semibold text-muted">Name</dt>
-                <dd className="text-right text-ink">
-                  {user?.full_name ?? "Not signed in"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-4 rounded-lg bg-sunken px-3 py-3">
-                <dt className="font-semibold text-muted">Email</dt>
-                <dd className="text-right text-ink">
-                  {user?.email ?? "Not available"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-4 rounded-lg bg-sunken px-3 py-3">
-                <dt className="font-semibold text-muted">Member since</dt>
-                <dd className="text-right text-ink">
-                  {user?.created_at ? formatDate(user.created_at) : "Not set"}
-                </dd>
-              </div>
+        <div className="surface divide-y divide-line">
+          <SettingsRow
+            title="Account"
+            description="The details you signed up with."
+          >
+            <dl className="divide-y divide-line text-sm">
+              <AccountItem label="Name" value={user?.full_name || "Not set"} />
+              <AccountItem
+                label="Email"
+                value={user?.email ?? "Not available"}
+              />
+              <AccountItem
+                label="Member since"
+                value={
+                  user?.created_at
+                    ? formatDate(user.created_at)
+                    : "Not available"
+                }
+              />
             </dl>
-          </section>
+          </SettingsRow>
 
-          <section className="surface p-5">
-            <h2 className="text-lg font-semibold text-ink">
-              AI and your control
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              CareerPilot keeps you in control. Agents prepare recommendations,
-              but any action that changes your career data is presented for your
+          <SettingsRow
+            title="Your data"
+            description="Everything is stored in your CareerPilot workspace. Edit or delete it where it lives."
+          >
+            <ul className="divide-y divide-line">
+              {dataPlaces.map((place) => (
+                <li key={place.href}>
+                  <Link
+                    href={place.href}
+                    className="group flex items-center justify-between gap-4 py-3 first:pt-0"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-ink group-hover:text-accent">
+                        {place.label}
+                      </span>
+                      <span className="block text-meta text-muted">
+                        {place.stored}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="h-4 w-4 flex-none text-muted transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-accent"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </SettingsRow>
+
+          <SettingsRow
+            title="AI features"
+            description="What the Prepare tools can and can't do."
+          >
+            <p className="max-w-prose border-l-2 border-highlight pl-4 text-sm leading-6 text-ink-2">
+              The Prepare tools write suggestions and drafts for you to read.
+              Anything that would change your saved data is shown to you for
               review first.
             </p>
-            <div className="mt-5">
-              <Link href="/agents" className="button button-primary">
-                Open AI agents
-              </Link>
-            </div>
-          </section>
-
-          <section className="surface p-5 lg:col-span-2">
-            <h2 className="text-lg font-semibold text-ink">Data controls</h2>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              Profile details, saved jobs, application records, extracted resume
-              text, generated analyses, and interview practice are stored in
-              your CareerPilot workspace. Uploaded PDFs are not stored as
-              original files.
-            </p>
-            <div className="mt-5 grid gap-2 sm:grid-cols-3">
-              <Link
-                href="/profile"
-                className="rounded-lg border border-line bg-sunken px-3 py-3 text-sm font-semibold text-ink transition hover:border-accent/50"
-              >
-                Edit profile
-              </Link>
-              <Link
-                href="/resume"
-                className="rounded-lg border border-line bg-sunken px-3 py-3 text-sm font-semibold text-ink transition hover:border-accent/50"
-              >
-                Manage resume
-              </Link>
-              <Link
-                href="/jobs"
-                className="rounded-lg border border-line bg-sunken px-3 py-3 text-sm font-semibold text-ink transition hover:border-accent/50"
-              >
-                Saved jobs
-              </Link>
-            </div>
-          </section>
+            <Link href="/agents" className="link-arrow mt-4">
+              Go to Prepare
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          </SettingsRow>
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function SettingsRow({
+  title,
+  description,
+  children
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="grid gap-4 p-5 sm:p-6 md:grid-cols-3 md:gap-8">
+      <div>
+        <h2 className="text-sm font-semibold text-ink">{title}</h2>
+        <p className="mt-1 text-meta text-muted">{description}</p>
+      </div>
+      <div className="min-w-0 md:col-span-2">{children}</div>
+    </section>
+  );
+}
+
+function AccountItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4">
+      <dt className="text-muted">{label}</dt>
+      <dd className="min-w-0 break-words text-ink sm:text-right">{value}</dd>
+    </div>
   );
 }
