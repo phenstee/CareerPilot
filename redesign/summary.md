@@ -260,21 +260,23 @@ These only change local UI state. No data or API behavior changed.
 ## 8. Commits
 
 ```
-e39f220 Interview prep: don't repeat the plan hint under the disabled-reason callout
-288ec52 Replace remaining arbitrary grid and size values with named tokens
-ebda481 Error and 404 pages: wordmark bar, serif headline, plain next steps
-25bf94e Sign in and register: pine side panel, wordmark, shared fields with visible errors
-6bbd3f2 Landing: serif hero with highlight, sample board showcase, prep evidence, AI does/doesn't band
-346f475 Settings: account, data locations and AI note as settings rows
-d6dbd9d Resume: file header, extracted-text preview, delete confirmation, error state; keep dialog centred
-f22d7f7 Profile: summary header, sectioned edit form, career goals and coursework inputs, visible validation
-654bd72 Prepare section and interview practice
-a84f21d Application detail: header, form panel, stage timeline, confirm delete
-59c194b Jobs: saved list, job detail, manual add-job form
-f2464c9 Applications: tinted stage columns, deadline chips, control bar
-5050143 Dashboard: greeting, pipeline, Coming up, Recently saved
-136c7a6 Shared primitives and top-bar layout shell
-c3bf0e2 Design tokens and fonts
-daf206d Format frontend with Prettier
-f50fdf9 Redesign: v2 design direction with more warmth and character
+f7d9b4e Self-host fonts so the production Docker build doesn't fetch from Google Fonts
+de91692 Redesign: after-screenshots at 1440 and 390, and Phase 3 summary
+f897ba2 Interview prep: don't repeat the plan hint under the disabled-reason callout
+453a546 Replace remaining arbitrary grid and size values with named tokens
+8450cfb Error and 404 pages: wordmark bar, serif headline, plain next steps
+4067500 Sign in and register: pine side panel, wordmark, shared fields with visible errors
+3837f98 Landing: serif hero with highlight, sample board showcase, prep evidence, AI does/doesn't band
+f59b826 Settings: account, data locations and AI note as settings rows
+3f3a586 Resume: file header, extracted-text preview, delete confirmation, error state; keep dialog centred
+814a9b0 Profile: summary header, sectioned edit form, career goals and coursework inputs, visible validation
+cfb2f10 Prepare section and interview practice
+11a52f6 Application detail: header, form panel, stage timeline, confirm delete
+c38047d Jobs: saved list, job detail, manual add-job form
+5392470 Applications: tinted stage columns, deadline chips, control bar
+d66dd69 Dashboard: greeting, pipeline, Coming up, Recently saved
+c03cb43 Shared primitives and top-bar layout shell
+c6cf92f Design tokens and fonts
+4e4fe73 Format frontend with Prettier
+28c59ec Redesign: v2 design direction with more warmth and character
 ```
