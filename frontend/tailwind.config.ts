@@ -80,7 +80,8 @@ const config: Config = {
         },
         danger: {
           DEFAULT: token("danger"),
-          subtle: token("danger-subtle")
+          subtle: token("danger-subtle"),
+          hover: token("danger-hover")
         },
         success: {
           DEFAULT: token("success"),
