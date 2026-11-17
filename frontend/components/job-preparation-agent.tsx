@@ -456,11 +456,11 @@ export function JobPreparationAgent() {
                     />
                   </div>
                 </>
-              ) : (
+              ) : !planDisabledReason ? (
                 <p className="text-sm text-muted">
                   Generate a plan after the role analysis is ready.
                 </p>
-              )}
+              ) : null}
             </AgentCard>
           ) : null}
 
