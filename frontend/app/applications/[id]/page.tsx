@@ -1,8 +1,5 @@
-import Link from "next/link";
-
 import { AppShell } from "@/components/app-shell";
 import { ApplicationDetail } from "@/components/application-detail";
-import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
 export default async function ApplicationDetailPage() {
@@ -10,15 +7,7 @@ export default async function ApplicationDetailPage() {
 
   return (
     <AppShell user={user}>
-      <div className="page-container-narrow">
-        <PageHeader
-          title="Application details"
-          actions={
-            <Link href="/applications" className="button button-secondary">
-              All applications
-            </Link>
-          }
-        />
+      <div className="page-container">
         <ApplicationDetail />
       </div>
     </AppShell>
