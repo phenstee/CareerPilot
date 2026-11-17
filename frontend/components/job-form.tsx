@@ -2,13 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm, type UseFormRegisterReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { createJob, JobPosting, JobPostingPayload, updateJob } from "@/lib/api";
+import { TextareaField, TextField } from "@/components/ui/field";
+import { Spinner } from "@/components/ui/loading-state";
 
 const jobSchema = z.object({
   title: z.string().trim().min(1, "Job title is required.").max(255),
@@ -28,9 +29,10 @@ type JobFormValues = z.infer<typeof jobSchema>;
 
 type JobFormProps = {
   job?: JobPosting;
+  onCancel?: () => void;
 };
 
-export function JobForm({ job }: JobFormProps) {
+export function JobForm({ job, onCancel }: JobFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [formError, setFormError] = useState<string | null>(null);
@@ -69,103 +71,93 @@ export function JobForm({ job }: JobFormProps) {
     }
   });
 
+  const errors = form.formState.errors;
+
   return (
     <form
-      className="space-y-5"
+      noValidate
+      className="space-y-6"
       onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
     >
-      <section className="surface p-5">
+      <section className="surface p-5 sm:p-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <TextField label="Job title" registration={form.register("title")} />
-          <TextField label="Company" registration={form.register("company")} />
+          <TextField
+            label="Job title"
+            required
+            placeholder="e.g. Backend Engineering Intern"
+            error={errors.title?.message}
+            registration={form.register("title")}
+          />
+          <TextField
+            label="Company"
+            required
+            error={errors.company?.message}
+            registration={form.register("company")}
+          />
           <TextField
             label="Location"
+            placeholder="e.g. Toronto, ON or Remote"
+            error={errors.location?.message}
             registration={form.register("location")}
           />
           <TextField
             label="Employment type"
+            placeholder="e.g. Internship"
+            error={errors.employment_type?.message}
             registration={form.register("employment_type")}
           />
           <TextField
-            label="Job URL"
+            label="Posting URL"
             type="url"
+            placeholder="https://"
+            className="md:col-span-2"
+            error={errors.job_url?.message}
             registration={form.register("job_url")}
           />
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <TextareaField
             label="Full job description"
+            required
             rows={12}
+            hint="Paste the whole posting. Prep and matching read from it."
+            error={errors.description?.message}
             registration={form.register("description")}
           />
           <TextareaField
             label="Notes"
             rows={12}
+            error={errors.notes?.message}
             registration={form.register("notes")}
           />
         </div>
       </section>
 
       {formError ? (
-        <div className="callout-error">
+        <p role="alert" className="callout-error">
           {formError}
-        </div>
+        </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={mutation.isPending}
-        className="button button-primary"
-      >
-        {mutation.isPending ? (
-          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-        ) : (
-          <Save aria-hidden="true" className="h-4 w-4" />
-        )}
-        {job ? "Save changes" : "Save job"}
-      </button>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row">
+        <button
+          type="submit"
+          disabled={mutation.isPending}
+          className="button button-primary"
+        >
+          {mutation.isPending ? <Spinner /> : null}
+          {job ? "Save changes" : "Save job"}
+        </button>
+        {onCancel ? (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="button button-ghost"
+          >
+            Cancel
+          </button>
+        ) : null}
+      </div>
     </form>
-  );
-}
-
-function TextField({
-  label,
-  type = "text",
-  registration
-}: {
-  label: string;
-  type?: string;
-  registration: UseFormRegisterReturn;
-}) {
-  return (
-    <label className="block">
-      <span className="form-label">{label}</span>
-      <input
-        {...registration}
-        type={type}
-        className="form-control mt-2"
-      />
-    </label>
-  );
-}
-
-function TextareaField({
-  label,
-  rows,
-  registration
-}: {
-  label: string;
-  rows: number;
-  registration: UseFormRegisterReturn;
-}) {
-  return (
-    <label className="block">
-      <span className="form-label">{label}</span>
-      <textarea
-        {...registration}
-        rows={rows}
-        className="form-control mt-2"
-      />
-    </label>
   );
 }

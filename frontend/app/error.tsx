@@ -1,7 +1,8 @@
 "use client";
 
-import { AlertTriangle, RefreshCw } from "lucide-react";
 import Link from "next/link";
+
+import { Wordmark } from "@/components/ui/wordmark";
 
 export default function GlobalError({
   error,
@@ -11,42 +12,36 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <main className="min-h-screen bg-paper px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-3xl rounded-lg border border-border bg-surface p-6 shadow-card">
-        <div className="flex items-start gap-4">
-          <span className="inline-flex rounded-lg bg-danger-soft p-3 text-danger">
-            <AlertTriangle aria-hidden="true" className="h-6 w-6" />
-          </span>
-          <div>
-            <p className="page-eyebrow">
-              Error
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold text-ink">
-              Something went wrong
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              {error.message ||
-                "CareerPilot could not finish loading this page."}
-            </p>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <button
-                type="button"
-                onClick={reset}
-                className="button button-primary"
-              >
-                <RefreshCw aria-hidden="true" className="h-4 w-4" />
-                Try again
-              </button>
-              <Link
-                href="/dashboard"
-                className="button button-secondary"
-              >
-                Dashboard
-              </Link>
-            </div>
-          </div>
+    <div className="min-h-screen bg-canvas">
+      <header className="mx-auto flex h-bar max-w-app items-center px-4 sm:px-6 lg:px-8">
+        <Wordmark href="/dashboard" />
+      </header>
+      <main className="mx-auto max-w-app px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+        <p className="font-serif text-lg italic text-danger">
+          Something went wrong
+        </p>
+        <h1 className="mt-2 max-w-2xl font-serif text-display-2 font-medium text-ink">
+          This page didn&apos;t finish loading.
+        </h1>
+        <div
+          role="alert"
+          className="mt-6 max-w-prose border-l-2 border-danger pl-4 text-sm leading-6 text-ink-2"
+        >
+          {error.message || "CareerPilot couldn't finish loading this page."}
         </div>
-      </div>
-    </main>
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={reset}
+            className="button button-primary"
+          >
+            Try again
+          </button>
+          <Link href="/dashboard" className="button button-secondary">
+            Go to dashboard
+          </Link>
+        </div>
+      </main>
+    </div>
   );
 }

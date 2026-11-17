@@ -1,16 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  BookmarkPlus,
-  Check,
-  ExternalLink,
-  Loader2,
-  Search,
-  Sparkles,
-  ThumbsDown
-} from "lucide-react";
+import { ArrowRight, Check, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -22,6 +13,11 @@ import {
   searchJobsByProfile,
   searchJobsByPrompt
 } from "@/lib/api";
+import { formatDate } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState, errorMessage } from "@/components/ui/error-state";
+import { Spinner } from "@/components/ui/loading-state";
 
 const defaultFilters: JobSearchFilters = {
   location: "",
@@ -40,9 +36,9 @@ const promptExamples = [
 ];
 
 const progressMessages = [
-  "Matching your saved profile...",
-  "Searching job sources...",
-  "Organizing the strongest opportunities..."
+  "Matching your saved profile…",
+  "Searching job sources…",
+  "Organizing the strongest opportunities…"
 ];
 
 export function JobSearchAgent() {
@@ -110,23 +106,37 @@ export function JobSearchAgent() {
   }
 
   return (
-    <section className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <ModeButton
-          active={mode === "profile"}
-          title="Use my profile"
-          description="Search from saved skills, roles, locations, projects, and education."
-          onClick={() => setMode("profile")}
-        />
-        <ModeButton
-          active={mode === "prompt"}
-          title="Describe what you want"
-          description="Write instructions and let CareerPilot convert them into search filters."
-          onClick={() => setMode("prompt")}
-        />
-      </div>
-
-      <section className="surface p-5 sm:p-6">
+    <div className="space-y-6">
+      <section className="surface p-5 sm:p-6" aria-label="Search">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            role="group"
+            aria-label="Search mode"
+            className="segmented self-start"
+          >
+            <button
+              type="button"
+              aria-pressed={mode === "profile"}
+              onClick={() => setMode("profile")}
+              className="segmented-item"
+            >
+              Use my profile
+            </button>
+            <button
+              type="button"
+              aria-pressed={mode === "prompt"}
+              onClick={() => setMode("prompt")}
+              className="segmented-item"
+            >
+              Describe what you want
+            </button>
+          </div>
+          <p className="text-meta text-muted">
+            {mode === "profile"
+              ? "Searches from your saved skills, roles, locations, projects and education."
+              : "Write it in your own words. CareerPilot turns it into search filters."}
+          </p>
+        </div>
         {mode === "profile" ? (
           <div className="space-y-5">
             <div className="grid gap-4 lg:grid-cols-2">
@@ -176,39 +186,39 @@ export function JobSearchAgent() {
               disabled={profileSearch.isPending}
               className="button button-primary"
             >
-              {profileSearch.isPending ? (
-                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles aria-hidden="true" className="h-4 w-4" />
-              )}
+              {profileSearch.isPending ? <Spinner /> : null}
               Find jobs for me
             </button>
           </div>
         ) : (
           <div className="space-y-4">
-            <label className="block">
-              <span className="form-label">
-                Search instructions
-              </span>
+            <div>
+              <label htmlFor="search-prompt" className="form-label">
+                What are you looking for?
+              </label>
               <textarea
+                id="search-prompt"
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
-                rows={7}
-                placeholder="Find entry-level AI engineering or full-stack AI agent internships in Canada or the United States that use Python, FastAPI, React, or LLM APIs."
-                className="form-control mt-2"
+                rows={5}
+                placeholder="e.g. Entry-level AI engineering internships in Canada or the US that use Python, FastAPI, React or LLM APIs."
+                className="form-control"
               />
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {promptExamples.map((example) => (
-                <button
-                  key={example}
-                  type="button"
-                  onClick={() => setPrompt(example)}
-                  className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700"
-                >
-                  {example}
-                </button>
-              ))}
+            </div>
+            <div>
+              <p className="text-meta text-muted">Or start from an example:</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {promptExamples.map((example) => (
+                  <button
+                    key={example}
+                    type="button"
+                    onClick={() => setPrompt(example)}
+                    className="inline-flex h-8 items-center rounded-full border border-line bg-surface px-3 text-meta text-ink-2 transition-colors duration-150 hover:border-line-ui hover:text-ink"
+                  >
+                    {example}
+                  </button>
+                ))}
+              </div>
             </div>
             <button
               type="button"
@@ -216,11 +226,7 @@ export function JobSearchAgent() {
               disabled={promptSearch.isPending || prompt.trim().length < 5}
               className="button button-primary"
             >
-              {promptSearch.isPending ? (
-                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-              ) : (
-                <Search aria-hidden="true" className="h-4 w-4" />
-              )}
+              {promptSearch.isPending ? <Spinner /> : null}
               Search jobs
             </button>
           </div>
@@ -228,49 +234,55 @@ export function JobSearchAgent() {
       </section>
 
       {activeSearch.isPending ? (
-        <div className="surface p-5 text-sm text-muted">
+        <p role="status" className="flex items-center gap-2 text-sm text-ink-2">
+          <Spinner className="h-4 w-4 text-accent" />
           {progressMessages[progressIndex]}
-        </div>
+        </p>
       ) : null}
 
       {activeSearch.isError ? (
-        <div className="callout-error">
-          {activeSearch.error instanceof Error
-            ? activeSearch.error.message
-            : "Unable to search jobs."}
-        </div>
+        <ErrorState
+          message={errorMessage(
+            activeSearch.error,
+            "The search didn't finish. Try again."
+          )}
+          onRetry={mode === "profile" ? startProfileSearch : startPromptSearch}
+        />
       ) : null}
 
       {response ? (
         <section className="space-y-4">
           {response.profile_incomplete ? (
-            <div className="callout-error">
-              <div className="flex items-start gap-3">
-                <AlertTriangle aria-hidden="true" className="h-5 w-5" />
-                <div>
-                  <p className="font-semibold">Profile needs more detail</p>
-                  <p className="mt-1">
-                    Add skills, target roles, projects, or preferred locations
-                    for better matches.
-                  </p>
-                  <Link
-                    href="/profile"
-                    className="mt-3 inline-flex font-semibold text-lagoon"
-                  >
-                    Update profile
-                  </Link>
-                </div>
-              </div>
+            <div className="callout-warning flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                <span className="font-semibold">
+                  Your profile is missing details.
+                </span>{" "}
+                Add skills, target roles, projects or preferred locations for
+                closer matches.
+              </p>
+              <Link
+                href="/profile"
+                className="button button-sm button-secondary flex-none"
+              >
+                Update profile
+              </Link>
             </div>
           ) : null}
 
-          <div className="surface p-5">
-            <p className="text-sm font-semibold text-ink">Search strategy</p>
-            <p className="mt-2 text-sm leading-6 text-muted">
+          <div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="section-title">
+                {visibleResults.length}{" "}
+                {visibleResults.length === 1 ? "result" : "results"}
+              </h2>
+            </div>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-ink-2">
+              <span className="font-medium text-ink">How it searched:</span>{" "}
               {response.strategy}
             </p>
             {response.provider_failures.length > 0 ? (
-              <p className="mt-3 text-sm text-warning">
+              <p className="mt-2 text-sm text-warning">
                 Some sources were unavailable:{" "}
                 {response.provider_failures.join("; ")}
               </p>
@@ -278,9 +290,10 @@ export function JobSearchAgent() {
           </div>
 
           {visibleResults.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm text-muted">
-              No results found. Try widening the location, role, or job type.
-            </div>
+            <EmptyState
+              title="No results"
+              description="Try a wider location, a broader role, or fewer job types."
+            />
           ) : (
             <div className="grid gap-4">
               {visibleResults.map((result) => (
@@ -304,31 +317,7 @@ export function JobSearchAgent() {
           )}
         </section>
       ) : null}
-    </section>
-  );
-}
-
-function ModeButton({
-  active,
-  title,
-  description,
-  onClick
-}: {
-  active: boolean;
-  title: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className="surface surface-hover p-5 text-left aria-pressed:border-brand-500 aria-pressed:bg-brand-50"
-    >
-      <p className="font-semibold text-ink">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
-    </button>
+    </div>
   );
 }
 
@@ -350,7 +339,7 @@ function TextInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="form-control mt-2"
+        className="form-control"
       />
     </label>
   );
@@ -368,22 +357,32 @@ function FilterGroup({
   onToggle: (value: never) => void;
 }) {
   return (
-    <div>
-      <p className="form-label">{label}</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {values.map((value) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={selected.includes(value)}
-            onClick={() => onToggle(value as never)}
-            className="badge badge-neutral cursor-pointer transition hover:bg-brand-50 hover:text-brand-700 aria-pressed:bg-brand-50 aria-pressed:text-brand-700"
-          >
-            {value}
-          </button>
-        ))}
+    <fieldset>
+      <legend className="form-label">{label}</legend>
+      <div className="flex flex-wrap gap-2">
+        {values.map((value) => {
+          const pressed = selected.includes(value);
+          return (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={pressed}
+              onClick={() => onToggle(value as never)}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-meta font-medium transition-colors duration-150 ${
+                pressed
+                  ? "border-accent bg-accent-subtle text-accent"
+                  : "border-line-ui bg-surface text-ink-2 hover:bg-sunken hover:text-ink"
+              }`}
+            >
+              {pressed ? (
+                <Check aria-hidden="true" className="h-3.5 w-3.5" />
+              ) : null}
+              {value}
+            </button>
+          );
+        })}
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -412,65 +411,42 @@ function JobResultCard({
   return (
     <article className="surface p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="badge badge-brand">
-              {fitLabel}
-            </span>
-            <span className="badge badge-neutral">
-              {result.workplace_type}
-            </span>
+            <Badge tone="brand">{fitLabel}</Badge>
+            {result.workplace_type ? (
+              <Badge>{result.workplace_type}</Badge>
+            ) : null}
             {result.is_mock ? (
-              <span className="badge badge-warning">
-                Mock result
-              </span>
+              <Badge tone="warning">Sample result</Badge>
             ) : null}
           </div>
-          <h2 className="mt-3 text-xl font-semibold text-ink">
+          <h3 className="mt-3 text-lg font-semibold leading-7 text-ink">
             {result.title}
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            {result.company} - {result.location}
+          </h3>
+          <p className="text-sm text-ink-2">
+            {[result.company, result.location].filter(Boolean).join(" · ")}
           </p>
-          <p className="mt-2 text-sm text-muted-subtle">
-            {result.employment_type || "Type not listed"} -{" "}
-            {result.experience_level || "Level not listed"} - {salary}
+          <p className="mt-1 text-meta text-muted">
+            {[
+              result.employment_type || "Type not listed",
+              result.experience_level || "Level not listed",
+              salary
+            ].join(" · ")}
           </p>
-          <p className="mt-3 text-sm leading-6 text-ink">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink">
             {result.short_description}
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
-          <Link
-            href={result.source_url}
-            target="_blank"
-            className="button button-secondary"
-          >
-            <ExternalLink aria-hidden="true" className="h-4 w-4" />
-            View job
-          </Link>
+        <div className="flex flex-none flex-wrap gap-2 lg:w-44 lg:flex-col">
           {savedJobId ? (
-            <>
-              <Link
-                href={`/jobs/${savedJobId}`}
-                className="button button-primary"
-              >
-                <Check aria-hidden="true" className="h-4 w-4" />
-                Saved
-              </Link>
-              <Link
-                href={`/agents/job-application?job=${savedJobId}`}
-                className="button button-secondary"
-              >
-                Prepare application
-              </Link>
-              <Link
-                href={`/agents/job-prep?job=${savedJobId}`}
-                className="button button-secondary"
-              >
-                Prepare for this job
-              </Link>
-            </>
+            <Link
+              href={`/jobs/${savedJobId}`}
+              className="button button-secondary border-accent text-accent"
+            >
+              <Check aria-hidden="true" className="h-4 w-4" />
+              Saved
+            </Link>
           ) : (
             <button
               type="button"
@@ -478,66 +454,109 @@ function JobResultCard({
               disabled={savePending}
               className="button button-primary"
             >
-              {savePending ? (
-                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-              ) : (
-                <BookmarkPlus aria-hidden="true" className="h-4 w-4" />
-              )}
+              {savePending ? <Spinner /> : null}
               Save job
             </button>
           )}
+          <a
+            href={result.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="button button-secondary"
+          >
+            View posting
+            <ExternalLink aria-hidden="true" className="h-4 w-4" />
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
           <button
             type="button"
             onClick={onDismiss}
-            className="button button-danger"
+            className="button button-ghost"
           >
-            <ThumbsDown aria-hidden="true" className="h-4 w-4" />
-            Not interested
+            Hide
           </button>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <ResultList title="Required skills" items={skills} />
-        <ResultList title="Relevant profile evidence" items={profileEvidence} />
-        <ResultList title="Possible gaps" items={gaps} />
+      <div className="mt-5 grid gap-5 border-t border-line pt-5 lg:grid-cols-3">
+        <ResultList title="Skills it asks for" items={skills} tone="neutral" />
+        <ResultList
+          title="What you can point to"
+          items={profileEvidence}
+          tone="brand"
+        />
+        <ResultList title="Possible gaps" items={gaps} tone="warning" />
       </div>
-      <p className="mt-4 text-xs text-muted-subtle">
-        Source: {result.source}
-        {result.posted_at
-          ? ` - Posted ${new Intl.DateTimeFormat("en", {
-              month: "short",
-              day: "numeric",
-              year: "numeric"
-            }).format(new Date(result.posted_at))}`
-          : ""}
-      </p>
+
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-meta text-muted">
+          Source: {result.source}
+          {result.posted_at ? ` · Posted ${formatDate(result.posted_at)}` : ""}
+        </p>
+        {savedJobId ? (
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link
+              href={`/agents/job-application?job=${savedJobId}`}
+              className="link-arrow"
+            >
+              Draft application
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+            <Link
+              href={`/agents/job-prep?job=${savedJobId}`}
+              className="link-arrow"
+            >
+              Interview prep
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
 
-function ResultList({ title, items }: { title: string; items: string[] }) {
+function ResultList({
+  title,
+  items,
+  tone
+}: {
+  title: string;
+  items: string[];
+  tone: "neutral" | "brand" | "warning";
+}) {
   return (
     <section>
-      <h3 className="text-sm font-semibold text-ink">{title}</h3>
-      {items.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-2">
+      <h4 className="text-meta font-medium text-ink-2">{title}</h4>
+      {items.length > 0 && tone === "neutral" ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {items.map((item, index) => (
-            <span
-              key={`${item}-${index}`}
-              className="badge badge-neutral"
-            >
-              {item}
-            </span>
+            <Badge key={`${item}-${index}`}>{item}</Badge>
           ))}
         </div>
+      ) : items.length > 0 ? (
+        <ul className="mt-2 space-y-1.5">
+          {items.map((item, index) => (
+            <li
+              key={`${item}-${index}`}
+              className="flex gap-2 text-sm leading-5 text-ink"
+            >
+              <span
+                aria-hidden="true"
+                className={`mt-1.5 h-2 w-2 flex-none rounded-full ${
+                  tone === "brand" ? "bg-accent" : "bg-highlight"
+                }`}
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p className="mt-2 text-sm text-muted-subtle">None listed.</p>
+        <p className="mt-2 text-sm text-muted">None listed.</p>
       )}
     </section>
   );
 }
-
 function legacyFitLabel(score?: number) {
   if (typeof score !== "number") return "Possible fit";
   if (score >= 75) return "Strong fit";

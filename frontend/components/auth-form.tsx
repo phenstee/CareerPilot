@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,8 @@ import { z } from "zod";
 
 import { login, register } from "@/lib/api";
 import { sanitizeRedirectPath } from "@/lib/redirects";
+import { TextField } from "@/components/ui/field";
+import { Spinner } from "@/components/ui/loading-state";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
@@ -73,13 +75,13 @@ export function AuthForm({
       router.refresh();
     } catch (error) {
       setFormError(
-        error instanceof Error ? error.message : "Unable to authenticate."
+        error instanceof Error ? error.message : "That didn't work. Try again."
       );
     }
   }
 
   function onInvalid() {
-    setFormError("Please fix the highlighted fields and try again.");
+    setFormError("Some fields need attention. They're marked above.");
   }
 
   return (
@@ -97,77 +99,50 @@ export function AuthForm({
 
       {mode === "register" ? (
         <>
-          <label className="block">
-            <span className="form-label">Full name</span>
-            <input
-              {...registerField("full_name")}
-              autoComplete="name"
-              className="form-control mt-2"
-            />
-            {errors.full_name ? (
-              <span className="mt-1 block text-sm text-danger">
-                {errors.full_name.message}
-              </span>
-            ) : null}
-          </label>
-
-          <label className="block">
-            <span className="form-label">Beta access code</span>
-            <input
-              {...registerField("beta_access_code")}
-              autoComplete="off"
-              className="form-control mt-2"
-            />
-          </label>
+          <TextField
+            label="Full name"
+            autoComplete="name"
+            registration={registerField("full_name")}
+            error={errors.full_name?.message}
+          />
+          <TextField
+            label="Beta access code"
+            autoComplete="off"
+            registration={registerField("beta_access_code")}
+            error={errors.beta_access_code?.message}
+          />
         </>
       ) : null}
 
-      <label className="block">
-        <span className="form-label">Email</span>
-        <input
-          {...registerField("email")}
-          type="email"
-          autoComplete="email"
-          className="form-control mt-2"
-        />
-        {errors.email ? (
-          <span className="mt-1 block text-sm text-danger">
-            {errors.email.message}
-          </span>
-        ) : null}
-      </label>
+      <TextField
+        label="Email"
+        type="email"
+        autoComplete="email"
+        registration={registerField("email")}
+        error={errors.email?.message}
+      />
 
-      <label className="block">
-        <span className="form-label">Password</span>
-        <input
-          {...registerField("password")}
-          type="password"
-          autoComplete={
-            mode === "register" ? "new-password" : "current-password"
-          }
-          className="form-control mt-2"
-        />
-        {errors.password ? (
-          <span className="mt-1 block text-sm text-danger">
-            {errors.password.message}
-          </span>
-        ) : null}
-      </label>
+      <TextField
+        label="Password"
+        type="password"
+        autoComplete={mode === "register" ? "new-password" : "current-password"}
+        hint={mode === "register" ? "At least 8 characters." : undefined}
+        registration={registerField("password")}
+        error={errors.password?.message}
+      />
 
       {formError ? (
-        <div className="callout-error">
+        <p role="alert" className="callout-error">
           {formError}
-        </div>
+        </p>
       ) : null}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="button button-primary w-full"
+        className="button button-primary button-lg w-full"
       >
-        {isSubmitting ? (
-          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-        ) : null}
+        {isSubmitting ? <Spinner className="h-4 w-4" /> : null}
         {mode === "register" ? "Create account" : "Sign in"}
         {!isSubmitting ? (
           <ArrowRight aria-hidden="true" className="h-4 w-4" />

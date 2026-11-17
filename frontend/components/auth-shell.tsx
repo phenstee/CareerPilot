@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
-import { BriefcaseBusiness, CheckCircle2, ShieldCheck } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Wordmark } from "@/components/ui/wordmark";
 
 const trustPoints = [
-  "Track applications at your own pace",
-  "AI recommendations grounded in your profile",
-  "Review before any agent data change"
+  "The tracker works without any AI at all",
+  "AI suggestions are based on your own profile and resume",
+  "Nothing in your data changes until you review it"
 ];
 
 export function AuthShell({
@@ -19,74 +21,94 @@ export function AuthShell({
   footer?: ReactNode;
 }) {
   return (
-    <main className="grid min-h-screen bg-paper lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="hidden border-r border-border bg-ink px-12 py-10 text-white lg:flex lg:flex-col">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white">
-            <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-base font-bold tracking-tight">CareerPilot</p>
-            <p className="text-xs text-white/55">Career command center</p>
-          </div>
-        </div>
+    <div className="grid min-h-screen bg-canvas lg:grid-cols-2">
+      <aside className="relative hidden overflow-hidden bg-accent-deep px-12 py-10 text-cream lg:flex lg:flex-col">
+        <Wordmark href="/" tone="cream" />
 
-        <div className="relative mt-16 max-w-md">
-          <p className="text-sm font-bold uppercase tracking-[0.12em] text-brand-100">
-            Career search, organized
-          </p>
-          <h1 className="mt-5 text-4xl font-bold leading-tight tracking-tight">
-            A focused workspace for the next step in your career.
-          </h1>
-          <p className="mt-5 text-base leading-7 text-white/70">
-            Keep jobs, applications, resumes, and interview preparation in one
-            trusted place.
+        <div className="mt-20 max-w-lg">
+          <p className="font-serif text-display-2 font-medium text-cream">
+            Every application in one place, and{" "}
+            <em className="italic text-highlight">a plan for each one.</em>
           </p>
         </div>
 
-        <ul className="relative mt-auto space-y-3">
+        <div aria-hidden="true" className="relative mt-12 h-48 max-w-sm">
+          <SampleCard
+            className="absolute left-0 top-0 w-72 -rotate-2"
+            title="AI Engineering Intern"
+            company="Boreal AI Labs"
+            due="Due Nov 26"
+            edge="before:bg-stage-interview"
+          />
+          <SampleCard
+            className="absolute left-16 top-24 w-72 rotate-1"
+            title="Backend Engineering Intern"
+            company="Northstar Robotics"
+            due="Due Nov 20 · In 3 days"
+            soon
+            edge="before:bg-stage-prep"
+          />
+        </div>
+
+        <ul className="mt-auto space-y-3">
           {trustPoints.map((point) => (
             <li
               key={point}
-              className="flex items-start gap-3 text-sm text-white/75"
+              className="flex items-start gap-3 text-sm leading-6 text-cream-muted"
             >
-              <CheckCircle2
+              <span
                 aria-hidden="true"
-                className="mt-0.5 h-4 w-4 flex-none text-brand-100"
+                className="mt-2 h-2 w-2 flex-none rounded-full bg-highlight"
               />
-              <span>{point}</span>
+              {point}
             </li>
           ))}
-          <li className="flex items-center gap-2 pt-2 text-xs font-semibold uppercase tracking-[0.12em] text-white/50">
-            <ShieldCheck aria-hidden="true" className="h-4 w-4" />
-            Human review built in
-          </li>
         </ul>
-      </section>
+      </aside>
 
-      <section className="flex items-center justify-center px-5 py-10 sm:px-10">
-        <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-              <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />
-            </span>
-            <span className="font-bold tracking-tight text-ink">
-              CareerPilot
-            </span>
-          </div>
-          <div className="surface p-6 sm:p-8">
-            <p className="page-eyebrow">CareerPilot</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink">
-              {title}
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
-            <div className="mt-6">{children}</div>
-          </div>
+      <main className="flex flex-col px-4 py-6 sm:px-10 lg:justify-center lg:py-10">
+        <div className="lg:hidden">
+          <Wordmark href="/" />
+        </div>
+        <div className="mx-auto w-full max-w-sm flex-1 pt-12 lg:flex-none lg:pt-0">
+          <h1 className="page-title">{title}</h1>
+          <p className="mt-2 text-sm leading-6 text-ink-2">{description}</p>
+          <div className="mt-8">{children}</div>
           {footer ? (
-            <p className="mt-5 text-center text-sm text-muted">{footer}</p>
+            <p className="mt-8 border-t border-line pt-5 text-sm text-ink-2">
+              {footer}
+            </p>
           ) : null}
         </div>
-      </section>
-    </main>
+      </main>
+    </div>
+  );
+}
+
+function SampleCard({
+  title,
+  company,
+  due,
+  soon = false,
+  edge,
+  className
+}: {
+  title: string;
+  company: string;
+  due: string;
+  soon?: boolean;
+  edge: string;
+  className: string;
+}) {
+  return (
+    <div
+      className={`rounded-lg border border-line bg-surface py-3 pl-4 pr-3 shadow-overlay before:absolute before:bottom-3 before:left-1.5 before:top-3 before:w-1 before:rounded-full before:content-[''] ${edge} ${className}`}
+    >
+      <p className="text-sm font-semibold leading-5 text-ink">{title}</p>
+      <p className="mt-0.5 text-meta text-ink-2">{company}</p>
+      <div className="mt-2.5">
+        <Badge tone={soon ? "warning" : "neutral"}>{due}</Badge>
+      </div>
+    </div>
   );
 }

@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { JobApplicationAgent } from "@/components/job-application-agent";
-import { PageHeader } from "@/components/page-header";
+import { LoadingState } from "@/components/ui/loading-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
 export default async function JobApplicationAgentPage() {
@@ -11,24 +11,12 @@ export default async function JobApplicationAgentPage() {
 
   return (
     <AppShell user={user}>
-      <div className="page-container-narrow">
+      <div className="page-container lg:pt-8">
         <PageHeader
-          eyebrow="Job Application Agent"
-          title="Prepare an application preview"
-          description="Select a saved job, review profile evidence, and approve a manual-use preview before using it anywhere."
-          actions={
-            <Link href="/agents" className="button button-secondary">
-              All agents
-            </Link>
-          }
+          title="Draft an application"
+          description="Pick a saved job. You get a fit summary, a cover letter to edit and the answers that need your confirmation."
         />
-        <Suspense
-          fallback={
-            <div className="surface p-5 text-sm text-muted">
-              Loading application agent...
-            </div>
-          }
-        >
+        <Suspense fallback={<LoadingState label="Loading" rows={4} />}>
           <JobApplicationAgent />
         </Suspense>
       </div>

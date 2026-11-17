@@ -6,7 +6,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "CareerPilot",
-  description: "AI-assisted career tracking for early-career tech candidates"
+  description:
+    "Track internship and co-op applications, keep deadlines in view, and prepare for each role."
 };
 
 export default function RootLayout({

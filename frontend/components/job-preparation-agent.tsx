@@ -1,12 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  FileText,
-  ListChecks,
-  Sparkles
-} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -14,10 +8,9 @@ import { useState } from "react";
 import {
   AgentCard,
   CompactList,
-  EmptyState,
   ErrorCallout,
+  HintCallout,
   JobPicker,
-  LoadingState,
   PrimaryActionCard,
   StaleNotice,
   TaskStatusNotice
@@ -47,6 +40,10 @@ import {
   RecommendationPanel,
   UncertaintyList
 } from "@/components/insights";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { LoadingState } from "@/components/ui/loading-state";
+import { PipelineSteps } from "@/components/ui/pipeline-steps";
 
 export function JobPreparationAgent() {
   const searchParams = useSearchParams();
@@ -56,6 +53,7 @@ export function JobPreparationAgent() {
   const [completedByPlan, setCompletedByPlan] = useState<
     Record<string, string[]>
   >({});
+  const [tab, setTab] = useState<"prep" | "resume">("prep");
   const queryClient = useQueryClient();
 
   const jobsQuery = useQuery({
@@ -177,12 +175,19 @@ export function JobPreparationAgent() {
     profileQuery.isLoading ||
     applicationsQuery.isLoading
   ) {
-    return <LoadingState message="Loading your preparation workspace." />;
+    return <LoadingState label="Loading your prep workspace" rows={4} />;
   }
 
   if (jobsQuery.isError || profileQuery.isError || applicationsQuery.isError) {
     return (
-      <ErrorCallout message="Unable to load preparation data. Refresh the page and try again." />
+      <ErrorState
+        message="Your prep workspace didn't load. Check your connection and try again."
+        onRetry={() => {
+          jobsQuery.refetch();
+          profileQuery.refetch();
+          applicationsQuery.refetch();
+        }}
+      />
     );
   }
 
@@ -190,13 +195,23 @@ export function JobPreparationAgent() {
     return (
       <EmptyState
         title="No saved jobs yet"
-        description="Save a job first, then generate a focused preparation plan."
+        description="Prep works on a specific posting. Save one first, then come back to analyze it."
+        action={
+          <>
+            <Link href="/jobs/new" className="button button-primary">
+              Add job
+            </Link>
+            <Link href="/agents/job-finder" className="button button-secondary">
+              Find jobs
+            </Link>
+          </>
+        }
       />
     );
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-sidebar">
       <JobPicker
         jobs={jobs}
         selectedJobId={selectedJobId}
@@ -208,14 +223,13 @@ export function JobPreparationAgent() {
           const app = applicationsQuery.data?.items.find(
             (item) => item.job_posting_id === job.id
           );
-          return `${job.location || "Location not set"}${app ? ` - ${app.stage}` : ""}`;
+          return `${job.location || "Location not set"}${app ? ` · ${app.stage}` : ""}`;
         }}
       />
 
       {selectedJob ? (
-        <section className="space-y-5">
+        <section className="min-w-0 space-y-6">
           <PrimaryActionCard
-            eyebrow="Preparation"
             title={`${selectedJob.title} at ${selectedJob.company}`}
             description={getHeroDescription({
               hasRoleAnalysis: Boolean(latestRoleAnalysis),
@@ -233,28 +247,48 @@ export function JobPreparationAgent() {
               generatePlan: () => planMutation.mutate()
             })}
           >
-            <div className="grid gap-3 sm:grid-cols-3">
-              <StatusTile
-                label="Role analysis"
-                value={
-                  latestRoleAnalysis
+            <PipelineSteps
+              label="Prep steps"
+              steps={[
+                {
+                  key: "analysis",
+                  label: "Role analysis",
+                  value: 1,
+                  caption: latestRoleAnalysis
                     ? roleAnalysisIsStale
-                      ? "Needs refresh"
+                      ? "Out of date"
                       : "Ready"
-                    : "Not generated"
+                    : "Not started",
+                  tint: roleAnalysisIsStale
+                    ? "bg-highlight-subtle"
+                    : "bg-accent-subtle",
+                  dot: roleAnalysisIsStale ? "bg-highlight" : "bg-accent",
+                  muted: !latestRoleAnalysis
+                },
+                {
+                  key: "plan",
+                  label: "Prep plan",
+                  value: 2,
+                  caption: latestPlan
+                    ? `${checklistCount} tasks`
+                    : "Not started",
+                  tint: "bg-accent-subtle",
+                  dot: "bg-accent",
+                  muted: !latestPlan
+                },
+                {
+                  key: "practice",
+                  label: "Checklist",
+                  value: 3,
+                  caption: latestPlan
+                    ? `${completedCount} of ${checklistCount} done`
+                    : "Not started",
+                  tint: "bg-accent-subtle",
+                  dot: "bg-accent",
+                  muted: !latestPlan || completedCount === 0
                 }
-              />
-              <StatusTile
-                label="Plan"
-                value={latestPlan ? `${checklistCount} tasks` : "Not generated"}
-              />
-              <StatusTile
-                label="Checklist"
-                value={
-                  latestPlan ? `${completedCount}/${checklistCount} done` : "0"
-                }
-              />
-            </div>
+              ]}
+            />
             {roleAnalysisMutation.isError ? (
               <ErrorCallout
                 message={formatError(
@@ -302,15 +336,10 @@ export function JobPreparationAgent() {
               />
 
               <section className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted-subtle">
-                  Areas to prepare
-                </h3>
+                <h3 className="section-title">Areas to prepare</h3>
                 {latestRoleAnalysis.gaps.length > 0 ? (
                   latestRoleAnalysis.gaps.map((gap, index) => (
-                    <GapInsight
-                      key={`${gap.requirement}-${index}`}
-                      gap={gap}
-                    />
+                    <GapInsight key={`${gap.requirement}-${index}`} gap={gap} />
                   ))
                 ) : (
                   <p className="text-sm text-muted">
@@ -320,9 +349,7 @@ export function JobPreparationAgent() {
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-muted-subtle">
-                  Evidence to use
-                </h3>
+                <h3 className="section-title">Evidence to use</h3>
                 {latestRoleAnalysis.strengths.length > 0 ? (
                   latestRoleAnalysis.strengths.map((strength, index) => (
                     <EvidenceInsight
@@ -339,206 +366,226 @@ export function JobPreparationAgent() {
 
               <UncertaintyList items={latestRoleAnalysis.uncertainties} />
             </>
-          ) : (
-            <AgentCard title="Start with a role analysis">
-              <p className="text-sm leading-6 text-muted">
-                CareerPilot needs one role analysis before it can build a
-                focused preparation plan.
-              </p>
-            </AgentCard>
-          )}
+          ) : null}
 
-          <AgentCard
-            title="Preparation plan"
-            description="A short plan with next steps first, followed by practice tasks."
-            action={{
-              label: latestPlan ? "Regenerate plan" : "Generate interview plan",
-              onClick: () => planMutation.mutate(),
-              disabled: !planCanGenerate,
-              loading: planMutation.isPending,
-              icon: <Sparkles aria-hidden="true" className="h-4 w-4" />
-            }}
-          >
-            {planDisabledReason ? (
-              <ErrorCallout
-                message={planDisabledReason}
-                action={
-                  roleAnalysisIsStale
-                    ? {
-                        label: "Refresh role analysis",
-                        onClick: () => roleAnalysisMutation.mutate(),
-                        loading: roleAnalysisMutation.isPending
-                      }
-                    : undefined
-                }
-              />
-            ) : null}
-            {latestPlan ? (
-              <>
-                {latestPlanItem?.is_stale ? (
-                  <StaleNotice message="This plan may be stale because the job, profile, resume, or source role analysis changed." />
-                ) : null}
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <CompactList
-                    title="Next steps"
-                    items={latestPlan.staged_plan}
-                    limit={4}
-                  />
-                  <CompactList
-                    title="Essential topics"
-                    items={latestPlan.essential_topics}
-                    limit={4}
-                  />
-                </div>
-                <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                  <CompactList
-                    title="Technical practice"
-                    items={latestPlan.technical_practice}
-                  />
-                  <CompactList
-                    title="Behavioral practice"
-                    items={latestPlan.behavioral_practice}
-                  />
-                  <CompactList
-                    title="Concrete exercises"
-                    items={latestPlan.concrete_exercises}
-                  />
-                  <CompactList
-                    title="Research tasks"
-                    items={latestPlan.research_tasks}
-                  />
-                  <CompactList
-                    title="Optional topics"
-                    items={latestPlan.optional_topics}
-                  />
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-muted-subtle">
-                Generate a plan after the role analysis is ready.
-              </p>
-            )}
-          </AgentCard>
+          <div role="tablist" aria-label="Prep sections" className="segmented">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "prep"}
+              onClick={() => setTab("prep")}
+              className="segmented-item"
+            >
+              Prep plan
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === "resume"}
+              onClick={() => setTab("resume")}
+              className="segmented-item"
+            >
+              Resume advice
+            </button>
+          </div>
 
-          <AgentCard
-            title="Resume advice"
-            description="Optional. Use this when you want to tune your resume before applying."
-            action={{
-              label: latestSuggestions
-                ? "Regenerate resume advice"
-                : "Generate resume advice",
-              onClick: () => suggestionMutation.mutate(),
-              loading: suggestionMutation.isPending,
-              icon: <FileText aria-hidden="true" className="h-4 w-4" />
-            }}
-          >
-            {suggestionMutation.isError ? (
-              <ErrorCallout
-                message={formatError(
-                  suggestionMutation.error,
-                  "Unable to generate resume advice."
-                )}
-                action={{
-                  label: "Retry",
-                  onClick: () => suggestionMutation.mutate()
-                }}
-              />
-            ) : null}
-            {latestSuggestions ? (
-              <>
-                {latestSuggestionsItem?.is_stale ? (
-                  <StaleNotice message="This resume advice may be stale because your job, profile, or resume changed." />
-                ) : null}
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <CompactList
-                    title="Add or emphasize"
-                    items={latestSuggestions.suggested_additions ?? []}
-                    limit={4}
-                  />
-                  <CompactList
-                    title="Less important"
-                    items={latestSuggestions.less_important_items ?? []}
-                    limit={4}
-                  />
-                </div>
-                <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                  <CompactList
-                    title="Already relevant"
-                    items={
-                      latestSuggestions.relevant_existing_resume_content ?? []
-                    }
-                  />
-                  <CompactList
-                    title="Keywords"
-                    items={latestSuggestions.keywords ?? []}
-                  />
-                  <CompactList
-                    title="Questions before editing"
-                    items={
-                      latestSuggestions.missing_information_questions ?? []
-                    }
-                  />
-                  <CompactList
-                    title="Uncertainties"
-                    items={latestSuggestions.uncertainties ?? []}
-                  />
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-muted-subtle">
-                Resume advice is optional and stays secondary to preparation.
-              </p>
-            )}
-          </AgentCard>
-
-          <AgentCard title="Quick review">
-            <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-              <Checklist
-                latestPlanId={latestPlanId}
-                items={latestPlan?.completion_checklist ?? []}
-                completedItems={completedItems}
-                onToggle={(itemKey, checked) =>
-                  setCompletedByPlan((current) => {
-                    const currentItems = new Set(current[latestPlanId] ?? []);
-                    if (checked) currentItems.add(itemKey);
-                    else currentItems.delete(itemKey);
-                    return {
-                      ...current,
-                      [latestPlanId]: [...currentItems]
-                    };
-                  })
-                }
-              />
-              <div className="rounded-lg bg-surface-muted p-4">
-                <h3 className="text-sm font-semibold text-ink">
-                  Mock interview
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Practice after the plan is ready and the job is tracked as an
-                  application.
+          {tab === "prep" ? (
+            <AgentCard
+              title="Preparation plan"
+              description="A short plan with next steps first, followed by practice tasks."
+              action={{
+                label: latestPlan
+                  ? "Regenerate plan"
+                  : "Generate interview plan",
+                onClick: () => planMutation.mutate(),
+                disabled: !planCanGenerate,
+                loading: planMutation.isPending
+              }}
+            >
+              {planDisabledReason ? (
+                <HintCallout
+                  message={planDisabledReason}
+                  action={
+                    roleAnalysisIsStale
+                      ? {
+                          label: "Refresh role analysis",
+                          onClick: () => roleAnalysisMutation.mutate(),
+                          loading: roleAnalysisMutation.isPending
+                        }
+                      : undefined
+                  }
+                />
+              ) : null}
+              {latestPlan ? (
+                <>
+                  {latestPlanItem?.is_stale ? (
+                    <StaleNotice message="This plan may be stale because the job, profile, resume, or source role analysis changed." />
+                  ) : null}
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <CompactList
+                      title="Next steps"
+                      items={latestPlan.staged_plan}
+                      limit={4}
+                    />
+                    <CompactList
+                      title="Essential topics"
+                      items={latestPlan.essential_topics}
+                      limit={4}
+                    />
+                  </div>
+                  <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                    <CompactList
+                      title="Technical practice"
+                      items={latestPlan.technical_practice}
+                    />
+                    <CompactList
+                      title="Behavioral practice"
+                      items={latestPlan.behavioral_practice}
+                    />
+                    <CompactList
+                      title="Concrete exercises"
+                      items={latestPlan.concrete_exercises}
+                    />
+                    <CompactList
+                      title="Research tasks"
+                      items={latestPlan.research_tasks}
+                    />
+                    <CompactList
+                      title="Optional topics"
+                      items={latestPlan.optional_topics}
+                    />
+                  </div>
+                </>
+              ) : !planDisabledReason ? (
+                <p className="text-sm text-muted">
+                  Generate a plan after the role analysis is ready.
                 </p>
-                {application ? (
-                  <Link
-                    href={`/applications/${application.id}/interview`}
-                    className="button button-primary mt-4"
-                  >
-                    <Sparkles aria-hidden="true" className="h-4 w-4" />
-                    Start mock interview
-                  </Link>
-                ) : (
-                  <p className="mt-4 text-sm text-muted">
-                    Track this job as an application to unlock the stored mock
-                    interview workflow.
+              ) : null}
+            </AgentCard>
+          ) : null}
+
+          {tab === "resume" ? (
+            <AgentCard
+              title="Resume advice"
+              description="Optional. Use this when you want to tune your resume before applying."
+              action={{
+                label: latestSuggestions
+                  ? "Regenerate resume advice"
+                  : "Generate resume advice",
+                onClick: () => suggestionMutation.mutate(),
+                loading: suggestionMutation.isPending
+              }}
+            >
+              {suggestionMutation.isError ? (
+                <ErrorCallout
+                  message={formatError(
+                    suggestionMutation.error,
+                    "Unable to generate resume advice."
+                  )}
+                  action={{
+                    label: "Retry",
+                    onClick: () => suggestionMutation.mutate()
+                  }}
+                />
+              ) : null}
+              {latestSuggestions ? (
+                <>
+                  {latestSuggestionsItem?.is_stale ? (
+                    <StaleNotice message="This resume advice may be stale because your job, profile, or resume changed." />
+                  ) : null}
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <CompactList
+                      title="Add or emphasize"
+                      items={latestSuggestions.suggested_additions ?? []}
+                      limit={4}
+                    />
+                    <CompactList
+                      title="Less important"
+                      items={latestSuggestions.less_important_items ?? []}
+                      limit={4}
+                    />
+                  </div>
+                  <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                    <CompactList
+                      title="Already relevant"
+                      items={
+                        latestSuggestions.relevant_existing_resume_content ?? []
+                      }
+                    />
+                    <CompactList
+                      title="Keywords"
+                      items={latestSuggestions.keywords ?? []}
+                    />
+                    <CompactList
+                      title="Questions before editing"
+                      items={
+                        latestSuggestions.missing_information_questions ?? []
+                      }
+                    />
+                    <CompactList
+                      title="Uncertainties"
+                      items={latestSuggestions.uncertainties ?? []}
+                    />
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted">
+                  Resume advice is optional and stays secondary to preparation.
+                </p>
+              )}
+            </AgentCard>
+          ) : null}
+
+          {tab === "prep" ? (
+            <AgentCard title="Checklist and practice">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Checklist
+                  latestPlanId={latestPlanId}
+                  items={latestPlan?.completion_checklist ?? []}
+                  completedItems={completedItems}
+                  onToggle={(itemKey, checked) =>
+                    setCompletedByPlan((current) => {
+                      const currentItems = new Set(current[latestPlanId] ?? []);
+                      if (checked) currentItems.add(itemKey);
+                      else currentItems.delete(itemKey);
+                      return {
+                        ...current,
+                        [latestPlanId]: [...currentItems]
+                      };
+                    })
+                  }
+                />
+                <div className="rounded-lg bg-sunken p-4">
+                  <h3 className="text-sm font-semibold text-ink">
+                    Practice questions
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Practice after the plan is ready and the job is tracked as
+                    an application.
                   </p>
-                )}
+                  {application ? (
+                    <Link
+                      href={`/applications/${application.id}/interview`}
+                      className="button button-secondary mt-4"
+                    >
+                      Open interview practice
+                    </Link>
+                  ) : (
+                    <p className="mt-4 text-sm text-muted">
+                      Track this job as an application to unlock the stored mock
+                      interview workflow.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </AgentCard>
+            </AgentCard>
+          ) : null}
         </section>
       ) : (
-        <div className="rounded-lg border border-dashed border-border-strong bg-surface p-8 text-sm text-muted">
-          Select a saved job to begin preparation.
-        </div>
+        <EmptyState
+          title="Pick a saved job"
+          description="Choose a job on the left to see its role analysis, prep plan and checklist."
+        />
       )}
     </div>
   );
@@ -590,8 +637,7 @@ function getPrimaryAction({
         ? "Refresh role analysis"
         : "Generate role analysis",
       onClick: generateRoleAnalysis,
-      loading: roleAnalysisPending,
-      icon: <Sparkles aria-hidden="true" className="h-4 w-4" />
+      loading: roleAnalysisPending
     };
   }
 
@@ -599,8 +645,7 @@ function getPrimaryAction({
     label: hasPlan ? "Regenerate interview plan" : "Generate interview plan",
     onClick: generatePlan,
     disabled: !planCanGenerate,
-    loading: planPending,
-    icon: <ListChecks aria-hidden="true" className="h-4 w-4" />
+    loading: planPending
   };
 }
 
@@ -617,7 +662,7 @@ function Checklist({
 }) {
   if (items.length === 0 || !latestPlanId) {
     return (
-      <div className="rounded-lg bg-surface-muted p-4 text-sm text-muted">
+      <div className="rounded-lg bg-sunken p-4 text-sm text-muted">
         Generate a preparation plan to get a short checklist.
       </div>
     );
@@ -656,32 +701,17 @@ function ChecklistItem({
   const checked = completedItems.has(itemKey);
 
   return (
-    <label className="flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2 text-sm text-ink">
+    <label className="flex cursor-pointer items-center gap-3 rounded-lg bg-sunken px-3 py-2 text-sm text-ink has-[:checked]:bg-accent-subtle">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onToggle(itemKey, event.target.checked)}
-        className="h-4 w-4 rounded border-border-strong text-brand-600 focus:ring-brand-600"
+        className="h-4 w-4 flex-none accent-accent"
       />
-      <span>{item}</span>
-      {checked ? (
-        <CheckCircle2
-          aria-hidden="true"
-          className="ml-auto h-4 w-4 text-brand-600"
-        />
-      ) : null}
+      <span className={checked ? "text-ink-2 line-through" : undefined}>
+        {item}
+      </span>
     </label>
-  );
-}
-
-function StatusTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-surface-muted px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-subtle">
-        {label}
-      </p>
-      <p className="mt-1 text-sm font-semibold text-ink">{value}</p>
-    </div>
   );
 }
 
