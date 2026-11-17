@@ -1,34 +1,33 @@
-import { Compass } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+
+import { Wordmark } from "@/components/ui/wordmark";
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen bg-canvas px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-3xl rounded-lg border border-line bg-surface p-6">
-        <div className="flex items-start gap-4">
-          <span className="inline-flex rounded-lg bg-accent-subtle p-3 text-accent">
-            <Compass aria-hidden="true" className="h-6 w-6" />
-          </span>
-          <div>
-            <p className="page-eyebrow">Not found</p>
-            <h1 className="mt-2 text-2xl font-semibold text-ink">
-              This page is not available
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              The page may have moved, or you may need to return to one of the
-              main CareerPilot workflows.
-            </p>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Link href="/dashboard" className="button button-primary">
-                Dashboard
-              </Link>
-              <Link href="/agents" className="button button-secondary">
-                AI agents
-              </Link>
-            </div>
-          </div>
+    <div className="min-h-screen bg-canvas">
+      <header className="mx-auto flex h-bar max-w-app items-center px-4 sm:px-6 lg:px-8">
+        <Wordmark href="/dashboard" />
+      </header>
+      <main className="mx-auto max-w-app px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+        <p className="voice text-lg">Page not found</p>
+        <h1 className="mt-2 max-w-2xl font-serif text-display-2 font-medium text-ink">
+          There&apos;s nothing at this address.
+        </h1>
+        <p className="mt-4 max-w-prose text-body text-ink-2">
+          The link may be out of date, or the job or application it pointed to
+          was deleted.
+        </p>
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+          <Link href="/dashboard" className="button button-primary">
+            Go to dashboard
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
+          <Link href="/applications" className="button button-secondary">
+            Applications
+          </Link>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
