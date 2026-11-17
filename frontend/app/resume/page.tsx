@@ -8,10 +8,10 @@ export default async function ResumePage() {
 
   return (
     <AppShell user={user}>
-      <div className="page-container-narrow">
+      <div className="page-container-narrow lg:pt-8">
         <PageHeader
-          title="Resume workspace"
-          description="Upload a readable PDF and keep extracted text ready for matching, tailoring, and interview preparation."
+          title="Resume"
+          description="One PDF. CareerPilot reads its text and uses it alongside your profile for matching, drafts and interview prep."
         />
         <ResumeManager />
       </div>

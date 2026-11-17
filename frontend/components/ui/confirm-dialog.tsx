@@ -7,6 +7,8 @@ import { Spinner } from "./loading-state";
 /**
  * Native <dialog> confirmation for destructive actions. Focus starts on
  * Cancel; Escape and the backdrop close it.
+ * `!m-auto` keeps it centred when it is rendered inside a `space-y-*` parent,
+ * whose sibling margin rule would otherwise pin it to the top.
  */
 export function ConfirmDialog({
   open,
@@ -52,7 +54,7 @@ export function ConfirmDialog({
       onClick={(event) => {
         if (event.target === dialogRef.current && !pending) onCancel();
       }}
-      className="m-auto w-11/12 max-w-md rounded-2xl bg-surface p-0 text-ink shadow-overlay backdrop:bg-ink/40 open:animate-rise"
+      className="!m-auto w-11/12 max-w-md rounded-2xl bg-surface p-0 text-ink shadow-overlay backdrop:bg-ink/40 open:animate-rise"
     >
       <div className="p-6">
         <h2 id="confirm-dialog-title" className="text-lg font-semibold">
