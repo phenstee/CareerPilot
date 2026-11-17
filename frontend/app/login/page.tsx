@@ -38,13 +38,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthShell
       title="Sign in"
-      description="Continue to your private career workspace."
+      description="Welcome back. Your tracker is where you left it."
       footer={
         <>
           New here?{" "}
           <Link
             href="/register"
-            className="font-semibold text-accent hover:text-accent"
+            className="font-medium text-accent underline-offset-4 hover:underline"
           >
             Create an account
           </Link>

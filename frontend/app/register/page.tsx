@@ -43,13 +43,13 @@ export default async function RegisterPage({
   return (
     <AuthShell
       title="Create account"
-      description="Start with secure account access. Profile and tracker data come next."
+      description="It takes a minute. You can fill in your profile after."
       footer={
         <>
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-semibold text-accent hover:text-accent"
+            className="font-medium text-accent underline-offset-4 hover:underline"
           >
             Sign in
           </Link>
