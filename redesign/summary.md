@@ -4,7 +4,7 @@ Branch `claude/project-thread-qukzx4`, draft PR #1. One commit per step, listed 
 
 All screenshots are in `redesign/after/` at 1440px and 390px (2x pixel density). The matching "before" shots, at 1x, are in `redesign/before/` with the same file names. Every page was also checked at 360px, with no horizontal overflow.
 
-No backend, API, route, auth or data-fetching code changed. No dependencies were added; the two fonts load through `next/font/google`, which ships with Next.
+No backend, API, route, auth or data-fetching code changed. No dependencies were added. The two fonts are self-hosted `.woff2` files in `frontend/app/fonts/` (both SIL OFL, licenses alongside), loaded with plain `@font-face`. I switched to this from `next/font/google` because that broke the production Docker build in CI.
 
 ---
 

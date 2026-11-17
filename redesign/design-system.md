@@ -35,7 +35,7 @@ The direction is to **let the pipeline be the product**, the way Odoo's CRM does
 
 ## 2. Typography
 
-**Pairing: Newsreader (titles and voice) + IBM Plex Sans (everything else).** Both are on Google Fonts and load through `next/font/google`, which ships with Next.js, so there's **no new npm dependency**. Fonts download at build time.
+**Pairing: Newsreader (titles and voice) + IBM Plex Sans (everything else).** Both are open-source (SIL OFL 1.1) and **self-hosted**: the Latin `.woff2` files live in `frontend/app/fonts/` and load with plain `@font-face`, so there's **no new npm dependency** and builds never fetch from Google Fonts.
 
 - **IBM Plex Sans** for UI and body. It has more character than Inter, stays legible at 13 to 14px, and has tabular figures for counts and dates.
 - **Newsreader** for page titles, marketing headlines, big counts (board column counts, pipeline numbers, date tiles) and monograms.
@@ -314,7 +314,7 @@ The Prettier formatting fix lands first, as its own commit.
 ## 10. Implementation notes
 
 - **Tokens:** `app/globals.css` (CSS variables as RGB triplets) and `tailwind.config.ts` (`rgb(var(--x) / <alpha-value>)`), plus `fontSize` entries for the clamp sizes and `transitionTimingFunction.out`. Remove `lagoon`, `brand-*`, `sidebar-*` and `xl2`.
-- **Fonts:** `next/font/google` in `app/layout.tsx` for Newsreader (500, normal and italic) and IBM Plex Sans (400, 500, 600), exposed as `--font-sans` and `--font-serif`.
+- **Fonts:** self-hosted `@font-face` in `app/globals.css` for Newsreader (500, normal and italic) and IBM Plex Sans (variable, 400 to 600), exposed as `--font-sans` and `--font-serif`. (`next/font/google` was used first, but its build-time fetch broke the production Docker build in CI.)
 - **Primitives in `components/ui/`:**
   - `Button`, `Input` / `Select` / `Textarea` / `Field`.
   - `Card`, `Chip`, `StageDot`, `DateTile`, `Monogram`.
