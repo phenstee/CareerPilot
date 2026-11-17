@@ -3,24 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CareerPilot redesign mockup</title>
+<title>CareerPilot redesign mockup (v2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,500&display=swap" rel="stylesheet">
 <style>
-/* ---- Tokens (mirror redesign/design-system.md) ---- */
+/* ---- Tokens v2 (mirror redesign/design-system.md) ---- */
 :root{
-  --canvas:#F7F7F5; --surface:#FFFFFF; --sunken:#F0F0EC;
-  --border:#E3E3DE; --border-ui:#CFCFC8; --border-strong:#8C8C84;
-  --text:#1B1B18; --text-2:#4A4A44; --muted:#66665E;
-  --accent:#1F5C4A; --accent-hover:#174538; --accent-subtle:#E7F0EC;
-  --success:#1D6B3B; --success-subtle:#E7F2EB;
-  --warning:#8A5200; --warning-subtle:#FBF0DC;
-  --danger:#B3261E; --danger-subtle:#FBEAE8;
-  --st-neutral:#84847C; --st-applied:#3D6A99; --st-interview:#B06A00; --st-offer:#1E7B45; --st-rejected:#B3261E;
+  --canvas:#F6F3EC; --surface:#FFFFFF; --sunken:#EFEBE2;
+  --border:#E4DFD3; --border-ui:#CBC4B5; --border-strong:#8A8473;
+  --text:#1C1B17; --text-2:#4B483F; --muted:#6A665B;
+  --accent:#1F5C4A; --accent-hover:#174538; --accent-deep:#143D31; --accent-subtle:#E3EEE8;
+  --highlight:#F4C04E; --highlight-subtle:#FCEFC9;
+  --cream:#F6F3EC; --cream-muted:#B9C8C0;
+  --warning:#8A5200; --danger:#B3261E;
+  --st-prep:#84847C;      --st-prep-tint:#ECE8DE;
+  --st-applied:#3D6A99;   --st-applied-tint:#E6EDF5;
+  --st-interview:#B06A00; --st-interview-tint:#FBEBD3;
+  --st-offer:#1E7B45;     --st-offer-tint:#E3F1E8;
+  --st-rejected:#B3261E;  --st-rejected-tint:#F8E5E3;
   --sans:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
   --serif:"Newsreader",Georgia,serif;
-  --shadow-overlay:0 8px 24px rgb(27 27 24/.12),0 1px 2px rgb(27 27 24/.08);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --shadow-hover:0 6px 18px -8px rgb(28 27 23/.25);
+  --shadow-overlay:0 12px 32px -8px rgb(28 27 23/.25),0 1px 2px rgb(28 27 23/.08);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -29,210 +35,226 @@ a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}
 
-/* mockup-only switcher (not part of the design) */
+/* mockup-only switcher */
 .mock-switch{position:sticky;top:0;z-index:50;background:#2b2b27;color:#fff;font:500 12px/16px var(--sans);display:flex;gap:4px;padding:6px 12px;align-items:center;flex-wrap:wrap}
 .mock-switch span{opacity:.7;margin-right:8px}
 .mock-switch a{padding:4px 8px;border-radius:4px}
 .mock-switch a[aria-current]{background:#fff;color:#2b2b27}
 body.shot .mock-switch{display:none}
-.screen{display:none}
-.screen.on{display:block}
+.screen{display:none}.screen.on{display:block}
 
-/* ---- Type ---- */
-.display-1{font:500 56px/60px var(--serif);letter-spacing:-.02em;margin:0}
-.display-2{font:500 36px/42px var(--serif);letter-spacing:-.015em;margin:0}
-.title-1{font:500 28px/34px var(--serif);letter-spacing:-.01em;margin:0}
-.title-2{font:600 18px/26px var(--sans);margin:0}
+/* ---- Type (fluid) ---- */
+.display-1{font:500 clamp(40px,5.2vw,64px)/1.04 var(--serif);letter-spacing:-.025em;margin:0}
+.display-2{font:500 clamp(28px,3.2vw,40px)/1.1 var(--serif);letter-spacing:-.015em;margin:0}
+.title-1{font:500 clamp(26px,2.6vw,34px)/1.15 var(--serif);letter-spacing:-.015em;margin:0}
+.title-2{font:600 17px/24px var(--sans);margin:0}
 .title-3{font:600 14px/20px var(--sans);margin:0}
 .body-lg{font-size:18px;line-height:28px}
 .body-sm{font-size:13px;line-height:18px}
 .caption{font:500 12px/16px var(--sans)}
-.muted{color:var(--muted)} .t2{color:var(--text-2)}
+.muted{color:var(--muted)}.t2{color:var(--text-2)}
+em.voice{font-style:italic;color:var(--accent)}
+/* highlighter stroke: one per page, max */
+.hl{background:linear-gradient(transparent 62%,var(--highlight) 62%,var(--highlight) 92%,transparent 92%);padding:0 .08em;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 /* ---- Buttons ---- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:4px;border:1px solid transparent;font:500 14px/20px var(--sans);cursor:pointer;white-space:nowrap;transition:background-color 120ms ease-out,border-color 120ms ease-out,color 120ms ease-out}
-.btn-sm{height:32px;padding:0 10px;font-size:13px}
-.btn-lg{height:44px;padding:0 20px;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border-radius:999px;border:1px solid transparent;font:500 14px/20px var(--sans);cursor:pointer;white-space:nowrap;transition:background-color 150ms var(--ease),border-color 150ms var(--ease),transform 150ms var(--ease)}
+.btn:active{transform:translateY(1px)}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-lg{height:48px;padding:0 24px;font-size:15px}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent-hover)}
 .btn-secondary{background:var(--surface);border-color:var(--border-ui);color:var(--text)}
-.btn-secondary:hover{background:var(--sunken)}
+.btn-secondary:hover{border-color:var(--text-2)}
 .btn-ghost{background:transparent;color:var(--text-2)}
 .btn-ghost:hover{background:var(--sunken);color:var(--text)}
 .btn svg{width:16px;height:16px}
 
 /* ---- Inputs ---- */
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font:500 13px/18px var(--sans);color:var(--text-2)}
-.input,.select{height:36px;border:1px solid var(--border-strong);border-radius:4px;background:var(--surface);padding:0 10px;font:400 14px/20px var(--sans);color:var(--text);min-width:0}
+.input,.select{height:38px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);padding:0 12px;font:400 14px/20px var(--sans);color:var(--text);min-width:0}
 .input::placeholder{color:var(--muted)}
 .input:focus,.select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgb(31 92 74/.2)}
-.select{appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A4A44' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.select{appearance:none;padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234B483F' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
 
 /* ---- Badges / stage ---- */
-.badge{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:4px;background:var(--sunken);color:var(--text-2);font:500 12px/16px var(--sans)}
-.badge-warning{background:var(--warning-subtle);color:var(--warning)}
+.chip{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;background:var(--sunken);color:var(--text-2);font:500 12px/16px var(--sans)}
+.chip-soon{background:var(--highlight-subtle);color:var(--warning)}
+.chip-gap{background:var(--highlight-subtle);color:var(--warning)}
 .stage{display:inline-flex;align-items:center;gap:6px;font:500 13px/18px var(--sans);color:var(--text-2)}
-.dot{width:8px;height:8px;border-radius:999px;background:var(--st-neutral);flex:none}
-.dot.applied{background:var(--st-applied)} .dot.interview{background:var(--st-interview)} .dot.offer{background:var(--st-offer)} .dot.rejected{background:var(--st-rejected)}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--st-prep);flex:none}
+.dot.applied{background:var(--st-applied)}.dot.interview{background:var(--st-interview)}.dot.offer{background:var(--st-offer)}.dot.rejected{background:var(--st-rejected)}
 
 /* ---- App shell ---- */
-.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.topbar{height:60px;background:rgb(246 243 236/.9);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
 body:not(.shot) .topbar{top:28px}
-.topbar-in{max-width:1280px;margin:0 auto;height:100%;display:flex;align-items:center;gap:32px;padding:0 32px}
-.wordmark{font:600 15px/20px var(--sans);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
-.wordmark .mark{width:20px;height:20px;border-radius:4px;background:var(--accent);position:relative}
-.wordmark .mark::after{content:"";position:absolute;left:5px;top:5px;width:10px;height:10px;border:2px solid #fff;border-radius:2px;border-top-color:transparent}
-.nav{display:flex;gap:4px;height:100%}
-.nav a{display:flex;align-items:center;padding:0 10px;font:500 14px/20px var(--sans);color:var(--text-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.topbar-in{max-width:1280px;margin:0 auto;height:100%;display:flex;align-items:center;gap:28px;padding:0 32px}
+.wordmark{font:500 21px/1 var(--serif);letter-spacing:-.02em;display:flex;align-items:baseline;gap:1px}
+.wordmark i{font-style:italic;color:var(--accent)}
+.nav{display:flex;gap:2px;background:var(--sunken);padding:3px;border-radius:999px}
+.nav a{display:flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;font:500 14px/20px var(--sans);color:var(--text-2);transition:background-color 150ms var(--ease),color 150ms var(--ease)}
 .nav a:hover{color:var(--text)}
-.nav a[aria-current]{color:var(--text);border-bottom-color:var(--accent)}
+.nav a[aria-current]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgb(28 27 23/.1)}
 .account{margin-left:auto;display:flex;align-items:center;gap:8px;font:500 13px/18px var(--sans);color:var(--text-2)}
-.avatar{width:28px;height:28px;border-radius:999px;background:var(--sunken);border:1px solid var(--border);display:grid;place-items:center;font:600 12px/1 var(--sans);color:var(--text)}
+.avatar{width:32px;height:32px;border-radius:999px;background:var(--accent);display:grid;place-items:center;font:500 14px/1 var(--serif);color:#fff;font-style:italic}
 .menu-btn{display:none}
-.page{max-width:1280px;margin:0 auto;padding:32px 32px 64px}
-.page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
-.page-head .sub{margin-top:4px}
+.page{max-width:1280px;margin:0 auto;padding:40px 32px 72px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:28px}
+.page-head .sub{margin-top:6px}
 .actions{display:flex;gap:8px}
 
 /* ---- Control bar ---- */
-.controls{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.search{position:relative;flex:1 1 280px;max-width:360px}
-.search svg{position:absolute;left:10px;top:10px;width:16px;height:16px;color:var(--muted)}
-.search .input{width:100%;padding-left:32px}
-.seg{display:inline-flex;border:1px solid var(--border-ui);border-radius:4px;overflow:hidden;margin-left:auto}
-.seg button{height:32px;padding:0 12px;border:0;background:var(--surface);font:500 13px/18px var(--sans);color:var(--text-2);cursor:pointer}
-.seg button+button{border-left:1px solid var(--border-ui)}
-.seg button[aria-pressed=true]{background:var(--sunken);color:var(--text)}
+.controls{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.search{position:relative;flex:1 1 280px;max-width:380px}
+.search svg{position:absolute;left:12px;top:11px;width:16px;height:16px;color:var(--muted)}
+.search .input{width:100%;padding-left:36px}
+.seg{display:inline-flex;background:var(--sunken);border-radius:999px;padding:3px;margin-left:auto}
+.seg button{height:32px;padding:0 14px;border:0;border-radius:999px;background:transparent;font:500 13px/18px var(--sans);color:var(--text-2);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgb(28 27 23/.1)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---- Board ---- */
-.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
-.col{background:var(--sunken);border-radius:6px;padding:8px;min-height:420px}
-.col-head{padding:4px 4px 10px}
-.col-head .row{display:flex;align-items:center;gap:8px}
-.col-head .count{margin-left:auto;color:var(--muted);font:500 12px/16px var(--sans)}
-.share{height:2px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
-.share i{display:block;height:100%;background:var(--text-2)}
-.cards{display:flex;flex-direction:column;gap:8px}
-.rcard{display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;transition:border-color 120ms ease-out}
-.rcard:hover{border-color:var(--border-ui)}
+.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.col{background:var(--sunken);border-radius:14px;padding:6px;min-height:440px}
+.col-head{display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:10px;background:var(--tint,var(--st-prep-tint));margin-bottom:6px}
+.col-head .count{margin-left:auto;font:500 20px/1 var(--serif);color:var(--text)}
+.col[data-k=applied]{--tint:var(--st-applied-tint);--edge:var(--st-applied)}
+.col[data-k=interview]{--tint:var(--st-interview-tint);--edge:var(--st-interview)}
+.col[data-k=offer]{--tint:var(--st-offer-tint);--edge:var(--st-offer)}
+.col[data-k=rejected]{--tint:var(--st-rejected-tint);--edge:var(--st-rejected)}
+.cards{display:flex;flex-direction:column;gap:6px}
+.rcard{display:block;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 12px 12px 15px;transition:transform 180ms var(--ease),box-shadow 180ms var(--ease),border-color 180ms var(--ease)}
+.rcard::before{content:"";position:absolute;left:5px;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--edge,var(--st-prep))}
+.rcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:var(--border-ui)}
 .rcard .co{color:var(--text-2);margin-top:2px}
-.rcard .meta{display:flex;gap:8px;align-items:center;margin-top:10px;color:var(--muted)}
-.rcard .next{margin-top:6px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.due-soon{color:var(--warning);font-weight:500}
-.col .none{padding:4px;color:var(--muted);font-size:13px}
+.rcard .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.rcard .next{margin-top:8px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.col .none{margin:4px;padding:16px 10px;border-radius:10px;border:1px dashed var(--border-ui);color:var(--muted);font-size:13px;text-align:center}
 .stage-tabs{display:none}
 
 /* ---- Dashboard ---- */
-.strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:32px}
-.strip a{padding:16px 20px;display:block}
-.strip a+a{border-left:1px solid var(--border)}
-.strip a:hover{background:var(--sunken)}
-.strip .n{font:500 32px/36px var(--serif)}
-.strip .l{margin-top:6px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:32px}
-.sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
-.list{background:var(--surface);border:1px solid var(--border);border-radius:6px}
-.lrow{display:grid;grid-template-columns:72px 1fr auto;gap:16px;align-items:center;padding:12px 16px;min-height:56px}
+.journey{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 28px 22px;margin-bottom:36px}
+.journey-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);position:relative}
+.steps::before{content:"";position:absolute;left:10%;right:10%;top:23px;height:2px;background:linear-gradient(90deg,var(--st-prep) 0%,var(--st-applied) 30%,var(--st-interview) 65%,var(--st-offer) 100%);opacity:.35;border-radius:2px}
+.step{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;position:relative;padding:0 4px;border-radius:12px;transition:background-color 150ms var(--ease)}
+.step:hover{background:var(--sunken)}
+.step .n{width:48px;height:48px;border-radius:999px;display:grid;place-items:center;font:500 24px/1 var(--serif);background:var(--tint,var(--st-prep-tint));color:var(--text);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border)}
+.step[data-k=applied]{--tint:var(--st-applied-tint)}.step[data-k=interview]{--tint:var(--st-interview-tint)}.step[data-k=offer]{--tint:var(--st-offer-tint)}
+.step.zero .n{background:var(--surface);color:var(--muted)}
+.two{display:grid;grid-template-columns:1.15fr 1fr;gap:36px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.list{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.lrow{display:grid;grid-template-columns:52px 1fr auto;gap:16px;align-items:center;padding:12px 18px;min-height:68px;transition:background-color 150ms var(--ease)}
 .lrow+.lrow{border-top:1px solid var(--border)}
-.lrow:hover{background:var(--sunken)}
-.lrow .date{font:500 13px/18px var(--sans)}
-.lrow .rel{font-size:12px;line-height:16px}
-.lrow.job{grid-template-columns:1fr auto}
-.link{color:var(--accent);font:500 13px/18px var(--sans)}
+.lrow:hover{background:var(--canvas)}
+.cal{width:52px;border-radius:10px;border:1px solid var(--border);text-align:center;overflow:hidden;background:var(--surface)}
+.cal .m{font:600 10px/16px var(--sans);letter-spacing:.06em;color:var(--text-2);background:var(--sunken);text-transform:uppercase}
+.cal .d{font:500 22px/30px var(--serif)}
+.cal.soon{border-color:var(--highlight)}
+.cal.soon .m{background:var(--highlight);color:var(--text)}
+.lrow .right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.lrow.job{grid-template-columns:40px 1fr auto}
+.mono{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:500 18px/1 var(--serif);font-style:italic;background:var(--accent-subtle);color:var(--accent)}
+.link{color:var(--accent);font:500 13px/18px var(--sans);display:inline-flex;gap:4px;align-items:center}
 .link:hover{text-decoration:underline;text-underline-offset:3px}
 
 /* ---- Landing ---- */
-.mk-bar{max-width:1120px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px}
-.mk{max-width:1120px;margin:0 auto;padding:0 32px}
-.hero{padding:64px 0 48px;max-width:760px}
-.hero p{margin:20px 0 0;max-width:620px;color:var(--text-2)}
-.hero .cta{display:flex;gap:12px;margin-top:32px;align-items:center}
-.shot-frame{border:1px solid var(--border);border-radius:8px;background:var(--surface);padding:16px;position:relative}
-.shot-frame .label{position:absolute;top:-10px;right:16px;background:var(--canvas);padding:0 8px}
-.shot-frame .board{grid-template-columns:repeat(4,minmax(0,1fr))}
-.shot-frame .col{min-height:0}
-.mk-sec{padding:96px 0;border-top:1px solid var(--border)}
-.split{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:start}
-.split p{color:var(--text-2);margin:16px 0 0}
-.evidence{background:var(--surface);border:1px solid var(--border);border-radius:6px}
-.evidence .row{padding:14px 16px}
-.evidence .row+.row{border-top:1px solid var(--border)}
-.evidence .q{margin-top:4px;padding-left:12px;border-left:2px solid var(--border);color:var(--muted)}
-.does{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:32px}
-.does ul{list-style:none;margin:12px 0 0;padding:0}
-.does li{padding:12px 0;border-top:1px solid var(--border)}
-.mk-foot{border-top:1px solid var(--border);padding:32px 0 48px;display:flex;justify-content:space-between;align-items:center;color:var(--muted)}
+.mk-bar{max-width:1180px;margin:0 auto;height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+.mk{max-width:1180px;margin:0 auto;padding:0 32px}
+.hero{padding:72px 0 56px;display:grid;grid-template-columns:1.25fr .75fr;gap:48px;align-items:end}
+.hero p{margin:24px 0 0;max-width:600px;color:var(--text-2)}
+.hero .cta{display:flex;gap:16px;margin-top:36px;align-items:center}
+.hero-note{border-left:2px solid var(--highlight);padding:4px 0 4px 16px;color:var(--text-2)}
+.hero-note strong{display:block;font:500 22px/1.2 var(--serif);color:var(--text);margin-bottom:6px}
+.stagepanel{background:var(--accent-deep);border-radius:24px;padding:40px 40px 0;overflow:hidden;position:relative}
+.stagepanel .label{color:var(--cream-muted);margin-bottom:16px;display:flex;justify-content:space-between}
+.stagepanel .board{grid-template-columns:repeat(4,minmax(0,1fr));transform:translateY(8px)}
+.stagepanel .col{min-height:0;padding-bottom:20px;border-radius:14px 14px 0 0}
+.mk-sec{padding:112px 0}
+.split{display:grid;grid-template-columns:5fr 7fr;gap:72px;align-items:center}
+.split p{color:var(--text-2);margin:20px 0 0}
+.kicker{font:500 italic 20px/1 var(--serif);color:var(--accent);margin-bottom:14px}
+.evidence{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:6px}
+.evidence .row{padding:16px 18px;border-radius:12px}
+.evidence .row+.row{margin-top:2px}
+.evidence .row.good{background:var(--accent-subtle)}
+.evidence .row.gap{background:var(--highlight-subtle)}
+.evidence .q{margin-top:6px;font:italic 500 15px/22px var(--serif);color:var(--text-2)}
+.dark{background:var(--accent-deep);color:var(--cream)}
+.dark .display-2{color:var(--cream)}
+.dark .kicker{color:var(--highlight)}
+.does{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:40px}
+.does h3{font:500 italic 22px/1.2 var(--serif);margin:0 0 8px;color:var(--cream)}
+.does ul{list-style:none;margin:0;padding:0}
+.does li{padding:14px 0;border-top:1px solid rgb(246 243 236/.16);color:var(--cream-muted);display:flex;gap:12px}
+.does li::before{content:"";flex:none;width:8px;height:8px;border-radius:999px;margin-top:7px;background:var(--highlight)}
+.does .no li::before{background:transparent;border:1.5px solid var(--cream-muted)}
+.mk-foot{padding:40px 0 56px;display:flex;justify-content:space-between;align-items:center;color:var(--muted)}
 
 /* ---- Responsive ---- */
 @media (max-width:1023px){
   .board{grid-template-columns:repeat(5,280px);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}
   .col{scroll-snap-align:start}
-  .two,.split{grid-template-columns:1fr;gap:32px}
+  .two,.split,.hero{grid-template-columns:1fr;gap:32px}
 }
 @media (max-width:767px){
   .topbar-in{padding:0 16px;gap:12px}
-  .nav,.account .name{display:none}
+  .nav,.account{display:none}
   .menu-btn{display:inline-flex;margin-left:auto}
-  .account{margin-left:0}
-  .page{padding:20px 16px 48px}
-  .title-1{font-size:24px;line-height:30px}
+  .page{padding:24px 16px 48px}
   .page-head{flex-direction:column;align-items:stretch}
   .actions .btn{flex:1;height:44px}
   .controls .search{max-width:none;flex-basis:100%}
   .controls .select{flex:1}
   .seg{margin-left:0}
-  .stage-tabs{display:flex;gap:4px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px}
-  .stage-tabs a{flex:none;display:flex;gap:6px;align-items:center;height:32px;padding:0 10px;border-radius:4px;background:var(--surface);border:1px solid var(--border);font:500 13px/18px var(--sans);color:var(--text-2)}
-  .stage-tabs a[aria-current]{border-color:var(--text);color:var(--text)}
-  .board{grid-template-columns:repeat(5,calc(100vw - 48px));margin:0 -16px;padding:0 16px 8px;scroll-padding:16px}
+  .stage-tabs{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px}
+  .stage-tabs a{flex:none;display:flex;gap:6px;align-items:center;height:34px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font:500 13px/18px var(--sans);color:var(--text-2)}
+  .stage-tabs a[aria-current]{background:var(--text);border-color:var(--text);color:var(--cream)}
+  .board{grid-template-columns:repeat(5,calc(100vw - 56px));margin:0 -16px;padding:0 16px 8px;scroll-padding:16px}
   .col{min-height:0}
-  .account{display:none}
-  .strip{grid-template-columns:1fr}
-  .strip a{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:center;padding:10px 16px}
-  .strip a+a{border-left:0;border-top:1px solid var(--border)}
-  .strip .n{font:500 20px/24px var(--serif)}
-  .strip .l{margin-top:0}
-  .lrow{grid-template-columns:76px 1fr;gap:12px}
-  .lrow .rel{white-space:nowrap}
-  .lrow .stage{grid-column:2}
-  .mk-bar{padding:0 16px}
+  .journey{padding:18px 12px}
+  .journey-top{padding:0 6px}
+  .steps::before{top:19px}
+  .step .n{width:40px;height:40px;font-size:20px}
+  .step .stage{font-size:11px;line-height:14px;flex-direction:column;gap:2px}
+  .step .stage .dot{display:none}
+  .lrow{grid-template-columns:52px 1fr;gap:14px;padding:12px 14px}
+  .lrow .right{grid-column:2;align-items:flex-start;flex-direction:row;gap:8px}
+  .lrow.job{grid-template-columns:40px 1fr}
+  .lrow.job .link{grid-column:2}
+  .mk-bar{padding:0 16px;height:64px}
   .mk{padding:0 16px}
-  .display-1{font-size:40px;line-height:44px}
-  .display-2{font-size:28px;line-height:34px}
-  .hero{padding:40px 0 32px}
+  .hero{padding:32px 0 32px}
   .hero .cta{flex-direction:column;align-items:stretch}
-  .shot-frame{padding:8px}
-  .shot-frame .board{grid-template-columns:repeat(4,240px);overflow-x:auto}
-  .mk-sec{padding:64px 0}
-  .does{grid-template-columns:1fr;gap:24px}
+  .stagepanel{padding:20px 16px 0;border-radius:18px;margin:0 -4px}
+  .stagepanel .board{grid-template-columns:repeat(4,240px);overflow-x:auto}
+  .mk-sec{padding:72px 0}
+  .does{grid-template-columns:1fr;gap:32px}
   .mk-foot{flex-direction:column;gap:8px;align-items:flex-start}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;transform:none!important}}
 </style>
 </head>
 <body>
 
 <nav class="mock-switch" aria-label="Mockup screens">
-  <span>Mockup · sample data</span>
+  <span>Mockup v2 · sample data</span>
   <a href="#applications">Applications</a>
   <a href="#dashboard">Dashboard</a>
   <a href="#landing">Landing</a>
 </nav>
 
-<!-- Inline SVG icons -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
-  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
 
 <template id="appbar">
   <header class="topbar">
     <div class="topbar-in">
-      <a class="wordmark" href="#dashboard">CareerPilot</a>
+      <a class="wordmark" href="#dashboard">Career<i>Pilot</i></a>
       <nav class="nav" aria-label="Main">
         <a href="#dashboard" data-k="dashboard">Dashboard</a>
         <a href="#applications" data-k="applications">Applications</a>
@@ -240,7 +262,7 @@ body:not(.shot) .topbar{top:28px}
         <a href="#">Prepare</a>
         <a href="#">Profile</a>
       </nav>
-      <div class="account"><span class="avatar">SC</span><span class="name">Stephen Chen</span><svg width="14" height="14" class="name"><use href="#i-down"/></svg></div>
+      <div class="account"><span>Stephen Chen</span><span class="avatar" aria-hidden="true">S</span></div>
       <button class="btn btn-ghost btn-sm menu-btn" aria-label="Open navigation"><svg><use href="#i-menu"/></svg></button>
     </div>
   </header>
@@ -252,26 +274,24 @@ body:not(.shot) .topbar{top:28px}
     <div class="page-head">
       <div>
         <h1 class="title-1">Applications</h1>
-        <p class="sub muted num">6 tracked</p>
+        <p class="sub t2"><span class="num">6</span> tracked · <span class="num">1</span> due this week</p>
       </div>
       <div class="actions"><a class="btn btn-primary" href="#"><svg><use href="#i-plus"/></svg>Add job</a></div>
     </div>
 
     <div class="controls" role="search">
       <div class="search"><svg><use href="#i-search"/></svg><label class="sr-only" for="q">Search applications</label><input id="q" class="input" placeholder="Search company or role"></div>
-      <label class="sr-only" for="st">Stage</label>
-      <select id="st" class="select"><option>All stages</option></select>
-      <label class="sr-only" for="dt">Applied</label>
-      <select id="dt" class="select"><option>Any date</option></select>
+      <label class="sr-only" for="st">Stage</label><select id="st" class="select"><option>All stages</option></select>
+      <label class="sr-only" for="dt">Applied</label><select id="dt" class="select"><option>Any date</option></select>
       <div class="seg" role="group" aria-label="View"><button aria-pressed="true">Board</button><button aria-pressed="false">Table</button></div>
     </div>
 
     <div class="stage-tabs" aria-label="Stages">
-      <a href="#" aria-current="true"><span class="dot"></span>Preparing <span class="num muted">2</span></a>
-      <a href="#"><span class="dot applied"></span>Applied <span class="num muted">2</span></a>
-      <a href="#"><span class="dot interview"></span>Interview <span class="num muted">1</span></a>
-      <a href="#"><span class="dot offer"></span>Offer <span class="num muted">0</span></a>
-      <a href="#"><span class="dot rejected"></span>Rejected <span class="num muted">1</span></a>
+      <a href="#" aria-current="true">Preparing <span class="num">2</span></a>
+      <a href="#"><span class="dot applied"></span>Applied <span class="num">2</span></a>
+      <a href="#"><span class="dot interview"></span>Interview <span class="num">1</span></a>
+      <a href="#"><span class="dot offer"></span>Offer <span class="num">0</span></a>
+      <a href="#"><span class="dot rejected"></span>Rejected <span class="num">1</span></a>
     </div>
 
     <div class="board" data-board></div>
@@ -283,8 +303,8 @@ body:not(.shot) .topbar{top:28px}
   <main class="page">
     <div class="page-head">
       <div>
-        <h1 class="title-1">Dashboard</h1>
-        <p class="sub muted">Tuesday, November 17</p>
+        <h1 class="title-1">Good morning, <em class="voice">Stephen</em></h1>
+        <p class="sub t2">Tuesday, November 17 · one deadline in the next 3 days</p>
       </div>
       <div class="actions">
         <a class="btn btn-secondary" href="#">Find jobs</a>
@@ -292,30 +312,33 @@ body:not(.shot) .topbar{top:28px}
       </div>
     </div>
 
-    <nav class="strip num" aria-label="Pipeline">
-      <a href="#applications"><div class="n">2</div><div class="l stage"><span class="dot"></span>Preparing</div></a>
-      <a href="#applications"><div class="n">2</div><div class="l stage"><span class="dot applied"></span>Applied</div></a>
-      <a href="#applications"><div class="n">0</div><div class="l stage"><span class="dot interview"></span>Online assessment</div></a>
-      <a href="#applications"><div class="n">1</div><div class="l stage"><span class="dot interview"></span>Interview</div></a>
-      <a href="#applications"><div class="n">0</div><div class="l stage"><span class="dot offer"></span>Offer</div></a>
-    </nav>
+    <section class="journey" aria-label="Pipeline">
+      <div class="journey-top"><h2 class="title-2">Your pipeline</h2><a class="link" href="#applications">Open board <svg width="14" height="14"><use href="#i-arrow"/></svg></a></div>
+      <div class="steps num">
+        <a class="step" href="#applications"><span class="n">2</span><span class="stage"><span class="dot"></span>Preparing</span></a>
+        <a class="step" data-k="applied" href="#applications"><span class="n">2</span><span class="stage"><span class="dot applied"></span>Applied</span></a>
+        <a class="step zero" data-k="interview" href="#applications"><span class="n">0</span><span class="stage"><span class="dot interview"></span>Online assessment</span></a>
+        <a class="step" data-k="interview" href="#applications"><span class="n">1</span><span class="stage"><span class="dot interview"></span>Interview</span></a>
+        <a class="step zero" data-k="offer" href="#applications"><span class="n">0</span><span class="stage"><span class="dot offer"></span>Offer</span></a>
+      </div>
+    </section>
 
     <div class="two">
       <section>
-        <div class="sec-head"><h2 class="title-2">Upcoming deadlines</h2><a class="link" href="#applications">All applications</a></div>
+        <div class="sec-head"><h2 class="title-2">Coming up</h2><a class="link" href="#applications">All applications</a></div>
         <div class="list">
-          <a class="lrow" href="#"><div><div class="date num">Nov 20</div><div class="rel due-soon">In 3 days</div></div><div><div class="title-3">Backend Engineering Intern</div><div class="body-sm t2">Northstar Robotics</div></div><span class="stage"><span class="dot"></span>Preparing</span></a>
-          <a class="lrow" href="#"><div><div class="date num">Nov 26</div><div class="rel muted">In 9 days</div></div><div><div class="title-3">AI Engineering Intern</div><div class="body-sm t2">Boreal AI Labs</div></div><span class="stage"><span class="dot interview"></span>Interview</span></a>
-          <a class="lrow" href="#"><div><div class="date num">Dec 1</div><div class="rel muted">In 14 days</div></div><div><div class="title-3">Frontend Platform Intern</div><div class="body-sm t2">Northwind Commerce</div></div><span class="stage"><span class="dot applied"></span>Applied</span></a>
-          <a class="lrow" href="#"><div><div class="date num">Dec 8</div><div class="rel muted">In 3 weeks</div></div><div><div class="title-3">Full-stack Product Intern</div><div class="body-sm t2">Maple Health</div></div><span class="stage"><span class="dot"></span>Preparing</span></a>
+          <a class="lrow" href="#"><div class="cal soon"><div class="m">Nov</div><div class="d num">20</div></div><div><div class="title-3">Backend Engineering Intern</div><div class="body-sm t2">Northstar Robotics</div></div><div class="right"><span class="chip chip-soon">In 3 days</span><span class="stage"><span class="dot"></span>Preparing</span></div></a>
+          <a class="lrow" href="#"><div class="cal"><div class="m">Nov</div><div class="d num">26</div></div><div><div class="title-3">AI Engineering Intern</div><div class="body-sm t2">Boreal AI Labs</div></div><div class="right"><span class="body-sm muted">In 9 days</span><span class="stage"><span class="dot interview"></span>Interview</span></div></a>
+          <a class="lrow" href="#"><div class="cal"><div class="m">Dec</div><div class="d num">1</div></div><div><div class="title-3">Frontend Platform Intern</div><div class="body-sm t2">Northwind Commerce</div></div><div class="right"><span class="body-sm muted">In 14 days</span><span class="stage"><span class="dot applied"></span>Applied</span></div></a>
+          <a class="lrow" href="#"><div class="cal"><div class="m">Dec</div><div class="d num">8</div></div><div><div class="title-3">Full-stack Product Intern</div><div class="body-sm t2">Maple Health</div></div><div class="right"><span class="body-sm muted">In 3 weeks</span><span class="stage"><span class="dot"></span>Preparing</span></div></a>
         </div>
       </section>
       <section>
-        <div class="sec-head"><h2 class="title-2">Recently saved jobs</h2><a class="link" href="#">All jobs</a></div>
+        <div class="sec-head"><h2 class="title-2">Recently saved</h2><a class="link" href="#">All jobs</a></div>
         <div class="list">
-          <div class="lrow job"><div><a class="title-3" href="#">Machine Learning Tools Intern</a><div class="body-sm t2">VectorWorks Studio · New York, NY · Saved Nov 15</div></div><a class="link" href="#">Prepare</a></div>
-          <div class="lrow job"><div><a class="title-3" href="#">Data Platform Intern</a><div class="body-sm t2">Lakeshore Analytics · Toronto, ON · Saved Nov 12</div></div><a class="link" href="#">Prepare</a></div>
-          <div class="lrow job"><div><a class="title-3" href="#">Full-stack Product Intern</a><div class="body-sm t2">Maple Health · Remote, Canada · Saved Nov 9</div></div><a class="link" href="#">Prepare</a></div>
+          <div class="lrow job"><span class="mono" aria-hidden="true">V</span><div><a class="title-3" href="#">Machine Learning Tools Intern</a><div class="body-sm t2">VectorWorks Studio · New York, NY</div></div><a class="link" href="#">Prepare <svg width="14" height="14"><use href="#i-arrow"/></svg></a></div>
+          <div class="lrow job"><span class="mono" aria-hidden="true">L</span><div><a class="title-3" href="#">Data Platform Intern</a><div class="body-sm t2">Lakeshore Analytics · Toronto, ON</div></div><a class="link" href="#">Prepare <svg width="14" height="14"><use href="#i-arrow"/></svg></a></div>
+          <div class="lrow job"><span class="mono" aria-hidden="true">M</span><div><a class="title-3" href="#">Full-stack Product Intern</a><div class="body-sm t2">Maple Health · Remote, Canada</div></div><a class="link" href="#">Prepare <svg width="14" height="14"><use href="#i-arrow"/></svg></a></div>
         </div>
       </section>
     </div>
@@ -325,68 +348,73 @@ body:not(.shot) .topbar{top:28px}
 <!-- =============== C. LANDING =============== -->
 <section class="screen" id="landing">
   <header class="mk-bar">
-    <a class="wordmark" href="#landing">CareerPilot</a>
+    <a class="wordmark" href="#landing">Career<i>Pilot</i></a>
     <div class="actions"><a class="btn btn-ghost" href="#">Sign in</a><a class="btn btn-primary" href="#">Create account</a></div>
   </header>
   <main>
     <div class="mk">
       <div class="hero">
-        <h1 class="display-1">Track every internship application in one place, and prepare for each one.</h1>
-        <p class="body-lg">Save postings, move each application through its stages, keep deadlines in view, and get a prep plan and practice questions written for the specific role.</p>
-        <div class="cta"><a class="btn btn-primary btn-lg" href="#">Create account</a><span class="body-sm muted">The tracker works on its own. AI features are optional.</span></div>
+        <div>
+          <h1 class="display-1">Track every internship application in one place, and <em class="voice"><span class="hl">prepare for each one.</span></em></h1>
+          <p class="body-lg">Save postings, move each application through its stages, keep deadlines in view, and get a prep plan and practice questions written for the specific role.</p>
+          <div class="cta"><a class="btn btn-primary btn-lg" href="#">Create account <svg><use href="#i-arrow"/></svg></a><a class="btn btn-ghost btn-lg" href="#">Sign in</a></div>
+        </div>
+        <div class="hero-note"><strong>The tracker works on its own.</strong>AI features are optional and only run when you click Generate. Nothing is ever submitted for you.</div>
       </div>
-      <div class="shot-frame" aria-label="Applications board with sample data">
-        <span class="label caption muted">Sample data</span>
+      <div class="stagepanel" aria-label="Applications board with sample data">
+        <div class="label caption"><span>Your applications board</span><span>Sample data</span></div>
         <div class="board" data-board data-cols="4"></div>
       </div>
     </div>
 
-    <section class="mk-sec" style="margin-top:96px">
+    <section class="mk-sec">
       <div class="mk split">
         <div>
+          <div class="kicker">Prep</div>
           <h2 class="display-2">Prep for the posting, not the job title.</h2>
-          <p class="body-lg">Pick a saved job and CareerPilot compares its requirements with your profile and resume. You get what you can already point to, what's missing, and a short plan for the gaps.</p>
+          <p class="body-lg">Pick a saved job and CareerPilot compares its requirements with your profile and resume. You see what you can already point to, what's missing, and a short plan for the gaps.</p>
         </div>
         <div class="evidence" aria-label="Example role analysis">
-          <div class="row"><div class="title-3">Python and FastAPI services</div><div class="q body-sm">From your projects: "Resume Parser Lab: Python, Pydantic, pytest"</div></div>
-          <div class="row"><div class="title-3">PostgreSQL-backed workflows</div><div class="q body-sm">From your experience: "CareerPilot full-stack career tracker"</div></div>
-          <div class="row"><div style="display:flex;justify-content:space-between;gap:12px"><div class="title-3">Robotics or embedded exposure</div><span class="badge badge-warning">Gap · High</span></div><div class="q body-sm">Not in your profile. Prepare one example of working with hardware APIs or simulators.</div></div>
+          <div class="row good"><div class="title-3">Python and FastAPI services</div><div class="q">“Resume Parser Lab: Python, Pydantic, pytest”, from your projects</div></div>
+          <div class="row good"><div class="title-3">PostgreSQL-backed workflows</div><div class="q">“CareerPilot full-stack career tracker”, from your experience</div></div>
+          <div class="row gap"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div class="title-3">Robotics or embedded exposure</div><span class="chip" style="background:var(--highlight);color:var(--text)">Gap · high</span></div><div class="q">Not in your profile yet. Prepare one example of working with hardware APIs or simulators.</div></div>
         </div>
       </div>
     </section>
 
-    <section class="mk-sec">
+    <section class="mk-sec dark">
       <div class="mk">
+        <div class="kicker">Straight answers</div>
         <h2 class="display-2">What the AI does and doesn't do</h2>
         <div class="does">
-          <div><h3 class="title-3">Does, when you click Generate</h3><ul class="t2"><li>Finds postings that match your profile or a description you write</li><li>Drafts an application preview and cover letter for you to edit</li><li>Writes a prep plan and practice questions for one specific role</li><li>Gives structured feedback on answers you type</li></ul></div>
-          <div><h3 class="title-3">Doesn't</h3><ul class="t2"><li>Submit applications or fill in forms on other sites</li><li>Change your profile, resume or tracker without you saving it</li><li>Run in the background. Nothing is generated until you ask.</li><li>Need to be used at all. The tracker works on its own.</li></ul></div>
+          <div><h3>Does, when you click Generate</h3><ul><li>Finds postings that match your profile or a description you write</li><li>Drafts an application preview and cover letter for you to edit</li><li>Writes a prep plan and practice questions for one specific role</li><li>Gives structured feedback on answers you type</li></ul></div>
+          <div class="no"><h3>Doesn't</h3><ul><li>Submit applications or fill in forms on other sites</li><li>Change your profile, resume or tracker without you saving it</li><li>Run in the background. Nothing is generated until you ask.</li><li>Need to be used at all. The tracker works on its own.</li></ul></div>
         </div>
       </div>
     </section>
 
-    <div class="mk"><footer class="mk-foot"><span class="wordmark">CareerPilot</span><span class="body-sm">An application tracker and prep workspace for students applying to internships and co-ops.</span></footer></div>
+    <div class="mk"><footer class="mk-foot"><span class="wordmark">Career<i>Pilot</i></span><span class="body-sm">An application tracker and prep workspace for students applying to internships and co-ops.</span></footer></div>
   </main>
 </section>
 
 <script>
 const cols = [
-  {name:"Preparing", dot:"", share:33, cards:[
-    {t:"Backend Engineering Intern", c:"Northstar Robotics", due:"Due Nov 20", soon:true, n:"Draft backend-focused cover letter"},
+  {k:"prep", name:"Preparing", cards:[
+    {t:"Backend Engineering Intern", c:"Northstar Robotics", due:"Due Nov 20", soon:"In 3 days", n:"Draft backend-focused cover letter"},
     {t:"Full-stack Product Intern", c:"Maple Health", due:"Due Dec 8", n:"Ask Mina Patel for a referral"}]},
-  {name:"Applied", dot:"applied", share:33, cards:[
+  {k:"applied", name:"Applied", dot:"applied", cards:[
     {t:"Frontend Platform Intern", c:"Northwind Commerce", due:"Due Dec 1", n:"Prepare React project walkthrough"},
     {t:"Software Developer Co-op", c:"Harbourline Bank", due:"No deadline", n:"Follow up on Nov 24"}]},
-  {name:"Interview", dot:"interview", share:17, cards:[
+  {k:"interview", name:"Interview", dot:"interview", cards:[
     {t:"AI Engineering Intern", c:"Boreal AI Labs", due:"Due Nov 26", n:"Practice behavioral and ML fundamentals"}]},
-  {name:"Offer", dot:"offer", share:0, cards:[]},
-  {name:"Rejected", dot:"rejected", share:17, cards:[
+  {k:"offer", name:"Offer", dot:"offer", cards:[]},
+  {k:"rejected", name:"Rejected", dot:"rejected", cards:[
     {t:"Platform Engineering Intern", c:"Cedar Systems", due:"Closed Oct 30", n:""}]},
 ];
-function card(x){return `<a class="rcard" href="#"><div class="title-3">${x.t}</div><div class="co body-sm">${x.c}</div><div class="meta body-sm num"><span class="${x.soon?'due-soon':''}">${x.due}</span></div>${x.n?`<div class="next body-sm">${x.n}</div>`:''}</a>`}
+function card(x){return `<a class="rcard" href="#"><div class="title-3">${x.t}</div><div class="co body-sm">${x.c}</div><div class="meta body-sm num"><span class="chip ${x.soon?'chip-soon':''}">${x.due}${x.soon?' · '+x.soon:''}</span></div>${x.n?`<div class="next body-sm">${x.n}</div>`:''}</a>`}
 document.querySelectorAll('[data-board]').forEach(b=>{
   const n=+(b.dataset.cols||5);
-  b.innerHTML=cols.slice(0,n).map(c=>`<section class="col" aria-label="${c.name}"><div class="col-head"><div class="row"><span class="dot ${c.dot}"></span><h2 class="title-3">${c.name}</h2><span class="count num">${c.cards.length}</span></div><div class="share"><i style="width:${c.share}%"></i></div></div><div class="cards">${c.cards.length?c.cards.map(card).join(''):'<p class="none">None</p>'}</div></section>`).join('');
+  b.innerHTML=cols.slice(0,n).map(c=>`<section class="col" data-k="${c.k}" aria-label="${c.name}"><div class="col-head"><span class="dot ${c.dot||''}"></span><h2 class="title-3">${c.name}</h2><span class="count num">${c.cards.length}</span></div><div class="cards">${c.cards.length?c.cards.map(card).join(''):'<p class="none">Nothing here yet</p>'}</div></section>`).join('');
 });
 const bar=document.getElementById('appbar');
 document.querySelectorAll('[data-bar]').forEach(s=>{
@@ -394,8 +422,7 @@ document.querySelectorAll('[data-bar]').forEach(s=>{
   h.querySelectorAll('.nav a').forEach(a=>{if(a.dataset.k===s.dataset.bar)a.setAttribute('aria-current','page')});
   s.prepend(h);
 });
-const params=new URLSearchParams(location.search);
-if(params.has('shot'))document.body.classList.add('shot');
+if(new URLSearchParams(location.search).has('shot'))document.body.classList.add('shot');
 function show(){
   const id=(location.hash||'#applications').slice(1);
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
