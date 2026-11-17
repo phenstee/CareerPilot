@@ -31,7 +31,7 @@ export function PageHeader({
         ) : null}
       </div>
       {actions ? (
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap md:flex-none md:justify-end">
+        <div className="flex flex-wrap gap-2 md:flex-none md:justify-end">
           {actions}
         </div>
       ) : null}
