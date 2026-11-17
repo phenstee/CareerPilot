@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { AppShell } from "@/components/app-shell";
 import { JobSearchAgent } from "@/components/job-search-agent";
 import { PageHeader } from "@/components/ui/page-header";
@@ -10,15 +8,10 @@ export default async function JobFinderAgentPage() {
 
   return (
     <AppShell user={user}>
-      <div className="page-container-narrow">
+      <div className="page-container lg:pt-8">
         <PageHeader
-          title="Find jobs that fit your direction"
-          description="Search from your profile or describe what you want. Results emphasize fit evidence, not arbitrary scores."
-          actions={
-            <Link href="/agents" className="button button-secondary">
-              All agents
-            </Link>
-          }
+          title="Find jobs"
+          description="Search from your profile or describe what you want. Each result explains its fit with evidence instead of a score."
         />
         <JobSearchAgent />
       </div>

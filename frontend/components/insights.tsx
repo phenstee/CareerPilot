@@ -1,24 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  ChevronDown,
-  CircleHelp,
-  FileText,
-  Sparkles
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import type { EvidenceItem, QualificationGap } from "@/lib/api";
 
 type Priority = "high" | "medium" | "low";
 
 const priorityStyles: Record<Priority, string> = {
-  high: "bg-danger/10 text-danger",
-  medium: "bg-warning/10 text-warning",
-  low: "bg-sunken text-muted"
+  high: "badge-highlight",
+  medium: "badge-warning",
+  low: "badge-neutral"
 };
 
 const priorityLabels: Record<Priority, string> = {
@@ -42,17 +34,13 @@ export function PriorityBadge({
 }) {
   const resolved = level ?? toPriority(severity);
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] ${priorityStyles[resolved]}`}
-    >
-      {resolved === "high" ? (
-        <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />
-      ) : null}
+    <span className={`badge flex-none ${priorityStyles[resolved]}`}>
       {priorityLabels[resolved]}
     </span>
   );
 }
 
+/** Strengths and gaps side by side: green rows and marigold rows. */
 export function InsightSummary({
   title,
   description,
@@ -65,36 +53,26 @@ export function InsightSummary({
   gaps: string[];
 }) {
   return (
-    <section className="rounded-lg border border-accent/20 bg-accent-subtle/40 p-5 sm:p-6">
-      <div>
-        <div className="flex items-center gap-2 text-accent">
-          <Sparkles aria-hidden="true" className="h-4 w-4" />
-          <span className="text-xs font-bold uppercase tracking-[0.12em]">
-            AI snapshot
-          </span>
-        </div>
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink">
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-            {description}
-          </p>
-        ) : null}
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <SignalColumn
-            title="Top strengths"
-            items={strengths}
-            empty="No strengths surfaced yet."
-            tone="strength"
-          />
-          <SignalColumn
-            title="Focus before interview"
-            items={gaps}
-            empty="No major gaps surfaced."
-            tone="gap"
-          />
-        </div>
+    <section className="surface p-5 sm:p-6">
+      <h2 className="font-serif text-2xl font-medium text-ink">{title}</h2>
+      {description ? (
+        <p className="mt-1 max-w-3xl text-sm leading-6 text-ink-2">
+          {description}
+        </p>
+      ) : null}
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
+        <SignalColumn
+          title="Where you're strong"
+          items={strengths}
+          empty="No strengths surfaced yet."
+          tone="strength"
+        />
+        <SignalColumn
+          title="Focus before the interview"
+          items={gaps}
+          empty="No major gaps surfaced."
+          tone="gap"
+        />
       </div>
     </section>
   );
@@ -111,60 +89,42 @@ function SignalColumn({
   empty: string;
   tone: "strength" | "gap";
 }) {
-  const Icon = tone === "strength" ? CheckCircle2 : AlertTriangle;
-  const iconClass = tone === "strength" ? "text-success" : "text-warning";
+  const rowClass =
+    tone === "strength" ? "bg-accent-subtle" : "bg-highlight-subtle";
   return (
-    <div className="rounded-lg border border-line/70 bg-surface p-4">
-      <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted">
-        {title}
-      </h3>
-      <div className="mt-3 space-y-2">
-        {items.length > 0 ? (
-          items.slice(0, 3).map((item) => (
-            <div key={item} className="flex items-start gap-2">
-              <Icon
-                aria-hidden="true"
-                className={`mt-0.5 h-4 w-4 flex-none ${iconClass}`}
-              />
-              <p className="text-sm font-medium leading-5 text-ink">{item}</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-muted">{empty}</p>
-        )}
-      </div>
+    <div>
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      {items.length > 0 ? (
+        <ul className="mt-2 space-y-1.5">
+          {items.slice(0, 3).map((item) => (
+            <li
+              key={item}
+              className={`rounded-lg px-3 py-2 text-sm leading-5 text-ink ${rowClass}`}
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-muted">{empty}</p>
+      )}
     </div>
   );
 }
 
+/** A requirement to prepare for, on a marigold row; opens for detail. */
 export function GapInsight({ gap }: { gap: QualificationGap }) {
-  const details = [
-    {
-      label: "Current evidence",
-      icon: FileText,
-      value: gap.current_evidence || "Not clearly evidenced in your profile."
-    },
-    {
-      label: "What to prepare",
-      icon: ArrowRight,
-      value: gap.recommendation
-    }
-  ];
-
   return (
-    <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-line-ui">
-      <summary className="flex cursor-pointer list-none items-start gap-3">
-        <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-warning/10 text-warning">
-          <AlertTriangle aria-hidden="true" className="h-4 w-4" />
-        </span>
+    <details className="group rounded-lg bg-highlight-subtle">
+      <summary className="flex cursor-pointer list-none items-start gap-3 rounded-lg px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span className="min-w-0 flex-1">
-          <span className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <span className="flex flex-wrap items-start justify-between gap-2">
             <span className="text-sm font-semibold leading-5 text-ink">
               {gap.requirement}
             </span>
             <PriorityBadge severity={gap.severity} />
           </span>
-          <span className="mt-1.5 block text-sm leading-6 text-muted">
+          <span className="mt-1 block text-sm leading-6 text-ink-2">
             {gap.recommendation
               ? shortRecommendation(gap.recommendation)
               : "Review this requirement before the interview."}
@@ -172,59 +132,40 @@ export function GapInsight({ gap }: { gap: QualificationGap }) {
         </span>
         <ChevronDown
           aria-hidden="true"
-          className="mt-1 h-4 w-4 flex-none text-muted transition group-open:rotate-180"
+          className="mt-0.5 h-4 w-4 flex-none text-muted transition-transform duration-150 group-open:rotate-180"
         />
       </summary>
-      <div className="mt-4 space-y-3 border-t border-line pt-4">
-        {details.map((detail) => (
-          <div
-            key={detail.label}
-            className="grid grid-cols-[1.25rem_1fr] gap-2"
-          >
-            <detail.icon
-              aria-hidden="true"
-              className="mt-0.5 h-4 w-4 text-accent"
-            />
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
-                {detail.label}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-ink">{detail.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <dl className="space-y-3 border-t border-ink/10 px-4 pb-4 pt-3">
+        <div>
+          <dt className="text-meta font-medium text-ink-2">
+            What you have now
+          </dt>
+          <dd className="mt-0.5 font-serif text-body italic text-ink">
+            {gap.current_evidence || "Not clearly shown in your profile yet."}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-meta font-medium text-ink-2">What to prepare</dt>
+          <dd className="mt-0.5 text-sm leading-6 text-ink">
+            {gap.recommendation}
+          </dd>
+        </div>
+      </dl>
     </details>
   );
 }
 
+/** A strength with the evidence quoted from your profile or resume. */
 export function EvidenceInsight({ evidence }: { evidence: EvidenceItem }) {
   return (
-    <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-line-ui">
-      <summary className="flex cursor-pointer list-none items-start gap-3">
-        <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-success/10 text-success">
-          <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold leading-5 text-ink">
-            {evidence.claim}
-          </span>
-          <span className="mt-1 block text-sm leading-6 text-muted">
-            {evidence.evidence}
-          </span>
-        </span>
-        <ChevronDown
-          aria-hidden="true"
-          className="mt-1 h-4 w-4 flex-none text-muted transition group-open:rotate-180"
-        />
-      </summary>
-      <div className="mt-4 border-t border-line pt-4">
-        <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
-          Supporting evidence
-        </p>
-        <p className="mt-2 text-sm leading-6 text-ink">{evidence.evidence}</p>
-      </div>
-    </details>
+    <div className="rounded-lg bg-accent-subtle px-4 py-3">
+      <p className="text-sm font-semibold leading-5 text-ink">
+        {evidence.claim}
+      </p>
+      <p className="mt-1 font-serif text-body italic text-ink-2">
+        &ldquo;{evidence.evidence}&rdquo;
+      </p>
+    </div>
   );
 }
 
@@ -238,17 +179,12 @@ export function RecommendationPanel({
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-accent-subtle/60 p-4">
-      <div className="flex items-center gap-2 text-accent">
-        <Sparkles aria-hidden="true" className="h-4 w-4" />
-        <h3 className="text-sm font-bold uppercase tracking-[0.08em]">
-          {title}
-        </h3>
-      </div>
-      <ol className="mt-3 space-y-2">
+    <section className="surface p-5">
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      <ol className="mt-3 space-y-3">
         {items.slice(0, 3).map((item, index) => (
           <li key={`${item}-${index}`} className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+            <span className="tabular w-5 flex-none font-serif text-lg leading-6 text-accent">
               {index + 1}
             </span>
             <p className="text-sm leading-6 text-ink">{item}</p>
@@ -267,11 +203,9 @@ export function InsightSectionLabel({
   children: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2 text-muted">
+    <div className="flex items-center gap-2">
       {icon}
-      <h3 className="text-sm font-bold uppercase tracking-[0.1em]">
-        {children}
-      </h3>
+      <h3 className="section-title">{children}</h3>
     </div>
   );
 }
@@ -279,22 +213,19 @@ export function InsightSectionLabel({
 export function UncertaintyList({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <div className="rounded-lg border border-line bg-surface p-4">
-      <div className="flex items-center gap-2 text-muted">
-        <CircleHelp aria-hidden="true" className="h-4 w-4" />
-        <h3 className="text-sm font-bold uppercase tracking-[0.1em]">
-          Open questions
-        </h3>
-      </div>
-      <ul className="mt-3 space-y-2">
+    <section>
+      <h3 className="text-sm font-semibold text-ink">Open questions</h3>
+      <ul className="mt-2 space-y-1.5">
         {items.slice(0, 3).map((item) => (
-          <li key={item} className="flex gap-2 text-sm leading-6 text-muted">
-            <span className="text-muted">?</span>
+          <li key={item} className="flex gap-2 text-sm leading-6 text-ink-2">
+            <span aria-hidden="true" className="font-serif italic text-muted">
+              ?
+            </span>
             <span>{item}</span>
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }
 

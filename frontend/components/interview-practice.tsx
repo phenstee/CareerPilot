@@ -1,15 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ChevronDown,
-  Loader2,
-  Mic,
-  Send,
-  Sparkles
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -22,6 +15,11 @@ import {
   listInterviewSessions
 } from "@/lib/api";
 import { InsightSummary, RecommendationPanel } from "@/components/insights";
+import { formatDateTime } from "@/lib/format";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { LoadingState, Spinner } from "@/components/ui/loading-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 const categoryLabels: Record<InterviewQuestion["category"], string> = {
   behavioral: "Behavioral",
@@ -29,16 +27,6 @@ const categoryLabels: Record<InterviewQuestion["category"], string> = {
   job_description: "Job description",
   projects_resume: "Projects and resume"
 };
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  }).format(new Date(value));
-}
 
 export function InterviewPractice() {
   const params = useParams<{ id: string }>();
@@ -110,191 +98,220 @@ export function InterviewPractice() {
     }
   });
 
-  if (sessionsQuery.isLoading) {
+  const header = (
+    <PageHeader
+      breadcrumb={{
+        href: `/applications/${params.id}`,
+        label: activeSession?.job_title ?? "Application"
+      }}
+      title="Interview practice"
+      description={
+        activeSession
+          ? `${activeSession.job_title} at ${activeSession.company}. Answer one question at a time and get feedback on each.`
+          : "Generate questions written for this application, then answer one at a time and get feedback on each."
+      }
+    />
+  );
+
+  if (sessionsQuery.isPending) {
     return (
-      <div className="flex min-h-48 items-center justify-center rounded-lg border border-line bg-surface">
-        <Loader2
-          aria-hidden="true"
-          className="h-5 w-5 animate-spin text-accent"
-        />
-      </div>
+      <>
+        {header}
+        <LoadingState label="Loading practice sessions" rows={3} />
+      </>
     );
   }
 
   if (sessionsQuery.isError) {
-    return <div className="callout-error">Unable to load interview prep.</div>;
+    return (
+      <>
+        {header}
+        <ErrorState
+          message="Your practice sessions didn't load. Check your connection and try again."
+          onRetry={() => sessionsQuery.refetch()}
+        />
+      </>
+    );
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
-      <aside className="surface p-5">
-        <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-accent-subtle p-2 text-accent">
-            <Mic aria-hidden="true" className="h-5 w-5" />
-          </div>
+    <>
+      {header}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
+        <aside className="min-w-0 space-y-4">
+          <button
+            type="button"
+            onClick={() => createMutation.mutate()}
+            disabled={createMutation.isPending}
+            className="button button-primary w-full"
+          >
+            {createMutation.isPending ? <Spinner /> : null}
+            Generate practice questions
+          </button>
+          <InterviewTaskStatus task={activeTask} />
+
           <div>
-            <h2 className="text-lg font-semibold text-ink">
-              Interview sessions
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              Generate questions from this application, then practice one answer
-              at a time.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => createMutation.mutate()}
-          disabled={createMutation.isPending}
-          className="button button-primary mt-5 w-full"
-        >
-          {createMutation.isPending ? (
-            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles aria-hidden="true" className="h-4 w-4" />
-          )}
-          Generate prep session
-        </button>
-
-        {sessions.length > 0 ? (
-          <div className="mt-5 space-y-2">
-            {sessions.map((session) => (
-              <button
-                key={session.id}
-                type="button"
-                onClick={() => {
-                  setSelectedSessionId(session.id);
-                  setQuestionIndex(0);
-                  setAnswerText("");
-                }}
-                className={`w-full rounded-lg border px-3 py-3 text-left text-sm transition ${
-                  activeSession?.id === session.id
-                    ? "border-accent bg-accent-subtle text-ink"
-                    : "border-line bg-surface text-muted hover:border-line-ui"
-                }`}
-              >
-                <span className="block font-semibold">
-                  {session.questions.length} questions
-                </span>
-                <span className="mt-1 block text-xs text-muted">
-                  {formatDate(session.created_at)} - {session.provider}
-                </span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-line-ui bg-sunken p-4 text-sm leading-6 text-muted">
-            No interview prep sessions yet.
-          </div>
-        )}
-      </aside>
-
-      <section className="space-y-5">
-        {formError ? <div className="callout-error">{formError}</div> : null}
-
-        <InterviewTaskStatus task={activeTask} />
-
-        {activeSession && activeQuestion ? (
-          <>
-            <SessionOverview session={activeSession} />
-
-            <article className="surface p-5 sm:p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="page-eyebrow">
-                    Question {questionIndex + 1} of{" "}
-                    {activeSession.questions.length}
-                  </p>
-                  <h3 className="mt-2 text-2xl font-semibold text-ink">
-                    {categoryLabels[activeQuestion.category]}
-                  </h3>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setQuestionIndex((value) => Math.max(0, value - 1))
-                    }
-                    disabled={questionIndex === 0}
-                    className="button button-secondary h-10 w-10 px-0"
-                    aria-label="Previous question"
-                  >
-                    <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setQuestionIndex((value) =>
-                        Math.min(activeSession.questions.length - 1, value + 1)
-                      )
-                    }
-                    disabled={
-                      questionIndex === activeSession.questions.length - 1
-                    }
-                    className="button button-secondary h-10 w-10 px-0"
-                    aria-label="Next question"
-                  >
-                    <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                  </button>
-                </div>
+            <h2 className="mb-2 text-sm font-semibold text-ink">Sessions</h2>
+            {sessions.length > 0 ? (
+              <div className="surface divide-y divide-line overflow-hidden">
+                {sessions.map((session) => {
+                  const active = activeSession?.id === session.id;
+                  return (
+                    <button
+                      key={session.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        setSelectedSessionId(session.id);
+                        setQuestionIndex(0);
+                        setAnswerText("");
+                      }}
+                      className={`relative block w-full px-4 py-3 text-left text-sm transition-colors duration-150 ${
+                        active
+                          ? "bg-accent-subtle before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r-full before:bg-accent before:content-['']"
+                          : "hover:bg-canvas"
+                      }`}
+                    >
+                      <span className="block font-medium text-ink">
+                        {session.questions.length}{" "}
+                        {session.questions.length === 1
+                          ? "question"
+                          : "questions"}
+                      </span>
+                      <span className="tabular mt-0.5 block text-meta text-muted">
+                        {formatDateTime(session.created_at)}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+            ) : (
+              <p className="text-sm text-muted">No sessions yet.</p>
+            )}
+          </div>
+        </aside>
 
-              <p className="mt-5 text-xl leading-8 text-ink">
-                {activeQuestion.question_text}
-              </p>
-              {activeQuestion.rationale ? (
-                <p className="mt-3 rounded-lg bg-sunken px-3 py-2 text-sm leading-6 text-muted">
-                  {activeQuestion.rationale}
-                </p>
-              ) : null}
+        <section className="min-w-0 space-y-6">
+          {formError ? (
+            <p role="alert" className="callout-error">
+              {formError}
+            </p>
+          ) : null}
 
-              <form
-                className="mt-5"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  answerMutation.mutate();
-                }}
+          {activeSession && activeQuestion ? (
+            <>
+              <article
+                aria-labelledby="question-heading"
+                className="surface p-5 sm:p-7"
               >
-                <label className="block">
-                  <span className="form-label">Practice answer</span>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-meta font-medium text-ink-2">
+                    <span className="tabular">
+                      Question {questionIndex + 1} of{" "}
+                      {activeSession.questions.length}
+                    </span>
+                    <span aria-hidden="true"> · </span>
+                    {categoryLabels[activeQuestion.category]}
+                  </p>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setQuestionIndex((value) => Math.max(0, value - 1))
+                      }
+                      disabled={questionIndex === 0}
+                      className="button button-secondary button-sm w-8 px-0"
+                      aria-label="Previous question"
+                    >
+                      <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setQuestionIndex((value) =>
+                          Math.min(
+                            activeSession.questions.length - 1,
+                            value + 1
+                          )
+                        )
+                      }
+                      disabled={
+                        questionIndex === activeSession.questions.length - 1
+                      }
+                      className="button button-secondary button-sm w-8 px-0"
+                      aria-label="Next question"
+                    >
+                      <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <h2
+                  id="question-heading"
+                  className="mt-4 font-serif text-2xl font-medium leading-snug text-ink"
+                >
+                  {activeQuestion.question_text}
+                </h2>
+                {activeQuestion.rationale ? (
+                  <p className="mt-3 text-sm leading-6 text-ink-2">
+                    <span className="font-medium text-ink">
+                      Why it&apos;s asked:
+                    </span>{" "}
+                    {activeQuestion.rationale}
+                  </p>
+                ) : null}
+
+                <form
+                  className="mt-6"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    answerMutation.mutate();
+                  }}
+                >
+                  <label htmlFor="practice-answer" className="form-label">
+                    Your answer
+                  </label>
                   <textarea
+                    id="practice-answer"
                     value={answerText}
                     onChange={(event) => setAnswerText(event.target.value)}
                     rows={9}
-                    placeholder="Type your answer here..."
-                    className="form-control mt-2"
+                    placeholder="Answer as you would out loud. A rough draft is fine."
+                    className="form-control"
                   />
-                </label>
-                <button
-                  type="submit"
-                  disabled={
-                    answerMutation.isPending || answerText.trim().length === 0
-                  }
-                  className="button button-primary mt-4"
-                >
-                  {answerMutation.isPending ? (
-                    <Loader2
-                      aria-hidden="true"
-                      className="h-4 w-4 animate-spin"
-                    />
-                  ) : (
-                    <Send aria-hidden="true" className="h-4 w-4" />
-                  )}
-                  Submit for feedback
-                </button>
-              </form>
-            </article>
+                  <button
+                    type="submit"
+                    disabled={
+                      answerMutation.isPending || answerText.trim().length === 0
+                    }
+                    className="button button-primary mt-4"
+                  >
+                    {answerMutation.isPending ? <Spinner /> : null}
+                    Get feedback
+                  </button>
+                </form>
+              </article>
 
-            <FeedbackPanel question={activeQuestion} />
-          </>
-        ) : (
-          <div className="rounded-lg border border-dashed border-line-ui bg-surface p-8 text-sm leading-6 text-muted">
-            Generate an interview prep session to start practicing.
-          </div>
-        )}
-      </section>
-    </div>
+              <FeedbackPanel question={activeQuestion} />
+              <SessionOverview session={activeSession} />
+            </>
+          ) : (
+            <EmptyState
+              title="No practice questions yet"
+              description="Generate a set of questions for this application. They're based on the posting, your profile and your resume."
+              action={
+                <Link
+                  href={`/applications/${params.id}`}
+                  className="button button-secondary"
+                >
+                  Back to application
+                </Link>
+              }
+            />
+          )}
+        </section>
+      </div>
+    </>
   );
 }
 
@@ -305,16 +322,28 @@ function InterviewTaskStatus({ task }: { task: AsyncTask | null }) {
 
   const text =
     task.status === "QUEUED"
-      ? "Queued..."
+      ? "Queued…"
       : task.status === "RUNNING"
-        ? "Generating..."
+        ? "Generating…"
         : task.status === "RETRYING"
-          ? `Temporary issue - retrying (${task.attempt_count}/${task.max_attempts})...`
+          ? `Temporary issue, retrying (${task.attempt_count} of ${task.max_attempts})…`
           : task.status === "SUCCEEDED"
-            ? "Completed."
+            ? "Done."
             : (task.last_error_message ?? "Generation failed. Try again.");
+  const failed = task.status === "FAILED";
+  const working = !failed && task.status !== "SUCCEEDED";
 
-  return <div className="callout-info">{text}</div>;
+  return (
+    <p
+      role="status"
+      className={`flex items-center gap-2 text-sm ${
+        failed ? "callout-error" : "text-ink-2"
+      }`}
+    >
+      {working ? <Spinner className="h-4 w-4 text-accent" /> : null}
+      {text}
+    </p>
+  );
 }
 
 function SessionOverview({ session }: { session: InterviewSession }) {
@@ -338,17 +367,20 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
   const latestAnswer = question.answers.at(-1);
 
   return (
-    <article className="surface p-5 sm:p-6">
-      <div className="flex items-center gap-2">
-        <Sparkles aria-hidden="true" className="h-4 w-4 text-accent" />
-        <h3 className="text-lg font-semibold text-ink">Answer feedback</h3>
+    <article aria-labelledby="feedback-heading" className="surface p-5 sm:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 id="feedback-heading" className="section-title">
+          Feedback on your answer
+        </h3>
+        {latestAnswer ? (
+          <p className="tabular text-meta text-muted">
+            {formatDateTime(latestAnswer.created_at)}
+          </p>
+        ) : null}
       </div>
       {latestAnswer ? (
         <>
-          <p className="mt-2 text-xs text-muted">
-            {formatDate(latestAnswer.created_at)} - {latestAnswer.provider}
-          </p>
-          <p className="mt-4 rounded-lg border border-accent/20 bg-accent-subtle/60 px-4 py-3 text-sm leading-6 text-ink">
+          <p className="mt-4 rounded-lg bg-accent-subtle px-4 py-3 text-sm leading-6 text-ink">
             {latestAnswer.feedback.overall_feedback}
           </p>
           <div className="mt-5 grid gap-3 lg:grid-cols-2">
@@ -381,7 +413,8 @@ function FeedbackPanel({ question }: { question: InterviewQuestion }) {
         </>
       ) : (
         <p className="mt-2 text-sm leading-6 text-muted">
-          Submit an answer for this question to see structured feedback.
+          Answer this question to see what was strong, what was unclear and what
+          was missing.
         </p>
       )}
     </article>
@@ -398,40 +431,41 @@ function FeedbackGroup({
   tone: "success" | "warning" | "danger" | "brand" | "ai";
 }) {
   const toneStyles = {
-    success: "text-success",
-    warning: "text-warning",
-    danger: "text-danger",
-    brand: "text-accent",
-    ai: "text-ink"
+    success: "bg-success",
+    warning: "bg-highlight",
+    danger: "bg-danger",
+    brand: "bg-accent",
+    ai: "bg-stage-prep"
   } as const;
 
   if (items.length === 0) return null;
 
   return (
-    <details className="group rounded-lg border border-line bg-surface p-4 transition hover:border-line-ui">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+    <details className="group rounded-lg border border-line bg-surface" open>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2">
           <span
-            className={`text-xs font-bold uppercase tracking-[0.1em] ${toneStyles[tone]}`}
-          >
-            {title}
-          </span>
-          <span className="rounded-full bg-sunken px-2 py-0.5 text-xs font-bold text-muted">
-            {items.length}
-          </span>
+            aria-hidden="true"
+            className={`h-2 w-2 rounded-full ${toneStyles[tone]}`}
+          />
+          <span className="text-sm font-semibold text-ink">{title}</span>
+          <span className="tabular text-meta text-muted">{items.length}</span>
         </span>
         <ChevronDown
           aria-hidden="true"
-          className="h-4 w-4 text-muted transition group-open:rotate-180"
+          className="h-4 w-4 text-muted transition-transform duration-150 group-open:rotate-180"
         />
       </summary>
-      <ul className="mt-3 space-y-2 border-t border-line pt-3">
+      <ul className="space-y-2 border-t border-line px-4 pb-4 pt-3">
         {items.map((item, index) => (
           <li
             key={`${item}-${index}`}
-            className="flex gap-2 text-sm leading-6 text-muted"
+            className="flex gap-2 text-sm leading-6 text-ink-2"
           >
-            <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-current opacity-50" />
+            <span
+              aria-hidden="true"
+              className="mt-2.5 h-1 w-1 flex-none rounded-full bg-muted"
+            />
             <span>{item}</span>
           </li>
         ))}

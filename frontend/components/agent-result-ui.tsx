@@ -1,8 +1,8 @@
-import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { AsyncTask, JobPosting } from "@/lib/api";
+import { Spinner } from "@/components/ui/loading-state";
 
 type Action = {
   label: string;
@@ -28,9 +28,9 @@ export function AgentCard({
     <section className="surface p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-ink">{title}</h2>
+          <h2 className="section-title">{title}</h2>
           {description ? (
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-2">
               {description}
             </p>
           ) : null}
@@ -43,25 +43,22 @@ export function AgentCard({
 }
 
 export function PrimaryActionCard({
-  eyebrow,
   title,
   description,
   action,
   children
 }: {
-  eyebrow: string;
   title: string;
   description: string;
   action?: Action;
   children?: ReactNode;
 }) {
   return (
-    <section className="surface border-accent/20 p-5 sm:p-6">
+    <section className="surface p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="page-eyebrow">{eyebrow}</p>
-          <h2 className="mt-2 text-2xl font-semibold text-ink">{title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+          <h2 className="font-serif text-2xl font-medium text-ink">{title}</h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-ink-2">
             {description}
           </p>
         </div>
@@ -83,11 +80,7 @@ export function ActionButton({
 
   const content = (
     <>
-      {action.loading ? (
-        <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-      ) : (
-        action.icon
-      )}
+      {action.loading ? <Spinner /> : action.icon}
       {action.label}
     </>
   );
@@ -124,22 +117,30 @@ export function JobPicker({
   getMeta?: (job: JobPosting) => string;
 }) {
   return (
-    <aside className="surface p-4">
-      <h2 className="text-base font-semibold text-ink">Saved jobs</h2>
-      <div className="mt-3 max-h-[34rem] space-y-2 overflow-y-auto pr-1">
+    <aside aria-labelledby="job-picker-heading" className="min-w-0">
+      <h2
+        id="job-picker-heading"
+        className="mb-3 text-sm font-semibold text-ink"
+      >
+        Saved jobs
+      </h2>
+      <div className="surface max-h-[34rem] divide-y divide-line overflow-y-auto">
         {jobs.map((job) => (
           <button
             key={job.id}
             type="button"
             onClick={() => onSelect(job.id)}
-            className={`w-full rounded-lg border px-3 py-3 text-left text-sm transition ${
+            aria-pressed={selectedJobId === job.id}
+            className={`relative block w-full px-4 py-3 text-left text-sm transition-colors duration-150 ${
               selectedJobId === job.id
-                ? "border-accent bg-accent-subtle"
-                : "border-line bg-surface hover:border-line-ui"
+                ? "bg-accent-subtle before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-r-full before:bg-accent before:content-['']"
+                : "hover:bg-canvas"
             }`}
           >
             <span className="block font-semibold text-ink">{job.title}</span>
-            <span className="mt-1 block text-muted">{job.company}</span>
+            <span className="mt-0.5 block text-meta text-ink-2">
+              {job.company}
+            </span>
             {getMeta ? (
               <span className="mt-1 block text-xs text-muted">
                 {getMeta(job)}
@@ -213,48 +214,6 @@ export function TagList({
   );
 }
 
-export function LoadingState({ message }: { message: string }) {
-  return (
-    <div className="surface p-5">
-      <div className="flex items-center gap-3 text-sm text-muted">
-        <Loader2
-          aria-hidden="true"
-          className="h-5 w-5 animate-spin text-accent"
-        />
-        <span>{message}</span>
-      </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <div className="skeleton h-20" />
-        <div className="skeleton h-20" />
-        <div className="skeleton h-20" />
-      </div>
-    </div>
-  );
-}
-
-export function EmptyState({
-  title,
-  description
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-lg border border-dashed border-line-ui bg-surface p-8">
-      <h2 className="text-xl font-semibold text-ink">{title}</h2>
-      <p className="mt-2 max-w-xl text-sm text-muted">{description}</p>
-      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <Link href="/agents/job-finder" className="button button-primary">
-          Find jobs
-        </Link>
-        <Link href="/jobs" className="button button-secondary">
-          View all jobs
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 export function ErrorCallout({
   message,
   action
@@ -263,18 +222,35 @@ export function ErrorCallout({
   action?: Action;
 }) {
   return (
-    <div className="callout-error mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-2">
-        <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
-        <p>{message}</p>
-      </div>
+    <div
+      role="alert"
+      className="callout-error mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>{message}</p>
       {action ? <ActionButton action={action} /> : null}
     </div>
   );
 }
 
+/** Out-of-date results are a warning, not an error. */
 export function StaleNotice({ message }: { message: string }) {
-  return <ErrorCallout message={message} />;
+  return <p className="callout-warning mt-4">{message}</p>;
+}
+
+/** A missing prerequisite is a neutral hint, not an error. */
+export function HintCallout({
+  message,
+  action
+}: {
+  message: string;
+  action?: Action;
+}) {
+  return (
+    <div className="callout-info mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p>{message}</p>
+      {action ? <ActionButton action={action} /> : null}
+    </div>
+  );
 }
 
 export function TaskStatusNotice({ task }: { task: AsyncTask | null }) {
@@ -287,41 +263,32 @@ export function TaskStatusNotice({ task }: { task: AsyncTask | null }) {
   const isFailed = task.status === "FAILED";
 
   return (
-    <div
-      className={`mt-4 flex items-start gap-2 px-3 py-2 text-sm ${
-        isFailed ? "callout-error" : "callout-info"
+    <p
+      role="status"
+      className={`mt-4 flex items-center gap-2 text-sm ${
+        isFailed ? "callout-error" : isDone ? "text-success" : "text-ink-2"
       }`}
     >
-      {isDone ? (
-        <CheckCircle2
-          aria-hidden="true"
-          className="mt-0.5 h-4 w-4 text-accent"
-        />
-      ) : isFailed ? (
-        <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4" />
-      ) : (
-        <Loader2
-          aria-hidden="true"
-          className="mt-0.5 h-4 w-4 animate-spin text-accent"
-        />
-      )}
-      <p>{status}</p>
-    </div>
+      {!isDone && !isFailed ? (
+        <Spinner className="h-4 w-4 text-accent" />
+      ) : null}
+      {status}
+    </p>
   );
 }
 
 function taskStatusCopy(task: AsyncTask): string {
   if (task.status === "QUEUED") {
-    return "Queued...";
+    return "Queued…";
   }
   if (task.status === "RUNNING") {
-    return "Generating...";
+    return "Generating…";
   }
   if (task.status === "RETRYING") {
-    return `Temporary issue - retrying (${task.attempt_count}/${task.max_attempts})...`;
+    return `Temporary issue, retrying (${task.attempt_count} of ${task.max_attempts})…`;
   }
   if (task.status === "SUCCEEDED") {
-    return "Completed.";
+    return "Done.";
   }
   return task.last_error_message ?? "Generation failed. Try again.";
 }

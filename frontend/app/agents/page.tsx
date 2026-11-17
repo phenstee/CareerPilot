@@ -8,10 +8,14 @@ export default async function AgentsPage() {
 
   return (
     <AppShell user={user}>
-      <div className="page-container-narrow">
+      <div className="page-container lg:pt-8">
         <PageHeader
-          title="Choose an AI workflow"
-          description="Use specialized, review-first agents for finding roles, preparing materials, and getting interview-ready."
+          title={
+            <>
+              Prepare for <span className="voice">each role</span>
+            </>
+          }
+          description="Three tools that work from a posting plus your profile and resume. Use them in order or on their own."
         />
         <AgentsHome />
       </div>

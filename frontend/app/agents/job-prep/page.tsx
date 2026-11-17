@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { JobPreparationAgent } from "@/components/job-preparation-agent";
+import { LoadingState } from "@/components/ui/loading-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { getCurrentUser } from "@/lib/server-auth";
 
@@ -11,23 +11,12 @@ export default async function JobPreparationAgentPage() {
 
   return (
     <AppShell user={user}>
-      <div className="page-container-narrow">
+      <div className="page-container lg:pt-8">
         <PageHeader
-          title="Prepare for a saved job"
-          description="Review the role, compare your evidence, generate resume advice, and practice interview answers."
-          actions={
-            <Link href="/agents" className="button button-secondary">
-              All agents
-            </Link>
-          }
+          title="Interview prep"
+          description="Pick a saved job. Start with a role analysis, then build a prep plan and work through the checklist."
         />
-        <Suspense
-          fallback={
-            <div className="surface p-5 text-sm text-muted">
-              Loading preparation agent...
-            </div>
-          }
-        >
+        <Suspense fallback={<LoadingState label="Loading" rows={4} />}>
           <JobPreparationAgent />
         </Suspense>
       </div>

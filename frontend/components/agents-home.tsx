@@ -1,84 +1,73 @@
-import {
-  ArrowUpRight,
-  BriefcaseBusiness,
-  FileText,
-  GraduationCap,
-  ShieldCheck
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-const agents = [
+const steps = [
   {
-    title: "Smart Job Finder",
-    kicker: "Discover",
+    title: "Find jobs",
     description:
-      "Search from your profile or describe what you want, then review fit evidence for each result.",
+      "Search from your profile or describe what you want. Each result says why it fits and what's missing, and you choose what to save.",
     action: "Find jobs",
-    href: "/agents/job-finder",
-    icon: BriefcaseBusiness
+    href: "/agents/job-finder"
   },
   {
-    title: "Job Application Agent",
-    kicker: "Apply",
+    title: "Draft application",
     description:
-      "Prepare a focused application preview, identify missing details, and copy materials for manual review.",
-    action: "Prepare application",
-    href: "/agents/job-application",
-    icon: FileText
+      "For a saved job: a short summary of your fit, a cover letter to edit, and the application answers that need your confirmation.",
+    action: "Draft an application",
+    href: "/agents/job-application"
   },
   {
-    title: "Job Preparation Agent",
-    kicker: "Prepare",
+    title: "Interview prep",
     description:
-      "Research the role, close qualification gaps, and practice interview answers with structured feedback.",
-    action: "Prepare for a job",
-    href: "/agents/job-prep",
-    icon: GraduationCap
+      "For a saved job: a role analysis that quotes your evidence, a prep plan for the gaps, and practice questions with feedback.",
+    action: "Start interview prep",
+    href: "/agents/job-prep"
   }
 ];
 
 export function AgentsHome() {
   return (
-    <section className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-3">
-        {agents.map((agent) => (
-          <Link
-            key={agent.title}
-            href={agent.href}
-            className="surface surface-hover group flex h-full flex-col p-6"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent-subtle text-accent">
-                <agent.icon aria-hidden="true" className="h-5 w-5" />
-              </div>
-              <ArrowUpRight
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-8">
+      <ol className="surface divide-y divide-line overflow-hidden lg:col-span-2">
+        {steps.map((step, index) => (
+          <li key={step.href}>
+            <Link
+              href={step.href}
+              className="group flex gap-5 px-5 py-5 transition-colors duration-150 hover:bg-canvas sm:px-6"
+            >
+              <span
                 aria-hidden="true"
-                className="h-5 w-5 text-muted transition group-hover:text-accent"
-              />
-            </div>
-            <p className="mt-6 text-xs font-bold uppercase tracking-[0.1em] text-muted">
-              {agent.kicker}
-            </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink">
-              {agent.title}
-            </h2>
-            <p className="mt-3 flex-1 text-sm leading-6 text-muted">
-              {agent.description}
-            </p>
-            <span className="mt-5 inline-flex text-sm font-semibold text-accent">
-              {agent.action}
-            </span>
-          </Link>
+                className="tabular w-6 flex-none font-serif text-3xl font-medium leading-8 text-accent"
+              >
+                {index + 1}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-semibold text-ink">
+                  {step.title}
+                </span>
+                <span className="mt-1 block max-w-xl text-sm leading-6 text-ink-2">
+                  {step.description}
+                </span>
+                <span className="link-arrow mt-3">
+                  {step.action}
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </span>
+              </span>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ol>
 
-      <div className="flex items-start gap-3 rounded-lg border border-accent/20 bg-accent-subtle/60 p-4 text-sm leading-6 text-accent">
-        <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 flex-none" />
-        <p>
-          Every agent produces recommendations for your review. CareerPilot does
-          not submit applications or change your data without your approval.
+      <aside className="border-l-2 border-highlight pl-5">
+        <h2 className="font-serif text-xl font-medium text-ink">
+          You stay in charge.
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-ink-2">
+          These only run when you click Generate. They don&apos;t submit
+          applications, fill in forms on other sites, or change your profile or
+          tracker unless you save something yourself.
         </p>
-      </div>
-    </section>
+      </aside>
+    </div>
   );
 }
